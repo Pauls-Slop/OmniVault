@@ -41,11 +41,14 @@ Kryptografische Grundfunktionen für Bitwarden (AES-CBC, HMAC, PBKDF2, RSA-OAEP,
 
 | Datei | Quelle | Stand | Lizenz | Verwendung |
 |---|---|---|---|---|
-| `vendor/public_suffix_list.dat` → `src/lib/psl-data.js` | [Public Suffix List](https://publicsuffix.org/) (Mozilla Foundation und Mitwirkende) | 28.12.2025 (SHA-256 `25d10019…748ade`, Paket `publicsuffix-list` aus nixpkgs) | MPL-2.0 (wie OmniVault, [LICENSE](LICENSE)) | Registrierbare Domain für den Seitenabgleich und die rpId-Prüfung bei Passkeys |
+| `vendor/public_suffix_list.dat` → `src/lib/psl-data.js` | [Public Suffix List](https://publicsuffix.org/) (Mozilla Foundation und Mitwirkende) | 17.10.2026 (SHA-256 `3d92f70d…25e5f33`, [publicsuffix/list](https://github.com/publicsuffix/list) Commit `52b71b3`) | MPL-2.0 (wie OmniVault, [LICENSE](LICENSE)) | Registrierbare Domain für den Seitenabgleich und die rpId-Prüfung bei Passkeys |
+| `test/fixtures/psl-test.txt` | Prüffälle der Public Suffix List (`tests/test_psl.txt`, gleiches Repository und gleicher Commit) | 17.10.2026 | Public Domain (CC0) | nur Test: `test/psl.test.js` prüft OmniVaults Auswertung gegen alle Fälle |
 
 `src/lib/psl-data.js` enthält nur die Regeln der Liste (Kommentare entfernt, Domains in ASCII-Schreibweise) und wird
-mit `npm run psl:build` neu erzeugt. Aktualisieren: neue Liste von https://publicsuffix.org/list/public_suffix_list.dat
-nach `vendor/` legen, dann `npm run psl:build`.
+mit `npm run psl:build` neu erzeugt. Aktualisieren (vor jedem Release): `git clone --depth 1
+https://github.com/publicsuffix/list` (raw.githubusercontent.com und publicsuffix.org sind in der Agent-Umgebung
+gesperrt, GitHub-Klone nicht), `public_suffix_list.dat` nach `vendor/` und `tests/test_psl.txt` nach
+`test/fixtures/psl-test.txt` kopieren, `npm run psl:build`, `npm test`, Datum, Hash und Commit hier eintragen.
 
 ## Externe Programme (nicht enthalten, nur aufgerufen)
 

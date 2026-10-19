@@ -4,6 +4,8 @@
 // Public Suffix List: cases from the list's own test file (publicsuffix.org/list/test.txt, MPL-2.0) and the
 // relying-party check that WebAuthn builds on.
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { domainToASCII } from 'node:url';
 import test from 'node:test';
 import { baseDomain, matchesUrl } from '../src/lib/match.js';
 import { isRegistrableSuffixOf, publicSuffix, registrableDomain } from '../src/lib/psl.js';
@@ -25,6 +27,25 @@ test('registrable domains (PSL test cases)', () => {
   ];
   for (const [host, want] of cases) assert.equal(registrableDomain(host), want, host);
   assert.equal(publicSuffix('www.example.co.uk'), 'co.uk');
+});
+
+test('all cases of the official test file (test/fixtures/psl-test.txt, public domain)', () => {
+  // Same file as tests/test_psl.txt in github.com/publicsuffix/list. Inputs are lower-cased and converted to
+  // ASCII first, as URL.hostname delivers them; a leading dot is not a valid host name.
+  const src = readFileSync(new URL('./fixtures/psl-test.txt', import.meta.url), 'utf8');
+  let n = 0;
+  for (const m of src.matchAll(/^checkPublicSuffix\((null|'[^']*'), (null|'[^']*')\);/gm)) {
+    const input = m[1] === 'null' ? null : m[1].slice(1, -1);
+    const want = m[2] === 'null' ? null : domainToASCII(m[2].slice(1, -1));
+    let got = null;
+    if (input && !input.startsWith('.')) {
+      const ascii = domainToASCII(input.toLowerCase());
+      got = ascii ? registrableDomain(ascii) : null;
+    }
+    assert.equal(got, want, String(input));
+    n++;
+  }
+  assert.ok(n > 70, `only ${n} cases found`);
 });
 
 test('URL matching uses the registrable domain', () => {
