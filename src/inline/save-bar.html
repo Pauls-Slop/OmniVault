@@ -1,0 +1,20 @@
+<!doctype html>
+<!-- This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
+     If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/. -->
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>OmniVault</title>
+<link rel="stylesheet" href="inline.css">
+</head>
+<body class="bar">
+<header><img src="icons/icon32.png" alt="" width="16" height="16"><strong id="question">Login speichern?</strong></header>
+<p id="detail"></p>
+<form id="form">
+  <select id="account" aria-label="Konto"></select>
+  <button type="submit" id="save">Speichern</button>
+</form>
+<div class="links"><button type="button" class="link" id="later">Nicht jetzt</button><button type="button" class="link" id="never">Nie für diese Seite</button></div>
+<script type="module" src="save-bar.js"></script>
+</body>
+</html>

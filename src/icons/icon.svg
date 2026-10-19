@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+  <!-- OmniVault icon. Primary color oklch(0.6903 0.2218 358.3255) = #ff4d9a, glyph oklch(0.22 0.06 358) -->
+  <rect width="20" height="20" rx="5" fill="#ff4d9a"/>
+  <g fill="none" stroke="#2b0a17" stroke-width="1.8" stroke-linecap="round">
+    <circle cx="10" cy="10" r="5.2"/>
+    <path d="M10 4.8V3.4M10 16.6v-1.4M4.8 10H3.4M16.6 10h-1.4"/>
+  </g>
+  <circle cx="10" cy="10" r="1.6" fill="#2b0a17"/>
+</svg>

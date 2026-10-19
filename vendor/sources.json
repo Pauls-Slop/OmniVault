@@ -1,0 +1,12 @@
+{
+  "_comment": "Exact upstream sources for vendor/*.mjs. Versions follow openpgpjs v6.3.2 package-lock.json.",
+  "openpgpjs":        { "repo": "https://github.com/openpgpjs/openpgpjs",        "ref": "v6.3.2",  "commit": "5f33328a3b601fb9c9dce310d1ecc137db0dbc75", "license": "LGPL-3.0-or-later" },
+  "noble-ciphers":    { "repo": "https://github.com/paulmillr/noble-ciphers",    "ref": "1.3.0",   "commit": "953f9aabb4dd91f02bb64a8df424dd1912ddd62a", "license": "MIT" },
+  "noble-curves":     { "repo": "https://github.com/paulmillr/noble-curves",     "ref": "1.9.7",   "commit": "a0ac59846ee76c52f7c18886f4963e1211345d48", "license": "MIT" },
+  "noble-hashes":     { "repo": "https://github.com/paulmillr/noble-hashes",     "ref": "1.8.0",   "commit": "32f700f38ec49d7e6b2ab687904d6b2d7d60d80a", "license": "MIT" },
+  "web-stream-tools": { "repo": "https://github.com/openpgpjs/web-stream-tools", "ref": "v0.3.1",  "commit": "510cf3f6d0e4148a4c65bd5d5e6c093a3d36ba14", "license": "MIT" },
+  "argon2id":         { "repo": "https://github.com/openpgpjs/argon2id",         "ref": "v1.0.1",  "commit": "6fc76bcf69fbe07b5ec532a7912772d28f1ea43a", "license": "MIT" },
+  "bn.js":            { "repo": "https://github.com/indutny/bn.js",              "ref": "v5.2.3",  "commit": "ea6c072a951493ca99e5cd5f8da3851b90116271", "license": "MIT" },
+  "fflate":           { "repo": "https://github.com/101arrowz/fflate",           "ref": "v0.8.3",  "commit": "dcb3714a6c25db3a2748641019c5277413d09714", "license": "MIT" },
+  "tweetnacl-js":     { "repo": "https://github.com/openpgpjs/tweetnacl-js",     "ref": "master",  "commit": "58ab2c532fdabc77ecd27e14c9d9bfad490a33e4", "license": "Unlicense" }
+}

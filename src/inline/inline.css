@@ -1,0 +1,46 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
+   If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+:root { --bg: #fff; --text: oklch(0.22 0.012 358); --muted: oklch(0.5 0.012 358); --border: oklch(0.9 0.01 358);
+  --soft: oklch(0.95 0.035 358); --accent: oklch(0.6903 0.2218 358.3255); --accent-text: oklch(0.2 0.06 358); color-scheme: light dark; }
+@media (prefers-color-scheme: dark) {
+  :root { --bg: oklch(0.22 0.009 358); --text: oklch(0.93 0.008 358); --muted: oklch(0.72 0.01 358); --border: oklch(0.33 0.01 358); --soft: oklch(0.3 0.06 358); }
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body { background: var(--bg); color: var(--text); font: 13px/1.35 system-ui, -apple-system, "Segoe UI", sans-serif; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+header { display: flex; gap: 6px; align-items: center; padding: 8px 10px; border-bottom: 2px solid var(--accent); }
+header span { color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+body.menu { display: flex; flex-direction: column; }
+#list { overflow-y: auto; flex: 1; }
+.row { display: grid; grid-template-columns: 1fr auto; gap: 6px; align-items: center; width: 100%; text-align: left; font: inherit; color: inherit;
+  background: none; border: 0; border-top: 1px solid var(--border); padding: 7px 10px 7px 12px; cursor: pointer; box-shadow: inset 4px 0 0 hsl(var(--h) 65% 42%); }
+.row:first-child { border-top: 0; }
+.row:hover, .row:focus-visible { background: var(--soft); outline: none; }
+.row strong, .row span { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.row span { color: var(--muted); font-size: 12px; }
+.row .badge { display: inline-block; color: #fff; background: hsl(var(--h) 65% 42%); border-radius: 4px; font-size: 10px; font-weight: 700; padding: 1px 4px; }
+.note { color: var(--muted); padding: 12px; margin: 0; }
+body.bar { padding-bottom: 8px; }
+.bar p { margin: 6px 10px; color: var(--muted); overflow-wrap: anywhere; }
+.bar form { display: grid; grid-template-columns: 1fr auto; gap: 6px; margin: 0 10px; }
+select, button { font: inherit; border-radius: 6px; border: 1px solid var(--border); padding: 4px 8px; background: var(--bg); color: var(--text); }
+#save { background: var(--accent); color: var(--accent-text); border-color: transparent; cursor: pointer; }
+.links { display: flex; gap: 14px; margin: 6px 10px 0; }
+button.link { border: 0; padding: 0; background: none; color: var(--muted); cursor: pointer; text-decoration: underline; }
+
+/* passkey dialog */
+html:has(body.passkey), body.passkey { height: auto; }
+body.passkey { padding-bottom: 10px; }
+.passkey #detail { margin: 8px 10px 6px; color: var(--muted); overflow-wrap: anywhere; }
+.passkey .list { border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); max-height: 260px; overflow-y: auto; }
+.passkey form { margin: 4px 10px 0; display: grid; gap: 4px; }
+.passkey form label { font-size: 12px; color: var(--muted); }
+.passkey .pick { display: grid; grid-template-columns: 1fr auto; gap: 6px; }
+.passkey .pick select { min-width: 0; }
+.passkey .locked { margin: 8px 10px 0; display: grid; gap: 6px; justify-items: start; }
+.passkey .locked p, .passkey .hint { margin: 0; color: var(--muted); overflow-wrap: anywhere; }
+.passkey > .hint, .passkey main > .hint { margin: 4px 10px 0; }
+.passkey .error { margin: 8px 10px 0; color: oklch(0.55 0.2 25); overflow-wrap: anywhere; }
+.passkey .links { flex-wrap: wrap; margin-top: 10px; }
+.passkey button:not(.link):not(.row) { cursor: pointer; }
+.passkey #unlock { background: var(--accent); color: var(--accent-text); border-color: transparent; }

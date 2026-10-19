@@ -1,0 +1,32 @@
+{
+  "name": "omnivault",
+  "version": "0.5.3",
+  "private": true,
+  "description": "Browser extension client for multiple password managers",
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs",
+    "watch": "node build.mjs --watch",
+    "test": "node --test test/*.test.js",
+    "lint:firefox": "web-ext lint --source-dir dist/firefox",
+    "test:e2e": "node test/e2e-chrome.mjs",
+    "test:popup": "node test/e2e-popup.mjs",
+    "test:proton": "node test/e2e-proton.mjs",
+    "test:cli": "node --test test/pass.test.js test/onepassword-lastpass.test.js",
+    "test:vaultwarden": "test/vaultwarden-server.sh start && VAULTWARDEN_URL=http://127.0.0.1:8800 node --test test/vaultwarden.test.js && VAULTWARDEN_URL=http://localhost:8800 node test/e2e-tools.mjs; s=$?; test/vaultwarden-server.sh stop; exit $s",
+    "vendor:fetch": "vendor/fetch-sources.sh",
+    "vendor:build": "node vendor/build.mjs",
+    "test:passbolt": "test/passbolt-server.sh start && PASSBOLT_URL=http://127.0.0.1:8900 node --test test/passbolt-real.test.js && test/passbolt-server.sh start && PASSBOLT_URL=http://127.0.0.1:8900 node test/e2e-passbolt.mjs; s=$?; test/passbolt-server.sh stop; exit $s",
+    "test:inline": "node test/e2e-inline.mjs",
+    "test:i18n": "node test/e2e-i18n.mjs",
+    "test:passkeys": "node test/e2e-passkeys.mjs",
+    "psl:build": "node tools/psl-build.mjs",
+    "i18n:keys": "node tools/i18n-extract.mjs"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.0",
+    "playwright": "^1.56.0"
+  },
+  "license": "MPL-2.0",
+  "author": "Die OmniVault-Mitwirkenden"
+}

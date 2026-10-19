@@ -1,0 +1,7 @@
+node_modules/
+dist/
+*.zip
+vendor/src/
+vendor/build/
+__pycache__/
+*.pyc

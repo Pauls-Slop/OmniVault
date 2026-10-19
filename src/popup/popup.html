@@ -1,0 +1,156 @@
+<!doctype html>
+<!-- This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
+     If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/. -->
+<html lang="de" class="i18n-pending">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>OmniVault</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+<div id="app">
+  <header>
+    <div id="nav" class="nav" hidden>
+      <button id="btn-nav-back" class="icon" title="Zurück" aria-label="Zurück" data-icon="chevronLeft"></button>
+      <button id="btn-nav-forward" class="icon" title="Vorwärts" aria-label="Vorwärts" data-icon="chevronRight"></button>
+    </div>
+    <h1 translate="no"><svg class="logo" viewBox="0 0 20 20" aria-hidden="true"><rect width="20" height="20" rx="5"/><circle cx="10" cy="10" r="5.2"/><circle class="hub" cx="10" cy="10" r="1.6"/><path d="M10 4.8V3.4M10 16.6v-1.4M4.8 10H3.4M16.6 10h-1.4"/></svg><span class="name">OmniVault</span></h1>
+    <div class="actions">
+      <button id="btn-new" class="icon" title="Neu …" aria-label="Neu" aria-haspopup="menu" data-icon="plus"></button>
+      <button id="btn-tools" class="icon" title="Werkzeuge: Duplikate, Mehrfachauswahl, Spiegeln" aria-label="Werkzeuge" data-icon="tools"></button>
+      <button id="btn-generator" class="icon" title="Passwortgenerator" aria-label="Passwortgenerator" data-icon="dice"></button>
+      <button id="btn-lock-all" class="icon" title="Alle sperren" aria-label="Alle sperren" data-icon="lock"></button>
+      <button id="btn-sidebar" class="icon" title="In der Seitenleiste öffnen" aria-label="In der Seitenleiste öffnen" data-icon="sidebar"></button>
+      <button id="btn-popout" class="icon" title="In eigenem Fenster öffnen" aria-label="In eigenem Fenster öffnen" data-icon="window"></button>
+      <button id="btn-settings" class="icon" title="Einstellungen" aria-label="Einstellungen" data-icon="settings"></button>
+    </div>
+  </header>
+
+  <main id="content">
+    <section id="view-main">
+      <ul id="accounts" class="accounts" aria-label="Konten"></ul>
+      <form id="pin-unlock" class="pin-unlock" hidden>
+        <label for="pin-input">Gesperrt – mit PIN entsperren</label>
+        <div class="pin-row">
+          <input id="pin-input" type="password" inputmode="numeric" autocomplete="off" required>
+          <button type="submit" id="pin-submit">Entsperren</button>
+        </div>
+        <p id="pin-error" class="error" hidden></p>
+      </form>
+      <div id="site-access" class="banner" hidden>
+        <span id="site-access-text">Zum Ausfüllen aus dem Fenster braucht OmniVault Zugriff auf Webseiten.</span>
+        <button id="btn-site-access">Erlauben</button>
+      </div>
+      <p id="target" class="hint" hidden></p>
+      <div class="searchbar">
+        <input id="search" type="search" placeholder="Suchen …" autocomplete="off" aria-label="Einträge durchsuchen">
+        <select id="filter-type" aria-label="Typ filtern">
+          <option value="">Alle</option>
+          <option value="login">Logins</option>
+          <option value="note">Notizen</option>
+          <option value="card">Karten</option>
+          <option value="identity">Identitäten</option>
+          <option value="ssh" translate="no">SSH</option>
+          <option value="fav">Favoriten</option>
+        </select>
+      </div>
+      <div id="items"></div>
+      <p id="empty" class="hint" hidden></p>
+    </section>
+
+    <section id="view-item" hidden></section>
+    <section id="view-edit" hidden></section>
+    <section id="view-tools" hidden></section>
+    <section id="view-generator" hidden></section>
+    <section id="view-settings" hidden></section>
+
+    <section id="view-account" hidden>
+      <h2 id="account-title">Konto hinzufügen</h2>
+      <form id="form-account">
+        <label id="provider-row">Anbieter <select name="provider" id="acc-provider"></select></label>
+        <p id="acc-note" class="hint"></p>
+        <div id="acc-fields"></div>
+        <label>Bezeichnung <input name="label" placeholder="z. B. Privat, Firma"></label>
+        <div class="two">
+          <label class="short">Kürzel <input name="short" maxlength="3" placeholder="PR" autocomplete="off" translate="no"></label>
+          <fieldset class="colors">
+            <legend>Farbe</legend>
+            <div id="swatches" class="swatches"></div>
+            <input type="range" name="hue" min="0" max="359" aria-label="Farbton">
+          </fieldset>
+        </div>
+        <div class="preview">Vorschau: <span id="acc-preview" class="badge" translate="no">PR</span></div>
+        <p id="acc-warn" class="hint warn" hidden>Server oder Anmeldedaten geändert – das Konto wird gesperrt.</p>
+        <div class="row actions">
+          <button type="button" class="secondary" data-back>Abbrechen</button>
+          <button type="submit" id="acc-submit">Hinzufügen</button>
+        </div>
+      </form>
+    </section>
+
+    <section id="view-unlock" hidden>
+      <h2 id="unlock-title">Entsperren</h2>
+      <form id="form-unlock">
+        <div id="unlock-apikey" hidden>
+          <p class="hint">Anmeldung mit persönlichem API-Schlüssel (Bitwarden: Kontoeinstellungen → Sicherheit → Schlüssel → API-Schlüssel). Nötig z. B. bei FIDO2-, Duo- oder SSO-Konten.</p>
+          <label translate="no">client_id <input name="clientId" autocomplete="off" spellcheck="false" placeholder="user.…"></label>
+          <label translate="no">client_secret <input name="clientSecret" type="password" autocomplete="off"></label>
+        </div>
+        <label><span id="unlock-label">Master-Passwort</span>
+          <input name="password" type="password" autocomplete="current-password" required></label>
+        <button type="button" class="link" id="btn-apikey" hidden>Mit API-Schlüssel anmelden …</button>
+        <div id="unlock-2fa" hidden>
+          <label>Zweiter Faktor <select name="twoFactorProvider"></select></label>
+          <label>Code <input name="twoFactorCode" inputmode="numeric" autocomplete="one-time-code"></label>
+          <button type="button" class="link" id="btn-email-code" hidden>Code per E-Mail senden</button>
+        </div>
+        <div id="unlock-device" hidden>
+          <p class="hint">Neues Gerät: Bitwarden hat einen Bestätigungscode an deine E-Mail-Adresse geschickt.</p>
+          <label>Gerätecode <input name="deviceOtp" inputmode="numeric" autocomplete="one-time-code"></label>
+        </div>
+        <p id="unlock-error" class="error" hidden></p>
+        <div class="row actions">
+          <button type="button" class="secondary" data-back>Zurück</button>
+          <button type="submit" id="unlock-submit">Entsperren</button>
+        </div>
+      </form>
+    </section>
+
+    <section id="view-about" hidden>
+      <h2>Über OmniVault</h2>
+      <p>OmniVault ist ein unabhängiger Client für mehrere Passwortmanager. Die Entschlüsselung
+        findet ausschließlich lokal im Browser statt.</p>
+      <h3>Keine Verbindung zu den Anbietern</h3>
+      <p>OmniVault ist nicht mit Bitwarden Inc., Passbolt S.A., Proton AG, AgileBits Inc. (1Password) oder
+        LastPass US LP verbunden und wird von ihnen weder unterstützt noch gebilligt. Die Namen der Dienste werden nur genannt, um
+        anzuzeigen, mit welchem Dienst ein Konto verbunden ist.</p>
+      <h3>Marken</h3>
+      <p class="small" data-i18n="Bitwarden® ist eine eingetragene Marke von Bitwarden Inc. Passbolt™ ist eine Marke von Passbolt S.A. ({0}). Proton™ und Proton Pass™ sind Marken der Proton AG. 1Password® ist eine Marke von AgileBits Inc. LastPass® ist eine Marke von LastPass US LP. Vaultwarden ist ein unabhängiges Community-Projekt. Alle Marken gehören ihren jeweiligen Inhabern."><a href="https://www.passbolt.com" target="_blank" rel="noopener" translate="no">passbolt.com</a></p>
+      <h3>Lizenz und Open Source</h3>
+      <p class="small" data-i18n="OmniVault steht unter der {0}. Enthält OpenPGP.js (LGPL-3.0-or-later) und argon2id (MIT) als separate Dateien im Ordner {1} sowie deren Abhängigkeiten (MIT, Unlicense). Übersicht: {2}; Lizenztexte im Ordner {3}, z. B. {4} und {5}."><a href="LICENSE" target="_blank" translate="no">Mozilla Public License 2.0</a><code>vendor/</code><a href="THIRD_PARTY_NOTICES.md" target="_blank" translate="no">THIRD_PARTY_NOTICES.md</a><code>LICENSES/</code><a href="LICENSES/openpgpjs-LGPL-3.0.txt" target="_blank" translate="no">LGPL-3.0</a><a href="LICENSES/GPL-3.0.txt" target="_blank" translate="no">GPL-3.0</a></p>
+      <p class="small" id="about-version"></p>
+      <div class="row actions"><button type="button" class="secondary" data-back>Zurück</button></div>
+    </section>
+  </main>
+</div>
+
+<div id="menu" class="menu" role="menu" hidden></div>
+<dialog id="dialog-transfer"></dialog>
+
+<dialog id="dialog">
+  <form method="dialog">
+    <p id="dialog-text"></p>
+    <input id="dialog-input" autocomplete="off" hidden aria-describedby="dialog-error">
+    <p id="dialog-error" class="error" role="alert" hidden></p>
+    <div class="row">
+      <button value="cancel" class="secondary" id="dialog-cancel">Abbrechen</button>
+      <button value="ok" id="dialog-ok">OK</button>
+    </div>
+  </form>
+</dialog>
+
+<div id="toast" role="status" hidden></div>
+<script type="module" src="popup.js"></script>
+</body>
+</html>

@@ -1,0 +1,91 @@
+# This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
+# If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
+# Copyright (c) 2026 Die OmniVault-Mitwirkenden
+"""
+LastPass backend via the official `lpass` CLI (lastpass-cli 1.x). `lpass ls` lists without secrets; `reveal`
+uses `lpass show --json`. Writes feed `Field: value` lines to `lpass add/edit --non-interactive` over stdin.
+"""
+import json
+
+from ov_common import HostError, check_id, run, which
+
+
+def lp_bin():
+    b = which("lpass", "OMNIVAULT_LPASS_BIN")
+    if not b:
+        raise HostError("`lpass` (LastPass CLI) wurde nicht gefunden.")
+    return b
+
+def lp_status(_a):
+    b = which("lpass", "OMNIVAULT_LPASS_BIN")
+    if not b:
+        return {"cli": None, "ready": False}
+    proc = run(b, ["status", "-q"], check=False)
+    return {"cli": b, "ready": proc.returncode == 0, "loggedIn": proc.returncode == 0}
+
+def lp_list(_a):
+    # tab-separated id, fullname, username, url — no secrets
+    proc = run(lp_bin(), ["ls", "--format", "%ai\t%aN\t%au\t%al"])
+    items = []
+    for line in proc.stdout.splitlines():
+        parts = line.split("\t")
+        if len(parts) < 2 or not parts[0]:
+            continue
+        iid, fullname = parts[0], parts[1]
+        username = parts[2] if len(parts) > 2 else ""
+        url = parts[3] if len(parts) > 3 else ""
+        group = "/".join(fullname.split("/")[:-1]) or None
+        items.append({"id": iid, "name": fullname.split("/")[-1], "username": username,
+                      "uris": [url] if url and url != "http://" else [], "folder": group, "hasTotp": False})
+    return {"items": items}
+
+def lp_reveal(a):
+    data = run(lp_bin(), ["show", "--json", check_id(a.get("id"), "Eintrags-ID")]).stdout
+    arr = json.loads(data or "[]")
+    if not arr:
+        raise HostError("Eintrag nicht gefunden")
+    e = arr[0]
+    note = e.get("note") or ""
+    is_note = not (e.get("username") or e.get("password") or e.get("url") not in ("", "http://", None))
+    return {
+        "id": e.get("id"), "name": e.get("name") or "", "username": e.get("username") or "",
+        "password": e.get("password") or "", "uris": [e["url"]] if e.get("url") and e["url"] != "http://" else [],
+        "totp": "", "notes": note, "type": "note" if is_note else "login",
+        "folder": e.get("group") or None,
+    }
+
+def lp_body(a):
+    lines = []
+    if a.get("username"):
+        lines.append(f"Username: {a['username']}")
+    if a.get("password"):
+        lines.append(f"Password: {a['password']}")
+    for u in a.get("uris") or []:
+        if u:
+            lines.append(f"URL: {u}")
+            break
+    if a.get("notes"):
+        lines.append(f"Notes: {a['notes']}")
+    return "\n".join(lines) + "\n"
+
+def lp_name(a):
+    folder = a.get("folder")
+    name = a.get("name") or "Ohne Namen"
+    return f"{folder}/{name}" if folder else name
+
+def lp_create(a):
+    run(lp_bin(), ["add", lp_name(a), "--non-interactive", "--sync=now"], stdin=lp_body(a))
+    # lpass add does not print the id; the extension re-syncs to pick it up
+    return {"id": None}
+
+def lp_update(a):
+    iid = check_id(a.get("id"), "Eintrags-ID")
+    run(lp_bin(), ["edit", iid, "--non-interactive", "--sync=now"], stdin=lp_body(a))
+    return {"id": iid}
+
+def lp_delete(a):
+    run(lp_bin(), ["rm", check_id(a.get("id"), "Eintrags-ID"), "--sync=now"])
+    return {"deleted": True}
+
+COMMANDS = {"status": lp_status, "list": lp_list, "reveal": lp_reveal,
+      "create": lp_create, "update": lp_update, "delete": lp_delete}
