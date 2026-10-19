@@ -765,5 +765,13 @@
  "Neu laden": "Recarregar",
  "Später": "Depois",
  "Seite wird neu geladen": "Recarregando a página",
- "Verbergen": "Ocultar"
+ "Verbergen": "Ocultar",
+ "{account} kann OmniVault nur lesen.": "O OmniVault só pode ler {account}.",
+ "Ungültige Polsterung": "Preenchimento inválido",
+ "Unbekanntes Schlüsselformat": "Formato de chave desconhecido",
+ "Dieser Eintrag braucht einen Schlüssel im neuen Format": "Este item precisa de uma chave no novo formato",
+ "Verfahren passt nicht zum Schlüssel": "O algoritmo não corresponde à chave",
+ "Schlüssel-ID passt nicht": "O ID da chave não corresponde",
+ "Dieses Konto nutzt Bitwardens neues Verschlüsselungsformat. OmniVault kann es bisher nur lesen.": "Esta conta usa o novo formato de criptografia do Bitwarden. Por enquanto, o OmniVault só pode lê-la.",
+ "Unbekanntes Eintragsformat {n}": "Formato de item desconhecido {n}"
 }

@@ -1,7 +1,7 @@
 // This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 // Copyright (c) 2026 Die OmniVault-Mitwirkenden
-// Builds vendor/openpgp.mjs (LGPL-3.0-or-later) and vendor/argon2id.mjs (MIT) from the sources pinned in
+// Builds vendor/openpgp.mjs (LGPL-3.0-or-later), vendor/argon2id.mjs (MIT) and vendor/noble-ciphers.mjs (MIT) from the sources pinned in
 // vendor/sources.json (fetch them with vendor/fetch-sources.sh). Needs clang with the wasm32 target.
 // The OpenPGP.js sources are bundled unmodified; only the module substitutions below are applied.
 import * as esbuild from 'esbuild';
@@ -90,3 +90,4 @@ await esbuild.build({
   banner: { js: `/*! argon2id ${sources.argon2id.ref} – MIT, see LICENSES/argon2id-MIT.txt. Built from ${commits(['argon2id'])}. */` },
 });
 console.log('vendor/openpgp.mjs and vendor/argon2id.mjs written');
+await import('./build-noble.mjs');

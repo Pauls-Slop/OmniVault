@@ -765,5 +765,13 @@
  "Neu laden": "Recharger",
  "Später": "Plus tard",
  "Seite wird neu geladen": "Rechargement de la page",
- "Verbergen": "Masquer"
+ "Verbergen": "Masquer",
+ "{account} kann OmniVault nur lesen.": "OmniVault peut seulement lire {account}.",
+ "Ungültige Polsterung": "Remplissage non valide",
+ "Unbekanntes Schlüsselformat": "Format de clé inconnu",
+ "Dieser Eintrag braucht einen Schlüssel im neuen Format": "Cet élément nécessite une clé au nouveau format",
+ "Verfahren passt nicht zum Schlüssel": "L’algorithme ne correspond pas à la clé",
+ "Schlüssel-ID passt nicht": "L’ID de clé ne correspond pas",
+ "Dieses Konto nutzt Bitwardens neues Verschlüsselungsformat. OmniVault kann es bisher nur lesen.": "Ce compte utilise le nouveau format de chiffrement de Bitwarden. Pour l’instant, OmniVault peut seulement le lire.",
+ "Unbekanntes Eintragsformat {n}": "Format d’élément inconnu {n}"
 }

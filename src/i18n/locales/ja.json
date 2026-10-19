@@ -736,5 +736,13 @@
  "Neu laden": "再読み込み",
  "Später": "後で",
  "Seite wird neu geladen": "ページを再読み込みしています",
- "Verbergen": "非表示"
+ "Verbergen": "非表示",
+ "{account} kann OmniVault nur lesen.": "OmniVault は {account} を読み取ることしかできません。",
+ "Ungültige Polsterung": "パディングが無効です",
+ "Unbekanntes Schlüsselformat": "不明な鍵の形式です",
+ "Dieser Eintrag braucht einen Schlüssel im neuen Format": "このアイテムには新しい形式の鍵が必要です",
+ "Verfahren passt nicht zum Schlüssel": "アルゴリズムが鍵と一致しません",
+ "Schlüssel-ID passt nicht": "鍵 ID が一致しません",
+ "Dieses Konto nutzt Bitwardens neues Verschlüsselungsformat. OmniVault kann es bisher nur lesen.": "このアカウントは Bitwarden の新しい暗号化形式を使用しています。現在、OmniVault は読み取りのみ可能です。",
+ "Unbekanntes Eintragsformat {n}": "不明なアイテム形式 {n}"
 }

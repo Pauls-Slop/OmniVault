@@ -765,5 +765,13 @@
  "Neu laden": "Ricarica",
  "Später": "Più tardi",
  "Seite wird neu geladen": "Ricaricamento della pagina",
- "Verbergen": "Nascondi"
+ "Verbergen": "Nascondi",
+ "{account} kann OmniVault nur lesen.": "OmniVault può solo leggere {account}.",
+ "Ungültige Polsterung": "Riempimento non valido",
+ "Unbekanntes Schlüsselformat": "Formato della chiave sconosciuto",
+ "Dieser Eintrag braucht einen Schlüssel im neuen Format": "Questo elemento richiede una chiave nel nuovo formato",
+ "Verfahren passt nicht zum Schlüssel": "L’algoritmo non corrisponde alla chiave",
+ "Schlüssel-ID passt nicht": "L’ID della chiave non corrisponde",
+ "Dieses Konto nutzt Bitwardens neues Verschlüsselungsformat. OmniVault kann es bisher nur lesen.": "Questo account usa il nuovo formato di crittografia di Bitwarden. Per ora OmniVault può solo leggerlo.",
+ "Unbekanntes Eintragsformat {n}": "Formato dell’elemento sconosciuto {n}"
 }

@@ -9,6 +9,7 @@
 //   keyValue      PKCS #8 private key, base64url        userHandle  user.id from the site, base64url
 //   counter       "0" (synced passkeys do not count)   discoverable "true" | "false"
 import { b64url, concat, fromB64, utf8 } from './bytes.js';
+import { cbor } from './cbor.js';
 
 const subtle = globalThis.crypto.subtle;
 
@@ -16,30 +17,7 @@ export const ES256 = -7;
 /** No attestation, so no maker is named: the AAGUID stays all zeros (allowed for "none"). */
 export const AAGUID = new Uint8Array(16);
 
-/* ---------- CBOR (RFC 8949), the subset WebAuthn needs ---------- */
-
-function head(major, n) {
-  if (n < 24) return new Uint8Array([(major << 5) | n]);
-  if (n < 0x100) return new Uint8Array([(major << 5) | 24, n]);
-  if (n < 0x10000) return new Uint8Array([(major << 5) | 25, n >> 8, n & 0xff]);
-  return new Uint8Array([(major << 5) | 26, n >>> 24, (n >> 16) & 0xff, (n >> 8) & 0xff, n & 0xff]);
-}
-
-/**
- * Encodes integers, byte strings (Uint8Array), text, arrays and maps. Maps are a Map or a plain object and
- * keep their order – callers list keys in CTAP2 canonical order (shorter keys first, integers before negatives).
- */
-export function cbor(v) {
-  if (typeof v === 'number') {
-    if (!Number.isInteger(v)) throw new TypeError('CBOR: nur ganze Zahlen');
-    return v >= 0 ? head(0, v) : head(1, -1 - v);
-  }
-  if (v instanceof Uint8Array) return concat(head(2, v.length), v);
-  if (typeof v === 'string') { const b = utf8(v); return concat(head(3, b.length), b); }
-  if (Array.isArray(v)) return concat(head(4, v.length), ...v.map(cbor));
-  const entries = v instanceof Map ? [...v] : Object.entries(v);
-  return concat(head(5, entries.length), ...entries.flatMap(([k, x]) => [cbor(k), cbor(x)]));
-}
+export { cbor } from './cbor.js';
 
 /* ---------- credential ids ---------- */
 

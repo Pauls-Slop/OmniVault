@@ -765,5 +765,13 @@
  "Neu laden": "Reload",
  "Später": "Later",
  "Seite wird neu geladen": "Reloading the page",
- "Verbergen": "Hide"
+ "Verbergen": "Hide",
+ "{account} kann OmniVault nur lesen.": "OmniVault can only read {account}.",
+ "Ungültige Polsterung": "Invalid padding",
+ "Unbekanntes Schlüsselformat": "Unknown key format",
+ "Dieser Eintrag braucht einen Schlüssel im neuen Format": "This item needs a key in the new format",
+ "Verfahren passt nicht zum Schlüssel": "Algorithm doesn't match the key",
+ "Schlüssel-ID passt nicht": "Key ID doesn't match",
+ "Dieses Konto nutzt Bitwardens neues Verschlüsselungsformat. OmniVault kann es bisher nur lesen.": "This account uses Bitwarden's new encryption format. OmniVault can only read it for now.",
+ "Unbekanntes Eintragsformat {n}": "Unknown item format {n}"
 }

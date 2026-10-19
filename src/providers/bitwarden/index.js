@@ -5,12 +5,47 @@
 // create / edit (logins, notes, cards, identities, custom fields) / favorite / folders / trash with restore.
 import { mark, t, tn } from '../../i18n/index.js';
 import { b64, fromB64 } from '../../lib/bytes.js';
+import { cborToPlain, decodeCbor } from '../../lib/cbor.js';
 import { Provider, ProviderError } from '../provider.js';
 import * as api from './api.js';
 import {
-  decryptBuffer, decryptRsa, decryptSym, decryptSymString, decryptUserKey,
-  deriveMasterKey, encryptSym, masterPasswordHash, splitKey,
+  decryptBuffer, decryptKey, decryptRsa, decryptSym, decryptSymString, decryptUserKey,
+  deriveMasterKey, encryptSym, keyBytes, masterPasswordHash, openCose, splitKey,
 } from './crypto.js';
+
+/** Item types inside an encryption-v2 cipher blob (typeData.type) → Bitwarden's cipher type numbers. */
+const BLOB_TYPES = { login: 1, secureNote: 2, card: 3, identity: 4, sshKey: 5 };
+
+/**
+ * Encryption-v2 accounts are read-only for now: writing in the old format under a v2 user key would produce
+ * items the official apps may reject (research/BITWARDEN-V2.md).
+ */
+const V2_READ_ONLY = mark('Dieses Konto nutzt Bitwardens neues Verschlüsselungsformat. OmniVault kann es bisher nur lesen.');
+
+/**
+ * Opens a cipher blob (cipher.data = {"format_version":1,"wrapped_cek","envelope"}) → the decrypted content in
+ * the shape the server uses for legacy ciphers, with plain values. null if `data` is not a blob.
+ */
+async function openBlob(data, itemKey) {
+  let sealed;
+  try { sealed = typeof data === 'string' ? JSON.parse(data) : null; } catch { sealed = null; }
+  if (!sealed || sealed.format_version == null) return null;
+  if (sealed.format_version !== 1) throw new ProviderError(t('Unbekanntes Eintragsformat {n}', { n: sealed.format_version }), 'unsupported');
+  const cek = await decryptKey(sealed.wrapped_cek, itemKey);
+  const { bytes } = await openCose(fromB64(sealed.envelope), cek);
+  const payload = cborToPlain(decodeCbor(bytes));
+  if (payload?.version !== '1' || !payload.content) throw new ProviderError(t('Unbekanntes Eintragsformat {n}', { n: payload?.version ?? '?' }), 'unsupported');
+  const c = payload.content;
+  const { type, ...typeData } = c.typeData ?? {};
+  return {
+    type: BLOB_TYPES[type], name: c.name, notes: c.notes,
+    login: type === 'login' ? { ...typeData, fido2Credentials: typeData.fido2Credentials } : null,
+    card: type === 'card' ? typeData : null,
+    identity: type === 'identity' ? typeData : null,
+    sshKey: type === 'sshKey' ? { ...typeData, keyFingerprint: typeData.fingerprint } : null,
+    fields: c.fields ?? [], passwordHistory: c.passwordHistory ?? [],
+  };
+}
 
 const TWO_FACTOR_LABELS = {
   0: mark('Authenticator-App (TOTP)'),
@@ -204,6 +239,7 @@ class BitwardenProvider extends Provider {
     const s = renewed ?? session;
 
     const userKey = splitKey(fromB64(s.userKey));
+    const readOnly = !!userKey.cose;
     const orgKeys = await this.#orgKeys(data.profile, userKey);
 
     const folderNames = {};
@@ -217,6 +253,7 @@ class BitwardenProvider extends Provider {
     for (const c of data.ciphers ?? []) {
       try {
         const item = await this.#decryptCipher(c, { userKey, orgKeys, folderNames, accountId: config.id });
+        if (readOnly) item.canEdit = false;
         if (c.deletedDate) trash.push({ ...item, deletedDate: c.deletedDate }); else items.push(item);
       } catch (e) {
         failed++;
@@ -230,7 +267,10 @@ class BitwardenProvider extends Provider {
       folders: Object.entries(folderNames).map(([id, name]) => ({ id, name })).sort((a, b) => a.name.localeCompare(b.name, 'de')),
       // remember the user id: current Vaultwarden requires it as `encryptedFor` when writing ciphers
       session: userId && userId !== s.userId ? { ...s, userId } : renewed,
-      warning: failed ? tn(failed, '{n} Eintrag konnte nicht entschlüsselt werden', '{n} Einträge konnten nicht entschlüsselt werden') : undefined,
+      warning: [readOnly ? t(V2_READ_ONLY) : null,
+        failed ? tn(failed, '{n} Eintrag konnte nicht entschlüsselt werden', '{n} Einträge konnten nicht entschlüsselt werden') : null,
+      ].filter(Boolean).join(' ') || undefined,
+      readOnly,
     };
   }
 
@@ -253,13 +293,16 @@ class BitwardenProvider extends Provider {
   static async #cipherKey(c, { userKey, orgKeys }) {
     let key = c.organizationId ? orgKeys[c.organizationId] : userKey;
     if (!key) throw new ProviderError(t('Schlüssel fehlt'), 'crypto');
-    if (c.key) key = splitKey(await decryptSym(c.key, key)); // per-item key
+    if (c.key) key = await decryptKey(c.key, key); // per-item key
     return key;
   }
 
-  static async #decryptCipher(c, { userKey, orgKeys, folderNames, accountId }) {
-    const key = await this.#cipherKey(c, { userKey, orgKeys });
-    const d = (v) => (v == null ? undefined : decryptSymString(v, key));
+  static async #decryptCipher(raw, { userKey, orgKeys, folderNames, accountId }) {
+    const key = await this.#cipherKey(raw, { userKey, orgKeys });
+    // encryption v2: everything sensitive sits in one sealed blob with plain values inside
+    const blob = await openBlob(raw.data, key);
+    const c = blob ? { ...raw, ...blob, type: blob.type ?? raw.type } : raw;
+    const d = blob ? async (v) => (v == null ? undefined : String(v)) : (v) => (v == null ? undefined : decryptSymString(v, key));
     const obj = async (src, names) => {
       if (!src) return undefined;
       const out = {};
@@ -277,14 +320,15 @@ class BitwardenProvider extends Provider {
       folderId: c.folderId ?? null,
       folder: c.folderId ? folderNames[c.folderId] : undefined,
       favorite: !!c.favorite,
-      canEdit: c.edit !== false,
+      canEdit: c.edit !== false && !blob && !key.cose,
       revisionDate: c.revisionDate,
       uris: [],
       fields: [],
       passwordHistory: [],
       // internal: raw cipher and its key for re-encryption on edit (memory only, stripped before reaching the UI)
-      _raw: c,
-      _key: b64(new Uint8Array([...key.enc, ...(key.mac ?? [])])),
+      _raw: raw,
+      _key: key.cose ? undefined : b64(keyBytes(key)),
+      _cipherKey: key, // in memory only (attachments); v2 keys cannot be written back as bytes
     };
     if (c.login) {
       item.username = await d(c.login.username);
@@ -301,6 +345,7 @@ class BitwardenProvider extends Provider {
         for (const f of c.login.fido2Credentials) {
           const p = await obj(f, PASSKEY_FIELDS);
           p.creationDate = f.creationDate ?? null;
+          if (blob) { p.counter = String(f.counter ?? 0); p.discoverable = String(!!f.discoverable); }
           item._passkeyKeys[p.credentialId] = p.keyValue;
           delete p.keyValue;
           item.passkeys.push(p);
@@ -320,7 +365,8 @@ class BitwardenProvider extends Provider {
     }
     item.attachments = [];
     for (const a of c.attachments ?? []) {
-      item.attachments.push({ id: a.id, fileName: (await d(a.fileName).catch(() => '')) || t('Anhang'), size: Number(a.size) || 0 });
+      const fileName = await decryptSymString(a.fileName, key).catch(() => '');
+      item.attachments.push({ id: a.id, fileName: fileName || t('Anhang'), size: Number(a.size) || 0 });
     }
     for (const h of c.passwordHistory ?? []) {
       item.passwordHistory.push({ password: await d(h.password), lastUsedDate: h.lastUsedDate });
@@ -356,7 +402,12 @@ class BitwardenProvider extends Provider {
    * Create or update. For updates, fields OmniVault does not edit (passkeys, attachments metadata,
    * card/identity details, custom fields …) are passed through unchanged as ciphertext.
    */
+  static #assertWritable(session) {
+    if (splitKey(fromB64(session.userKey)).cose) throw new ProviderError(t(V2_READ_ONLY), 'readonly');
+  }
+
   static async saveItem(config, session, existing, data) {
+    this.#assertWritable(session);
     const ep = api.endpoints(config.server);
     const enc = async (v, key) => (v == null || v === '' ? null : encryptSym(String(v), key));
     let body;
@@ -450,13 +501,14 @@ class BitwardenProvider extends Provider {
     if (!href) throw new ProviderError(t('Keine Download-Adresse für den Anhang'), 'server');
     const res = await fetch(new URL(href, ep.api));
     if (!res.ok) throw new ProviderError(t('Anhang: HTTP {status}', { status: res.status }), 'server');
-    const itemKey = splitKey(fromB64(item._key));
-    const key = meta.key ? splitKey(await decryptSym(meta.key, itemKey)) : itemKey;
+    const itemKey = item._cipherKey ?? splitKey(fromB64(item._key));
+    const key = meta.key ? await decryptKey(meta.key, itemKey) : itemKey;
     const data = await decryptBuffer(await res.arrayBuffer(), key);
     return { fileName: (await decryptSymString(meta.fileName, itemKey).catch(() => '')) || t('Anhang'), data: b64(data), session: s };
   }
 
   static async createFolder(config, session, { name }) {
+    this.#assertWritable(session);
     const ep = api.endpoints(config.server);
     const enc = await encryptSym(name, this.#session(session).userKey);
     const { result, session: s } = await this.#withToken(ep, session, (token) => api.authed(ep, token, 'POST', '/folders', { name: enc }));

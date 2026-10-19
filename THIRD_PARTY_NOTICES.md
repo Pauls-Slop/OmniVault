@@ -5,7 +5,7 @@ Grundsatz: so wenig Fremdsoftware wie möglich. Fremdcode kommt nur für Kryptog
 
 ## In der Extension enthalten
 
-Beide Bibliotheken liegen als **separate, unveränderte Dateien** in `vendor/` und werden zur Laufzeit importiert,
+Alle drei Dateien liegen als **separate, unveränderte Bibliotheken** in `vendor/` und werden zur Laufzeit importiert,
 nicht in OmniVaults eigenen Code gebündelt. Sie werden reproduzierbar aus den in
 [`vendor/sources.json`](vendor/sources.json) festgeschriebenen Upstream-Commits gebaut
 (`vendor/fetch-sources.sh` prüft die Commit-Hashes, `vendor/build.mjs` baut).
@@ -22,6 +22,7 @@ nicht in OmniVaults eigenen Code gebündelt. Sie werden reproduzierbar aus den i
 | ↳ enthalten | [tweetnacl-js (OpenPGP.js-Fork)](https://github.com/openpgpjs/tweetnacl-js) | 1.0.4-2 | Unlicense ([Text](LICENSES/tweetnacl-js-Unlicense.txt)) | Fallback für Curve25519, falls WebCrypto es nicht bietet |
 | ↳ enthalten | argon2id (siehe unten) | 1.0.1 | MIT | Argon2-S2K in OpenPGP.js |
 | `vendor/argon2id.mjs` | [argon2id](https://github.com/openpgpjs/argon2id) (© Proton AG) | 1.0.1 | MIT ([Text](LICENSES/argon2id-MIT.txt)); C-Kern teils aus der Argon2-Referenzimplementierung (CC0) | Bitwarden: Schlüsselableitung für Konten mit Argon2id |
+| `vendor/noble-ciphers.mjs` | [@noble/ciphers](https://github.com/paulmillr/noble-ciphers), nur `xchacha20poly1305` | 1.3.0 (gleicher Commit wie in OpenPGP.js) | MIT ([Text](LICENSES/noble-ciphers-MIT.txt)) | Bitwarden „Encryption V2“: ältere Umschläge mit XChaCha20-Poly1305, das WebCrypto nicht bietet |
 
 **Abweichungen vom offiziellen Build:** gebaut mit esbuild statt rollup; der WebAssembly-Kern von argon2id wird mit
 clang statt Emscripten kompiliert, nur in der portablen Variante ohne SIMD. Die SIMD-Variante entfällt, die Bibliothek
@@ -34,8 +35,8 @@ im Quellcode-Paket von OmniVault; vollständige Quellen über die Commits in `ve
 **Austauschbarkeit (LGPL):** `vendor/openpgp.mjs` kann durch einen eigenen Build von OpenPGP.js ersetzt werden
 (gleiche ES-Modul-Schnittstelle), z. B. beim Laden der entpackten Extension.
 
-Kryptografische Grundfunktionen für Bitwarden (AES-CBC, HMAC, PBKDF2, RSA-OAEP, SHA), für TOTP und für Passkeys
-(ECDSA P-256) kommen aus der WebCrypto-API des Browsers.
+Kryptografische Grundfunktionen für Bitwarden (AES-CBC, HMAC, PBKDF2, RSA-OAEP, SHA, AES-GCM – auch als Grundlage von
+XAES-256-GCM), für TOTP und für Passkeys (ECDSA P-256) kommen aus der WebCrypto-API des Browsers.
 
 ### Daten
 

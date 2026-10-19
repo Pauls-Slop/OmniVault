@@ -35,13 +35,13 @@ async function ensureSynced(account, force = false) {
     const result = await provider.sync(cfg(account), session);
     if (result.session) await store.setSession(account.id, result.session);
     await applyLocalFavorites(provider, account.id, result.items);
-    const entry = { items: result.items, trash: result.trash ?? [], folders: result.folders ?? [], syncedAt: Date.now(), error: null, warning: result.warning ?? null };
+    const entry = { items: result.items, trash: result.trash ?? [], folders: result.folders ?? [], syncedAt: Date.now(), error: null, warning: result.warning ?? null, readOnly: !!result.readOnly };
     cache.set(account.id, entry);
     if (provider.capabilities?.passkeys) passkeys.indexAccount(account.id, result.items).catch(() => {});
     return entry;
   } catch (e) {
     if (e.code === 'session_expired') await lock(account.id);
-    const entry = { items: cached?.items ?? [], trash: cached?.trash ?? [], folders: cached?.folders ?? [], syncedAt: cached?.syncedAt, error: e.message };
+    const entry = { items: cached?.items ?? [], trash: cached?.trash ?? [], folders: cached?.folders ?? [], syncedAt: cached?.syncedAt, error: e.message, readOnly: cached?.readOnly };
     cache.set(account.id, entry);
     return entry;
   }
@@ -138,6 +138,10 @@ async function write(accountId, fn) {
   if (!session) throw new Error(t('Tresor gesperrt'));
   const provider = writer(getProvider(account.provider), accountId);
   if (!provider.capabilities?.write) throw new Error(t('{provider}: Bearbeiten wird nicht unterstützt', { provider: provider.label }));
+  // an account the provider can only read (e.g. Bitwarden's new encryption format): no writes at all
+  if ((cache.get(accountId) ?? await ensureSynced(account))?.readOnly) {
+    throw new Error(t('{account} kann OmniVault nur lesen.', { account: account.label }));
+  }
   const res = await fn(provider, account, session);
   if (res?.session) await store.setSession(accountId, res.session);
   const entry = cache.get(accountId) ?? await ensureSynced(account);
@@ -266,7 +270,7 @@ async function saveTargets() {
   const out = [];
   for (const a of await store.listAccounts()) {
     const caps = getProvider(a.provider).capabilities ?? {};
-    if (caps.write && (caps.types ?? []).includes('login') && await store.getSession(a.id)) out.push(a);
+    if (caps.write && (caps.types ?? []).includes('login') && await store.getSession(a.id) && !cache.get(a.id)?.readOnly) out.push(a);
   }
   return out;
 }
@@ -388,7 +392,7 @@ const handlers = {
         id: a.id, provider: a.provider, label: a.label, short: a.short, hue: a.hue,
         config: a.config, server: a.config.server, email: a.config.email,
         unlocked, itemCount: c?.items.length ?? null, syncedAt: c?.syncedAt ?? null, error: c?.error ?? null,
-        warning: c?.warning ?? null,
+        warning: c?.warning ?? null, readOnly: !!c?.readOnly,
       });
     }
     return { providers: describeProviders(), accounts: out, settings: await getSettings(), pin: await pinStatus() };

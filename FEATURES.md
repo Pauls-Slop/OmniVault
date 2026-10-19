@@ -84,6 +84,7 @@ zeigt, ob das echte Programm ihn liefert.
 | Funktion | Bitwarden / Vaultwarden | Passbolt | CLI-Anbieter |
 |---|---|---|---|
 | Anmelden mit Master-Passwort / Passphrase | ✅ R (PBKDF2, Argon2id) | ✅ R (privater Schlüssel + Passphrase) | im CLI (`op signin`, `lpass login`, gpg-Agent) |
+| Bitwardens neues Verschlüsselungsformat („Encryption V2“: COSE, XAES-256-GCM, Cipher-Blobs) | ✅ U lesen; Schreiben gesperrt ¹⁴ | – | – |
 | Anmelden mit API-Schlüssel | ✅ R | – | – |
 | Zwei-Faktor | 🟡 S ¹¹ | 🟡 S ¹² | übernimmt das CLI |
 | Bestätigung neuer Geräte (E-Mail-Code) | ✅ S | – | – |
@@ -96,6 +97,10 @@ zeigt, ob das echte Programm ihn liefert.
 
 ¹¹ TOTP, E-Mail, YubiKey-OTP. WebAuthn und Duo fehlen; in diesem Fall hilft der API-Schlüssel.
 ¹² TOTP und YubiKey-OTP. Duo fehlt.
+¹⁴ Noch von keinem Produktivkonto genutzt und von Vaultwarden nicht unterstützt (Stand 19.10.2026). Geprüft gegen
+die Vektoren der XAES-Spezifikation, Bitwardens veröffentlichte Vektoren (nur lokal) und ein unabhängig in Python
+erzeugtes V2-Konto. Solche Konten sind in OmniVault nur lesbar, bis Schreiben im neuen Format umgesetzt ist
+(research/BITWARDEN-V2.md).
 
 ## Werkzeuge (anbieterübergreifend)
 

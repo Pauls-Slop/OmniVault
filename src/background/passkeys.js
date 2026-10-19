@@ -155,7 +155,7 @@ export function createPasskeyService(deps) {
         for (const m of matchingPasskeys(items, r.rpId, (r.options.allowCredentials ?? []).map((c) => c.id))) out.candidates.push({ account, ...m });
       } else {
         if (matchingPasskeys(items, r.rpId, (r.options.excludeCredentials ?? []).map((c) => c.id)).length && r.options.excludeCredentials?.length) out.excluded = true;
-        if (caps.write) {
+        if (caps.write && !entry.readOnly) {
           out.targets.push({ account, item: null });
           for (const item of items) if (item.canEdit !== false && matchesUrl(item, r.origin)) out.targets.push({ account, item });
         }

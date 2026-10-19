@@ -32,7 +32,7 @@ export const S = {
 
 export const providerOf = (id) => S.state.providers.find((p) => p.id === id);
 export const accountOf = (id) => S.state.accounts.find((a) => a.id === id);
-export const writableAccounts = () => S.state.accounts.filter((a) => a.unlocked && providerOf(a.provider)?.capabilities?.write);
+export const writableAccounts = () => S.state.accounts.filter((a) => a.unlocked && !a.readOnly && providerOf(a.provider)?.capabilities?.write);
 
 const listeners = new Set();
 export const onRefresh = (fn) => listeners.add(fn);

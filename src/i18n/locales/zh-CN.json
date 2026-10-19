@@ -736,5 +736,13 @@
  "Neu laden": "重新加载",
  "Später": "稍后",
  "Seite wird neu geladen": "正在重新加载页面",
- "Verbergen": "隐藏"
+ "Verbergen": "隐藏",
+ "{account} kann OmniVault nur lesen.": "OmniVault 只能读取 {account}。",
+ "Ungültige Polsterung": "填充无效",
+ "Unbekanntes Schlüsselformat": "未知的密钥格式",
+ "Dieser Eintrag braucht einen Schlüssel im neuen Format": "此项目需要新格式的密钥",
+ "Verfahren passt nicht zum Schlüssel": "算法与密钥不匹配",
+ "Schlüssel-ID passt nicht": "密钥 ID 不匹配",
+ "Dieses Konto nutzt Bitwardens neues Verschlüsselungsformat. OmniVault kann es bisher nur lesen.": "此账户使用 Bitwarden 的新加密格式。OmniVault 目前只能读取。",
+ "Unbekanntes Eintragsformat {n}": "未知的项目格式 {n}"
 }

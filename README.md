@@ -52,8 +52,8 @@ in `npm test` brauchen ein installiertes `gpg`, sonst werden sie übersprungen; 
 `OMNIVAULT_PASS_BIN=/pfad/zu/pass`. `test:passbolt` braucht PHP ≥ 8.2 mit der gnupg-Erweiterung, Composer, git und
 die PostgreSQL-Programme (Details in `test/passbolt-server.sh`).
 
-Kryptografie kommt aus etablierten Open-Source-Bibliotheken – OpenPGP.js (LGPL) und argon2id (MIT), beide als
-separate Dateien in `vendor/` – und aus WebCrypto. Sonst gibt es keine Laufzeitabhängigkeiten. Bibliotheken neu bauen
+Kryptografie kommt aus etablierten Open-Source-Bibliotheken – OpenPGP.js (LGPL), argon2id (MIT) und für
+XChaCha20-Poly1305 @noble/ciphers (MIT), alle als separate Dateien in `vendor/` – und aus WebCrypto. Sonst gibt es keine Laufzeitabhängigkeiten. Bibliotheken neu bauen
 (normalerweise nicht nötig, die Ergebnisse liegen im Repository):
 
 ```bash
