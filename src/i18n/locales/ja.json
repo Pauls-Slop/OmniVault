@@ -626,6 +626,7 @@
  "Metadaten-Schlüssel fehlt": "メタデータ鍵がありません",
  "Unerwartete Metadaten": "予期しないメタデータです",
  "Der Eintrag wurde inzwischen in Passbolt geändert. Bitte synchronisieren und erneut bearbeiten.": "その間にほかの人が Passbolt でこのアイテムを変更しました。同期してから、もう一度編集してください。",
+ "Der Eintrag wurde inzwischen geändert. Bitte synchronisieren und erneut bearbeiten.": "このアイテムはその間に別の場所で変更されました。同期してから、もう一度編集してください。",
  "Keine Schreibberechtigung für diesen Eintrag": "このアイテムは編集できません",
  "Notizen ohne Passwort benötigen Passbolt-v5-Ressourcen": "パスワードのないメモには Passbolt v5 のリソースが必要です",
  "Ressourcentyp {slug} ist auf diesem Server nicht verfügbar": "リソースの種類 {slug} はこのサーバーでは使えません",

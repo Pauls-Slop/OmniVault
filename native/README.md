@@ -74,6 +74,7 @@ nach der Berechtigung „Mit kooperierenden nativen Anwendungen kommunizieren“
 | Geheimnisse erst bei Bedarf laden | – (lädt beim Abgleich) | ✅ | ✅ | ✅ |
 | Favoriten | in OmniVault gespeichert | ✅ (`--favorite`) | in OmniVault gespeichert | in OmniVault gespeichert |
 | TOTP ändern | ✅ | ✅ | – | – |
+| Konflikterkennung (Änderung von anderswo wird nicht überschrieben) | – | ✅ (`version`) | ✅ (`last_modified_gmt`) | ✅ (`modify_time`) |
 
 pass kennt keinen eigenen Notiz-Typ: Jeder Eintrag beginnt mit einer Passwortzeile.
 

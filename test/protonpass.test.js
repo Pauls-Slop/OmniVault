@@ -93,7 +93,7 @@ test('update changed fields only; TOTP refused; move to another vault; delete = 
   const wiki = { ...items.find((i) => i.name === 'Wiki Arbeit') };
   Object.assign(wiki, await ProtonPassProvider.reveal(config, {}, wiki));
   await ProtonPassProvider.saveItem(config, {}, wiki, { type: 'login', name: 'Wiki', username: 'ada', password: 'wiki-neu', totp: '', uris: ['https://wiki2.example.com'], notes: '', folderId: 's2' });
-  const last = log().trim().split('\n').at(-1);
+  const last = log().trim().split('\n').filter((l) => l.includes('"update"')).at(-1);
   assert.match(last, /title=Wiki/);
   assert.match(last, /password=wiki-neu/);
   assert.doesNotMatch(last, /username=/, 'unchanged field not sent');
@@ -116,6 +116,27 @@ test('update changed fields only; TOTP refused; move to another vault; delete = 
   assert.match(log(), /"item", "trash"/);
   assert.doesNotMatch(log(), /"item", "delete"/, 'never deleted permanently');
   t.close();
+});
+
+test('conflict: an item changed elsewhere since OmniVault read it is not overwritten', async () => {
+  const { t, config } = setup();
+  try {
+    const stale = { ...(await ProtonPassProvider.sync(config)).items.find((i) => i.name === 'Wiki Arbeit') };
+    Object.assign(stale, await ProtonPassProvider.reveal(config, {}, stale));
+    // another device changes the item (directly through pass-cli)
+    execFileSync(FAKE, ['item', 'update', '--share-id', 's2', '--item-id', stale.id.split('/')[1], '--field', 'title=Von woanders'],
+      { env: { ...process.env, FAKE_PASS_STATE: join(dir, `state-${n}.json`) } });
+    await assert.rejects(
+      ProtonPassProvider.saveItem(config, {}, stale, { ...stale, type: 'login', name: 'Meins', folderId: 's2' }),
+      (e) => e.code === 'conflict' && /inzwischen geändert/.test(e.message));
+    const fresh = { ...(await ProtonPassProvider.sync(config)).items.find((i) => i.id === stale.id) };
+    assert.equal(fresh.name, 'Von woanders', 'the other change was kept');
+    Object.assign(fresh, await ProtonPassProvider.reveal(config, {}, fresh));
+    const first = await ProtonPassProvider.saveItem(config, {}, fresh, { ...fresh, type: 'login', name: 'Meins', folderId: 's2' });
+    // saving again from what the first save returned is not a conflict
+    await ProtonPassProvider.saveItem(config, {}, first.item, { ...first.item, type: 'login', name: 'Meins 2', folderId: 's2' });
+    assert.equal((await ProtonPassProvider.sync(config)).items.find((i) => i.id === stale.id).name, 'Meins 2');
+  } finally { t.close(); }
 });
 
 test('real pass-cli 2.3.1 behaviour: error line, locked session, stdin, old versions', async () => {

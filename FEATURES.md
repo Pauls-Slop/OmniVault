@@ -58,7 +58,7 @@ Bitwarden Cloud und Vaultwarden nutzen denselben Provider; gegen bitwarden.com/.
 | Passkeys auf Webseiten anlegen und damit anmelden, entfernen | ✅ R (Bitwarden-Format, mit den offiziellen Apps austauschbar) | – ⁹ | – ⁹ | ⛔ ¹⁰ | ⛔ ¹⁰ | ⛔ ¹⁰ |
 | Teilen, Rechte ändern, Zugriff entziehen | ❌ ⁷ | ✅ R | – | ⛔ | ⛔ | ⛔ |
 | Geteilte Einträge bearbeiten | ✅ R (Organisation) | ✅ R (Geheimnis für alle Leser neu verschlüsselt) | – | 🟡 (wie eigene, ungetestet) | 🟡 (wie eigene, ungetestet) | ❌ |
-| Konflikterkennung (veralteter Stand wird nicht überschrieben) | ✅ R | ✅ R | – | ❌ | ❌ | ❌ |
+| Konflikterkennung (veralteter Stand wird nicht überschrieben) | ✅ R | ✅ R | – | ✅ S ¹³ | ✅ S ¹³ | ✅ S ¹³ |
 | Geheimnisse erst bei Bedarf entschlüsseln | – (alles lokal) | ✅ R | ❌ ⁸ | ✅ S | ✅ S | ✅ S |
 | Rate-Limit verständlich melden | ✅ R | ✅ | – | – | – | – |
 
@@ -75,6 +75,9 @@ OmniVault legt dann einen einfachen Ordner an, wenn der Server das erlaubt.
 ⁹ Passbolt und pass kennen keine Passkeys.
 ¹⁰ Die Programme `op`, `lpass` und `pass-cli` geben die privaten Schlüssel von Passkeys nicht heraus; Proton Pass
 zeigt nur, für welche Seite und welchen Benutzer ein Passkey existiert.
+¹³ Der Host vergleicht vor dem Ändern den Änderungsstand des Programms (1Password `version`, LastPass
+`last_modified_gmt`, Proton `modify_time`). Meldet ein Programm keinen, wird nicht geprüft; `selftest.py --write`
+zeigt, ob das echte Programm ihn liefert.
 
 ## Anmeldung und Sitzung
 

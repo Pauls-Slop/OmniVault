@@ -23,6 +23,7 @@ const HOST_MESSAGES = new Set([
   mark('Diese pass-cli-Version kann Einträge nicht verschieben – bitte pass-cli aktualisieren (≥ 2.3).'),
   mark('Die pass-cli-Sitzung ist mit einem Sperrcode gesperrt. Bitte im Terminal `pass-cli session unlock` ausführen.'),
   mark('Proton Pass: nicht angemeldet. Bitte im Terminal `pass-cli login` ausführen.'),
+  mark('Der Eintrag wurde inzwischen geändert. Bitte synchronisieren und erneut bearbeiten.'),
 ]);
 const HOST_PATTERNS = [
   [/^Ungültige (.+)$/, (m) => t('Ungültige {name}', { name: m[1] })],
@@ -55,7 +56,7 @@ export class NativeTransport {
     port.onMessage.addListener((msg) => {
       const p = this.pending.get(msg.id);
       if (!p) return;
-      if (!msg.ok) { this.pending.delete(msg.id); p.reject(new ProviderError(hostMessage(msg.error), 'host')); return; }
+      if (!msg.ok) { this.pending.delete(msg.id); p.reject(new ProviderError(hostMessage(msg.error), msg.code ?? 'host')); return; }
       if (msg.more) { (p.items ??= []).push(...(msg.result.items ?? [])); return; }
       this.pending.delete(msg.id);
       p.resolve(p.items ? { ...msg.result, items: [...p.items, ...(msg.result.items ?? [])] } : msg.result);

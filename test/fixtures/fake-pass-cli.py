@@ -149,6 +149,8 @@ def main():
                     login[k] = v
                 else:
                     fail(f"Error: unknown field {k}")
+        # like Proton: every change moves the modification time forward
+        d["item"]["modify_time"] = "2026-10-%02dT10:00:00" % (int(d["item"]["modify_time"][8:10]) % 28 + 1)
         save(s)
         print("Item updated successfully")
         return

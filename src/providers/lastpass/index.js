@@ -43,6 +43,7 @@ class LastPassProvider extends CliProvider {
   static async reveal(config, session, item) {
     const r = await this.call('reveal', { id: item.id });
     const out = { notes: r.notes || undefined, fields: [] };
+    if (r.revision) out._revision = r.revision; // what an edit must still find (conflict check in the host)
     if (r.password !== undefined) out.password = r.password;
     if (r.username) out.username = r.username;
     if (r.uris) out.uris = r.uris;
@@ -59,10 +60,10 @@ class LastPassProvider extends CliProvider {
       await this.call('create', payload);
       return { item: this.#local(config, null, data), resync: true }; // lpass add prints no id
     }
-    await this.call('update', { ...payload, id: existing.id });
+    const { revision } = await this.call('update', { ...payload, id: existing.id, revision: existing._revision });
     // a group change in lpass is done by renaming to "Group/Name"; re-sync to get the new grouping
     const folderChanged = (data.folderId ?? null) !== (existing.folderId ?? null);
-    return { item: { ...existing, ...this.#local(config, existing.id, data) }, resync: folderChanged };
+    return { item: { ...existing, ...this.#local(config, existing.id, data), _revision: revision ?? undefined }, resync: folderChanged };
   }
 
   static #local(config, id, data) {

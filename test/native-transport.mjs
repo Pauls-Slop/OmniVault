@@ -6,6 +6,8 @@
 import { spawn } from 'node:child_process';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { hostMessage } from '../src/providers/native-host.js';
+import { ProviderError } from '../src/providers/provider.js';
 
 export const HOST = join(fileURLToPath(new URL('..', import.meta.url)), 'native/omnivault_host.py');
 
@@ -24,7 +26,7 @@ export class ProcessTransport {
         this.buf = this.buf.subarray(4 + len);
         const p = this.pending.get(msg.id);
         if (!p) continue;
-        if (!msg.ok) { this.pending.delete(msg.id); p.reject(new Error(msg.error)); continue; }
+        if (!msg.ok) { this.pending.delete(msg.id); p.reject(new ProviderError(hostMessage(msg.error), msg.code ?? 'host')); continue; } // as the real transport does
         if (msg.more) { (p.items ??= []).push(...msg.result.items); continue; }
         this.pending.delete(msg.id);
         p.resolve(p.items ? { ...msg.result, items: [...p.items, ...msg.result.items] } : msg.result);

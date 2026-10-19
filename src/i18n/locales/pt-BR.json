@@ -655,6 +655,7 @@
  "Metadaten-Schlüssel fehlt": "Chave de metadados ausente",
  "Unerwartete Metadaten": "Metadados inesperados",
  "Der Eintrag wurde inzwischen in Passbolt geändert. Bitte synchronisieren und erneut bearbeiten.": "Alguém alterou este item no Passbolt nesse meio-tempo. Sincronize e edite de novo.",
+ "Der Eintrag wurde inzwischen geändert. Bitte synchronisieren und erneut bearbeiten.": "Este item foi alterado em outro lugar nesse meio-tempo. Sincronize e edite de novo.",
  "Keine Schreibberechtigung für diesen Eintrag": "Você não pode editar este item",
  "Notizen ohne Passwort benötigen Passbolt-v5-Ressourcen": "Notas sem senha exigem recursos do Passbolt v5",
  "Ressourcentyp {slug} ist auf diesem Server nicht verfügbar": "O tipo de recurso {slug} não está disponível neste servidor",

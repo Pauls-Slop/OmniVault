@@ -626,6 +626,7 @@
  "Metadaten-Schlüssel fehlt": "缺少元数据密钥",
  "Unerwartete Metadaten": "意外的元数据",
  "Der Eintrag wurde inzwischen in Passbolt geändert. Bitte synchronisieren und erneut bearbeiten.": "有人在此期间修改了 Passbolt 中的这个项目。请同步后再编辑。",
+ "Der Eintrag wurde inzwischen geändert. Bitte synchronisieren und erneut bearbeiten.": "此项目在此期间已在别处被修改。请同步后再编辑。",
  "Keine Schreibberechtigung für diesen Eintrag": "你无法编辑此项目",
  "Notizen ohne Passwort benötigen Passbolt-v5-Ressourcen": "没有密码的笔记需要 Passbolt v5 资源",
  "Ressourcentyp {slug} ist auf diesem Server nicht verfügbar": "此服务器不提供资源类型 {slug}",

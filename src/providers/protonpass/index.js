@@ -37,7 +37,8 @@ class ProtonPassProvider extends CliProvider {
         id: `${e.shareId}/${e.itemId}`, accountId: config.id, provider: 'protonpass', type: e.type,
         name: e.title ?? '', username: e.username ?? undefined, uris: e.urls ?? [], subtitle: e.subtitle ?? undefined,
         folderId: e.shareId, folder: e.vault ?? undefined, favorite: false, canEdit: ['login', 'note'].includes(e.type),
-        revisionDate: e.modifyTime ? `${e.modifyTime}Z` : undefined, passkeys: e.passkeys?.length ? e.passkeys : undefined,
+        revisionDate: e.modifyTime ? `${e.modifyTime}Z` : undefined, _revision: e.modifyTime ?? undefined,
+        passkeys: e.passkeys?.length ? e.passkeys : undefined,
         lazy: true, hasPassword: !!e.hasPassword, hasTotp: !!e.hasTotp,
       })),
       folders: vaults.map((v) => ({ id: v.shareId, name: v.name })),
@@ -47,6 +48,7 @@ class ProtonPassProvider extends CliProvider {
   static async reveal(config, session, item) {
     const r = await this.call('reveal', this.ref(item));
     const out = { notes: r.note || undefined, fields: (r.fields ?? []).map((f) => ({ ...f, type: f.type === 'totp' ? 'hidden' : f.type })) };
+    if (r.revision) out._revision = r.revision; // what an edit must still find (conflict check in the host)
     if (r.password !== undefined) out.password = r.password;
     if (r.totp) out.totp = r.totp;
     if (r.card) out.card = r.card;
@@ -79,13 +81,16 @@ class ProtonPassProvider extends CliProvider {
       if ((data.password ?? '') !== (existing.password ?? '')) fields.password = data.password ?? '';
       if ((data.uris?.[0] ?? '') !== (existing.uris?.[0] ?? '')) fields.url = data.uris?.[0] ?? '';
     }
-    await this.call('update', { shareId, itemId, fields });
-    const local = { ...existing, ...this.#local(config, existing.id, { ...data, uris: data.uris?.length ? [data.uris[0], ...(existing.uris ?? []).slice(1)] : [] }, shareId), folder: existing.folder };
+    const { revision } = await this.call('update', { shareId, itemId, fields, revision: existing._revision });
+    const local = {
+      ...existing, ...this.#local(config, existing.id, { ...data, uris: data.uris?.length ? [data.uris[0], ...(existing.uris ?? []).slice(1)] : [] }, shareId),
+      folder: existing.folder, _revision: revision ?? undefined, revisionDate: revision ? `${revision}Z` : existing.revisionDate,
+    };
     if (toShare === shareId) return { item: local };
     // other vault: `pass-cli item move` (≥ 2.3) keeps passkeys, attachments and history
     const moved = await this.call('move', { shareId, itemId, toShareId: toShare });
     if (!moved.itemId) return { deletedId: existing.id, resync: true };
-    return { item: { ...local, id: `${toShare}/${moved.itemId}`, folderId: toShare, folder: undefined }, deletedId: existing.id };
+    return { item: { ...local, id: `${toShare}/${moved.itemId}`, folderId: toShare, folder: undefined, _revision: undefined }, deletedId: existing.id };
   }
 
   static #local(config, id, data, shareId) {

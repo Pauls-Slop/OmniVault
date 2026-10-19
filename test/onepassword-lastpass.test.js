@@ -3,6 +3,7 @@
 // Copyright (c) 2026 Die OmniVault-Mitwirkenden
 // 1Password and LastPass providers + the real CLI host, driven against simulated `op` / `lpass`.
 import assert from 'node:assert/strict';
+import { execFileSync } from 'node:child_process';
 import { chmodSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -77,13 +78,14 @@ test('1Password: vaults as folders, custom fields kept and edited, cards read, n
   const bank = { ...by.Bank, ...(await OnePasswordProvider.reveal(config, {}, by.Bank)) };
   assert.deepEqual(bank.fields.map((f) => [f.name, f.value, f.type]), [['Kundennummer', 'K-77', 'text'], ['PIN', '4711', 'hidden']]);
 
-  // editing the password keeps the custom fields (the edit template replaces the whole item)
-  await OnePasswordProvider.saveItem(config, {}, bank, { type: 'login', name: 'Bank', username: 'ada', password: 'bank-neu', totp: '', uris: bank.uris, notes: '', folderId: 'v1', favorite: true });
+  // editing the password keeps the custom fields (the edit template replaces the whole item); like the
+  // background, each later edit starts from the item the previous save returned
+  let saved = await OnePasswordProvider.saveItem(config, {}, bank, { type: 'login', name: 'Bank', username: 'ada', password: 'bank-neu', totp: '', uris: bank.uris, notes: '', folderId: 'v1', favorite: true });
   let again = await OnePasswordProvider.reveal(config, {}, by.Bank);
   assert.equal(again.password, 'bank-neu');
   assert.deepEqual(again.fields.map((f) => f.name), ['Kundennummer', 'PIN'], 'fields not touched survive the edit');
   // editing the fields themselves
-  await OnePasswordProvider.saveItem(config, {}, bank, { type: 'login', name: 'Bank', username: 'ada', password: 'bank-neu', totp: '', uris: bank.uris, notes: '', folderId: 'v1', favorite: true,
+  saved = await OnePasswordProvider.saveItem(config, {}, saved.item, { type: 'login', name: 'Bank', username: 'ada', password: 'bank-neu', totp: '', uris: bank.uris, notes: '', folderId: 'v1', favorite: true,
     fields: [{ name: 'PIN', value: '0000', type: 'hidden' }] });
   again = await OnePasswordProvider.reveal(config, {}, by.Bank);
   assert.deepEqual(again.fields.map((f) => [f.name, f.value, f.type]), [['PIN', '0000', 'hidden']]);
@@ -93,7 +95,7 @@ test('1Password: vaults as folders, custom fields kept and edited, cards read, n
   assert.equal((await OnePasswordProvider.sync(config)).items.find((i) => i.name === 'GitHub').favorite, true);
 
   const { folder } = await OnePasswordProvider.createFolder(config, {}, { name: 'Familie' });
-  const moved = await OnePasswordProvider.saveItem(config, {}, bank, { type: 'login', name: 'Bank', username: 'ada', password: 'bank-neu', totp: '', uris: bank.uris, notes: '', folderId: folder.id, favorite: true });
+  const moved = await OnePasswordProvider.saveItem(config, {}, saved.item, { type: 'login', name: 'Bank', username: 'ada', password: 'bank-neu', totp: '', uris: bank.uris, notes: '', folderId: folder.id, favorite: true });
   assert.equal(moved.deletedId, by.Bank.id, 'old id reported as gone');
   assert.notEqual(moved.item.id, by.Bank.id);
   ({ items, folders } = await OnePasswordProvider.sync(config));
@@ -132,6 +134,41 @@ test('LastPass: login, lazy sync with groups, reveal, create/update/delete via s
   await LastPassProvider.deleteItem(config, {}, neu);
   assert.ok(!(await LastPassProvider.sync(config)).items.some((i) => i.name === 'Neu'));
   t.close();
+});
+
+test('1Password: an item changed elsewhere is not overwritten; own saves and favorites are no conflict', async () => {
+  const { t, config } = opSetup();
+  const state = join(dir, `op-${n}.json`);
+  try {
+    const listed = (await OnePasswordProvider.sync(config)).items.find((i) => i.name === 'GitHub');
+    const stale = { ...listed, ...(await OnePasswordProvider.reveal(config, {}, listed)) };
+    // marking a favourite changes the version too: the returned item carries the new one
+    const fav = (await OnePasswordProvider.setFavorite(config, {}, stale, true)).item;
+    const first = await OnePasswordProvider.saveItem(config, {}, fav, { type: 'login', name: 'GitHub', username: 'ada', password: 'eins', totp: '', uris: fav.uris, notes: '', folderId: 'v1', favorite: true });
+    await OnePasswordProvider.saveItem(config, {}, first.item, { type: 'login', name: 'GitHub', username: 'ada', password: 'zwei', totp: '', uris: fav.uris, notes: '', folderId: 'v1', favorite: true });
+    // another device edits the item; the copy OmniVault still holds is now outdated
+    execFileSync(FAKE_OP, ['item', 'edit', listed.id, '--favorite', 'false', '--format', 'json'], { env: { ...process.env, FAKE_OP_STATE: state } });
+    await assert.rejects(
+      OnePasswordProvider.saveItem(config, {}, first.item, { type: 'login', name: 'GitHub', username: 'ada', password: 'drei', totp: '', uris: fav.uris, notes: '', folderId: 'v1' }),
+      (e) => e.code === 'conflict');
+    const now = (await OnePasswordProvider.sync(config)).items.find((i) => i.id === listed.id);
+    assert.equal((await OnePasswordProvider.reveal(config, {}, now)).password, 'zwei', 'nothing was overwritten');
+  } finally { t.close(); }
+});
+
+test('LastPass: an item changed elsewhere is not overwritten', async () => {
+  const { t, config } = lpSetup();
+  const state = join(dir, `lp-${n}.json`);
+  try {
+    const listed = (await LastPassProvider.sync(config)).items.find((i) => i.name === 'GitHub');
+    const item = { ...listed, ...(await LastPassProvider.reveal(config, {}, listed)) };
+    const data = { name: 'GitHub', username: 'ada', password: 'eins', uris: item.uris, notes: '', folderId: item.folderId };
+    const first = await LastPassProvider.saveItem(config, {}, item, data);
+    await LastPassProvider.saveItem(config, {}, first.item, { ...data, password: 'zwei' });
+    execFileSync(FAKE_LP, ['edit', listed.id, '--non-interactive'], { input: 'Password: von-woanders\n', env: { ...process.env, FAKE_LPASS_STATE: state } });
+    await assert.rejects(LastPassProvider.saveItem(config, {}, first.item, { ...data, password: 'drei' }), (e) => e.code === 'conflict');
+    assert.equal((await LastPassProvider.reveal(config, {}, listed)).password, 'von-woanders');
+  } finally { t.close(); }
 });
 
 test('CLI host: unknown backend and malformed id rejected', async () => {

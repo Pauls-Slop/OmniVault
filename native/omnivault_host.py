@@ -53,7 +53,7 @@ def main():
         try:
             respond(stdout, req_id, dispatch(req))
         except HostError as e:
-            write_message(stdout, {"id": req_id, "ok": False, "error": str(e)})
+            write_message(stdout, {"id": req_id, "ok": False, "error": str(e), **({"code": e.code} if e.code else {})})
         except Exception as e:  # never leak a traceback to the page, but report the type
             write_message(stdout, {"id": req_id, "ok": False, "error": f"Interner Fehler im Host: {type(e).__name__}"})
 

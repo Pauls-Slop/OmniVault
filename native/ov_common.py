@@ -16,7 +16,22 @@ PATH_ID = re.compile(r"^[A-Za-z0-9 _./@:+=-]{1,512}$")  # entry paths / ids of t
 
 
 class HostError(Exception):
-    """An error whose message is shown to the user as is."""
+    """An error whose message is shown to the user as is. `code` lets the extension tell kinds apart
+    (e.g. "conflict"); without it the error is a plain host error."""
+
+    def __init__(self, message, code=None):
+        super().__init__(message)
+        self.code = code
+
+
+CONFLICT = "Der Eintrag wurde inzwischen geändert. Bitte synchronisieren und erneut bearbeiten."
+
+
+def assert_unchanged(expected, current):
+    """Refuses to overwrite an item that changed since OmniVault last read it. `expected` is the revision the
+    extension saw (None or "" when it never saw one: then there is nothing to compare)."""
+    if expected not in (None, "") and current not in (None, "") and str(expected) != str(current):
+        raise HostError(CONFLICT, "conflict")
 
 
 def which(name, env_override):

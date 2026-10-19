@@ -9,7 +9,7 @@ import json
 import os
 import re
 
-from ov_common import HostError, check_id, run, which
+from ov_common import HostError, assert_unchanged, check_id, run, which
 
 
 def op_bin():
@@ -53,6 +53,13 @@ def op_vault_list():
     return [{"id": v.get("id"), "name": v.get("name") or v.get("id")} for v in (op_json(["vault", "list"]) or [])]
 
 
+def revision(doc):
+    """Change marker of an item: its version number (op 2.x), else the time of the last change."""
+    doc = doc or {}
+    v = doc.get("version")
+    return str(v) if v not in (None, "") else (doc.get("updated_at") or None)
+
+
 def op_list(_a):
     data = op_json(["item", "list"]) or []
     items = []
@@ -66,6 +73,7 @@ def op_list(_a):
             "uris": [u.get("href") for u in it.get("urls", []) if u.get("href")],
             "favorite": bool(it.get("favorite")),
             "hasTotp": False,
+            "revision": revision(it),
         })
     return {"items": items, "vaults": op_vault_list()}
 
@@ -96,7 +104,8 @@ def op_parse(doc):
     category = doc.get("category", "")
     out = {"id": doc.get("id"), "name": doc.get("title") or "", "username": "", "password": "",
            "totp": "", "uris": [u.get("href") for u in doc.get("urls", []) if u.get("href")], "notes": "",
-           "fields": [], "type": op_cat_to_type(category), "favorite": bool(doc.get("favorite"))}
+           "fields": [], "type": op_cat_to_type(category), "favorite": bool(doc.get("favorite")),
+           "revision": revision(doc)}
     card, identity = {}, {}
     for f in doc.get("fields", []) or []:
         purpose, ftype, fid = f.get("purpose"), f.get("type"), f.get("id")
@@ -158,10 +167,15 @@ def op_create(a):
     if a.get("favorite"):
         argv.append("--favorite")
     proc = run(op_bin(), argv, stdin=json.dumps(op_item_json(a, category)))
+    doc = _json_or_none(proc.stdout)
+    return {"id": doc.get("id"), "revision": revision(doc)}
+
+
+def _json_or_none(text):
     try:
-        return {"id": (json.loads(proc.stdout or "{}") or {}).get("id")}
+        return json.loads(text or "{}") or {}
     except json.JSONDecodeError:
-        return {"id": None}
+        return {}
 
 
 def _merge(current, a):
@@ -201,22 +215,23 @@ def _merge(current, a):
 def op_update(a):
     iid = check_id(a.get("id"), "Eintrags-ID")
     current = op_json(["item", "get", iid])
+    assert_unchanged(a.get("revision"), revision(current))
     argv = ["item", "edit", iid, "--format", "json"]
     if a.get("favorite") is not None:
         argv += ["--favorite", "true" if a["favorite"] else "false"]
-    run(op_bin(), argv, stdin=json.dumps(_merge(current, a)))
+    edited = _json_or_none(run(op_bin(), argv, stdin=json.dumps(_merge(current, a))).stdout)
     vault = (current.get("vault") or {}).get("id")
     if a.get("vaultId") and a["vaultId"] != vault:
         moved = op_json(["item", "move", iid, "--current-vault", check_id(vault, "Tresor-ID"),
                          "--destination-vault", check_id(a["vaultId"], "Tresor-ID")])
-        return {"id": (moved or {}).get("id") or iid, "moved": True}
-    return {"id": iid}
+        return {"id": (moved or {}).get("id") or iid, "moved": True, "revision": revision(moved)}
+    return {"id": iid, "revision": revision(edited)}
 
 
 def op_favorite(a):
     iid = check_id(a.get("id"), "Eintrags-ID")
-    run(op_bin(), ["item", "edit", iid, "--favorite", "true" if a.get("favorite") else "false", "--format", "json"])
-    return {"id": iid}
+    proc = run(op_bin(), ["item", "edit", iid, "--favorite", "true" if a.get("favorite") else "false", "--format", "json"])
+    return {"id": iid, "revision": revision(_json_or_none(proc.stdout))}
 
 
 def op_vault_create(a):

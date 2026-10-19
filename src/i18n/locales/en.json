@@ -654,6 +654,7 @@
  "Metadaten-Schlüssel fehlt": "Metadata key missing",
  "Unerwartete Metadaten": "Unexpected metadata",
  "Der Eintrag wurde inzwischen in Passbolt geändert. Bitte synchronisieren und erneut bearbeiten.": "Someone changed this item in Passbolt in the meantime. Sync, then edit it again.",
+ "Der Eintrag wurde inzwischen geändert. Bitte synchronisieren und erneut bearbeiten.": "This item was changed elsewhere in the meantime. Sync, then edit it again.",
  "Keine Schreibberechtigung für diesen Eintrag": "You can't edit this item",
  "Notizen ohne Passwort benötigen Passbolt-v5-Ressourcen": "Notes without a password need Passbolt v5 resources",
  "Ressourcentyp {slug} ist auf diesem Server nicht verfügbar": "The resource type {slug} isn't available on this server",

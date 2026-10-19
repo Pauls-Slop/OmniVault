@@ -62,7 +62,7 @@ def main():
         if not it:
             print("Error: Could not find specified account.", file=sys.stderr)
             sys.exit(1)
-        print(json.dumps([it]))
+        print(json.dumps([{**it, "last_modified_gmt": it.get("last_modified_gmt", "1700000000"), "last_touch": "1700000000"}]))
         return
     if a[:1] == ["add"]:
         name = a[1]
@@ -84,6 +84,7 @@ def main():
         for k, col in (("username", "username"), ("password", "password"), ("url", "url"), ("notes", "note")):
             if k in f:
                 it[col] = f[k]
+        it["last_modified_gmt"] = str(int(it.get("last_modified_gmt", "1700000000")) + 1)
         save(s)
         return
     if a[:1] == ["rm"]:

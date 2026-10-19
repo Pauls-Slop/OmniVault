@@ -9,7 +9,7 @@ import json
 import re
 from concurrent.futures import ThreadPoolExecutor
 
-from ov_common import VERSION, HostError, check_id as _check_id, run, which
+from ov_common import VERSION, HostError, assert_unchanged, check_id as _check_id, run, which
 
 ID_RE = re.compile(r"^[A-Za-z0-9_=\-]{1,200}$")
 # no update check (it may try to download), no colours, no Rust backtraces in error output
@@ -189,7 +189,7 @@ def cmd_reveal(args):
     share_id = check_id(args.get("shareId"), "Tresor-ID")
     item_id = check_id(args.get("itemId"), "Eintrags-ID")
     entry, secret = normalize(view(share_id, item_id), None)
-    return {**secret, "type": entry["type"]}
+    return {**secret, "type": entry["type"], "revision": entry["modifyTime"]}
 
 
 def cmd_create(args):
@@ -225,10 +225,14 @@ def cmd_update(args):
         if k not in allowed:
             raise HostError(f"Feld {k} kann nicht geändert werden")
         cli_args += ["--field", f"{k}={'' if v is None else v}"]
+    if args.get("revision"):
+        current, _ = normalize(view(share_id, item_id), None)
+        assert_unchanged(args["revision"], current["modifyTime"])
     if len(cli_args) == 6:
-        return {"updated": 0}
+        return {"updated": 0, "revision": args.get("revision")}
     run_cli(cli_args)
-    return {"updated": len(fields)}
+    after, _ = normalize(view(share_id, item_id), None)
+    return {"updated": len(fields), "revision": after["modifyTime"]}
 
 
 def cmd_delete(args):

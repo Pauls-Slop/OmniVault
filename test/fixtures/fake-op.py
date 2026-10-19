@@ -48,8 +48,15 @@ def save(s):
 
 
 def summary(it):
-    return {"id": it["id"], "title": it["title"], "category": it["category"], "vault": it["vault"], "favorite": it.get("favorite", False),
+    return {"id": it["id"], "title": it["title"], "version": it.get("version", 1), "vault": it["vault"], "category": it["category"],
+            "favorite": it.get("favorite", False), "updated_at": it.get("updated_at", "2026-01-01T10:00:00Z"),
             "additional_information": it.get("additional_information", ""), "urls": it.get("urls", [])}
+
+
+def bump(it):
+    """Like op: every change raises the item's version and its updated_at."""
+    it["version"] = it.get("version", 1) + 1
+    it["updated_at"] = "2026-10-%02dT10:00:00Z" % min(28, it["version"])
 
 
 def stdin_doc():
@@ -102,7 +109,7 @@ def main():
         if not it:
             print("[ERROR] item not found", file=sys.stderr)
             sys.exit(1)
-        print(json.dumps(it))
+        print(json.dumps({**it, "version": it.get("version", 1), "updated_at": it.get("updated_at", "2026-01-01T10:00:00Z")}))
         return
     if a[:2] == ["item", "create"]:
         doc = stdin_doc()
@@ -112,6 +119,7 @@ def main():
             vault = next((v for v in s["vaults"] if v["id"] == vid), {"id": vid, "name": vid})
         doc["favorite"] = "--favorite" in a
         doc["id"] = "n" + uuid.uuid4().hex[:6]
+        doc["version"] = 1
         doc["vault"] = vault
         up = doc.get("fields", [])
         doc["additional_information"] = next((f["value"] for f in up if f.get("purpose") == "USERNAME"), "")
@@ -138,6 +146,7 @@ def main():
         if flag(a, "--favorite") is not None:
             it["favorite"] = flag(a, "--favorite") == "true"
         it["additional_information"] = next((f["value"] for f in it["fields"] if f.get("purpose") == "USERNAME"), "")
+        bump(it)
         save(s)
         print(json.dumps(it))
         return

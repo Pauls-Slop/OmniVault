@@ -33,6 +33,7 @@ class OnePasswordProvider extends CliProvider {
         name: e.name || '', username: e.username || undefined, uris: e.uris ?? [],
         folderId: e.vaultId ?? null, folder: e.vault || undefined, favorite: !!e.favorite,
         canEdit: ['login', 'note'].includes(e.type), canDelete: true, lazy: true, hasPassword: e.type === 'login', hasTotp: !!e.hasTotp,
+        _revision: e.revision ?? undefined,
       })),
       folders: vaults.map((v) => ({ id: v.id, name: v.name })).sort((a, b) => a.name.localeCompare(b.name, 'de')),
     };
@@ -41,6 +42,7 @@ class OnePasswordProvider extends CliProvider {
   static async reveal(config, session, item) {
     const r = await this.call('reveal', { id: item.id });
     const out = { notes: r.notes || undefined, fields: r.fields ?? [] };
+    if (r.revision) out._revision = r.revision; // what an edit must still find (conflict check in the host)
     if (item.type === 'login') out.password = r.password;
     if (r.username) out.username = r.username;
     if (r.totp) out.totp = r.totp;
@@ -60,19 +62,19 @@ class OnePasswordProvider extends CliProvider {
       vaultId: data.folderId || undefined, favorite: data.favorite,
     };
     if (!existing) {
-      const { id } = await this.call('create', payload);
+      const { id, revision } = await this.call('create', payload);
       if (!id) return { item: this.#local(config, null, data), resync: true };
-      return { item: this.#local(config, id, data) };
+      return { item: { ...this.#local(config, id, data), _revision: revision ?? undefined } };
     }
-    const { id } = await this.call('update', { ...payload, id: existing.id });
-    const item = { ...existing, ...this.#local(config, id ?? existing.id, data) };
+    const { id, revision } = await this.call('update', { ...payload, id: existing.id, revision: existing._revision });
+    const item = { ...existing, ...this.#local(config, id ?? existing.id, data), _revision: revision ?? undefined };
     // a vault change is a move: 1Password gives the item a new id
     return id && id !== existing.id ? { item, deletedId: existing.id, resync: true } : { item };
   }
 
   static async setFavorite(config, session, existing, favorite) {
-    await this.call('favorite', { id: existing.id, favorite: !!favorite });
-    return { item: { ...existing, favorite: !!favorite } };
+    const { revision } = await this.call('favorite', { id: existing.id, favorite: !!favorite });
+    return { item: { ...existing, favorite: !!favorite, _revision: revision ?? existing._revision } };
   }
 
   static async createFolder(config, session, { name }) {

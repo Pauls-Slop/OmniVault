@@ -18,6 +18,7 @@ import time
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import omnivault_host  # noqa: E402
+from ov_common import HostError  # noqa: E402
 
 results = []
 NAME = "OmniVault-Selbsttest"
@@ -112,6 +113,26 @@ def main():
         assert cmd["reveal"](created).get("password") == "Selbsttest-2!", "Passwort nicht geändert"
         return None
 
+    def conflict():
+        """The host must refuse an edit based on an outdated revision (item changed elsewhere meanwhile)."""
+        if a.backend == "pass":
+            return "übersprungen (pass kennt keinen Änderungsstand)"
+        rev = cmd["reveal"](created).get("revision")
+        if not rev:
+            raise RuntimeError("das Programm meldet keinen Änderungsstand – die Konflikterkennung greift nicht")
+        stale = {"revision": "veraltet-0"}
+        try:
+            if proton:
+                cmd["update"]({**created, **stale, "fields": {"password": "Selbsttest-3!"}})
+            else:
+                cmd["update"]({**created, **stale, "name": NAME, "username": "selftest", "password": "Selbsttest-3!",
+                               "uris": ["https://example.org"], "notes": "Notiz", "folder": None})
+        except HostError as e:
+            if e.code == "conflict":
+                return "veralteter Stand wird abgelehnt"
+            raise
+        raise RuntimeError("ein veralteter Stand wurde überschrieben")
+
     def move():
         other = next((s for n, s in vaults.items() if n != a.vault), None)
         if not other:
@@ -127,6 +148,7 @@ def main():
 
     if step("Anlegen (Geheimnisse über stdin)", create):
         step("Ändern", update)
+        step("Konflikterkennung (Änderungsstand des Programms)", conflict)
         if proton:
             step("In anderen Tresor verschieben", move)
         step("Löschen", delete)

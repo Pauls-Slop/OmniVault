@@ -7,7 +7,7 @@ uses `lpass show --json`. Writes feed `Field: value` lines to `lpass add/edit --
 """
 import json
 
-from ov_common import HostError, check_id, run, which
+from ov_common import HostError, assert_unchanged, check_id, run, which
 
 
 def lp_bin():
@@ -39,19 +39,25 @@ def lp_list(_a):
                       "uris": [url] if url and url != "http://" else [], "folder": group, "hasTotp": False})
     return {"items": items}
 
-def lp_reveal(a):
-    data = run(lp_bin(), ["show", "--json", check_id(a.get("id"), "Eintrags-ID")]).stdout
-    arr = json.loads(data or "[]")
+def lp_show(iid):
+    data = run(lp_bin(), ["show", "--json", check_id(iid, "Eintrags-ID")]).stdout
+    try:
+        arr = json.loads(data or "[]")
+    except json.JSONDecodeError:
+        arr = []
     if not arr:
         raise HostError("Eintrag nicht gefunden")
-    e = arr[0]
+    return arr[0]
+
+def lp_reveal(a):
+    e = lp_show(a.get("id"))
     note = e.get("note") or ""
     is_note = not (e.get("username") or e.get("password") or e.get("url") not in ("", "http://", None))
     return {
         "id": e.get("id"), "name": e.get("name") or "", "username": e.get("username") or "",
         "password": e.get("password") or "", "uris": [e["url"]] if e.get("url") and e["url"] != "http://" else [],
         "totp": "", "notes": note, "type": "note" if is_note else "login",
-        "folder": e.get("group") or None,
+        "folder": e.get("group") or None, "revision": e.get("last_modified_gmt") or None,
     }
 
 def lp_body(a):
@@ -80,8 +86,10 @@ def lp_create(a):
 
 def lp_update(a):
     iid = check_id(a.get("id"), "Eintrags-ID")
+    if a.get("revision"):
+        assert_unchanged(a["revision"], lp_show(iid).get("last_modified_gmt"))
     run(lp_bin(), ["edit", iid, "--non-interactive", "--sync=now"], stdin=lp_body(a))
-    return {"id": iid}
+    return {"id": iid, "revision": lp_show(iid).get("last_modified_gmt") or None}
 
 def lp_delete(a):
     run(lp_bin(), ["rm", check_id(a.get("id"), "Eintrags-ID"), "--sync=now"])
