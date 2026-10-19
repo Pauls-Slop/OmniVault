@@ -170,7 +170,7 @@ Einstellungen → Darstellung → Sprache wechselt sofort.
 |---|---|---|
 | Toolbar-Popup | ✅ R (echtes Popup getestet) | ❓ |
 | Eigenes Fenster, Seitenleiste; Wechsel Fenster ↔ Seitenleiste in beide Richtungen | ✅ R | ❓ Fenster → Seitenleiste über Klick auf das Symbol (Übergabe in Chromium simuliert, in Firefox ungetestet) |
-| Ausfüllen per Klick, Tastenkürzel, Kontextmenü | ✅ R | ❓ |
+| Ausfüllen per Klick, Tastenkürzel, Kontextmenü (auch „Sicheres Passwort einfügen“) | ✅ R (Kürzel und Kontextmenü mit echten Tastatur- und Mauseingaben) | ❓ |
 | Karten und Identitäten in Zahlungs- und Adressformulare ausfüllen | ✅ S | ❓ |
 | OmniVault-Knopf in Anmeldefeldern mit passenden Logins (Opt-in) | ✅ S | ❓ |
 | „Login speichern?“ / „Passwort aktualisieren?“ nach dem Anmelden (Opt-in) | ✅ S | ❓ |

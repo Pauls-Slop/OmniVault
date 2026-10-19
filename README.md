@@ -41,6 +41,7 @@ npm run test:passbolt     # richtet einen lokalen Passbolt CE ein (PostgreSQL) u
 npm run test:inline       # Knopf im Anmeldefeld, „Login speichern?“, Karten ausfüllen
 npm run test:i18n         # Sprachen: Browsersprache, Sprachwahl, alle Ansichten in allen Sprachen + Pseudosprache
 npm run test:passkeys     # Passkeys: Testseite mit Prüfung auf dem Server, OmniVault-Dialog, Rückfall auf den Browser
+npm run test:shortcuts    # Tastenkürzel und Kontextmenü mit echten X11-Eingaben (sichtbarer Browser unter Xvfb)
 ```
 
 Die e2e-Skripte nehmen den Pfad zu Playwright als erstes Argument, falls es nicht im Projekt installiert ist.
