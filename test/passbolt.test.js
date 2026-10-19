@@ -11,6 +11,18 @@ import { ADMIN_ID, KEYS, USER_ID, fakePassbolt } from './fake-passbolt.js';
 
 const DOMAIN = 'https://passbolt.example.org';
 
+// A third account key in the newest format (RFC 9580): v6 key, Argon2 S2K with AEAD protection. Messages to it
+// use SEIPD v2. GnuPG cannot create such keys, so it is generated here with OpenPGP.js.
+{
+  const passphrase = 'carol-passphrase';
+  const v6 = await openpgp.generateKey({
+    type: 'curve25519', userIDs: [{ name: 'Carol Test', email: 'carol@passbolt.test' }], passphrase, format: 'armored',
+    config: { v6Keys: true, aeadProtect: true, s2kType: openpgp.enums.s2k.argon2 },
+  });
+  const pub = await openpgp.readKey({ armoredKey: v6.publicKey });
+  KEYS.userV6 = { fingerprint: pub.getFingerprint().toUpperCase(), passphrase, public: v6.publicKey, private: v6.privateKey };
+}
+
 async function setup(opts = {}) {
   const fake = await fakePassbolt({ domain: DOMAIN, ...opts });
   const jar = new Map();
@@ -28,7 +40,7 @@ async function setup(opts = {}) {
   return { fake, jar, config: { id: 'pb1', server: DOMAIN, userId: USER_ID, privateKey: KEYS[user].private }, pass: KEYS[user].passphrase };
 }
 
-for (const user of ['userRsa', 'userEcc']) {
+for (const user of ['userRsa', 'userEcc', 'userV6']) {
   test(`${user}: JWT login, v4 + v5 resources, folders, session keys, lazy secrets`, async () => {
     const { fake, config, pass } = await setup({ user });
     const res = await PassboltProvider.login(config, { password: pass });
@@ -126,6 +138,22 @@ test('permissions, favorites and public description are read', async () => {
   assert.equal(by.GitLab.favorite, true);
   assert.equal(by.Intranet.description, 'öffentliche Beschreibung');
   assert.deepEqual(out.folders.map((f) => f.name), ['Team', 'Team/Infra']);
+});
+
+test('v6 key (RFC 9580): unlock with Argon2 + AEAD, secrets written to it use SEIPD v2', async () => {
+  const key = await openpgp.readPrivateKey({ armoredKey: KEYS.userV6.private });
+  assert.equal(key.keyPacket.version, 6);
+  const { fake, config, pass } = await setup({ user: 'userV6' });
+  const res = await PassboltProvider.login(config, { password: pass });
+  assert.equal(res.status, 'ok');
+  const { item } = await PassboltProvider.saveItem(config, res.session, null, { type: 'login', name: 'Neu6', username: 'carol', password: 'v6-pw', uris: [] });
+  const secret = fake.resources.find((r) => r.id === item.id).secrets[0].data;
+  const msg = await openpgp.readMessage({ armoredMessage: secret });
+  const seipd = msg.packets.find((p) => p.constructor.tag === openpgp.enums.packet.symEncryptedIntegrityProtectedData);
+  assert.equal(seipd.version, 2, 'SEIPD v2 (AEAD) towards a v6 key');
+  const again = (await PassboltProvider.sync(config, res.session)).items.find((i) => i.name === 'Neu6');
+  assert.equal((await PassboltProvider.reveal(config, res.session, again)).password, 'v6-pw');
+  await assert.rejects(PassboltProvider.login(config, { password: 'falsch' }), 'wrong passphrase refused for v6 keys too');
 });
 
 test('create a v5 login (shared metadata key) and a v5 note, then read them back', async () => {

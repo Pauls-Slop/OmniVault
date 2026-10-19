@@ -84,6 +84,7 @@ zeigt, ob das echte Programm ihn liefert.
 | Funktion | Bitwarden / Vaultwarden | Passbolt | CLI-Anbieter |
 |---|---|---|---|
 | Anmelden mit Master-Passwort / Passphrase | ✅ R (PBKDF2, Argon2id) | ✅ R (privater Schlüssel + Passphrase) | im CLI (`op signin`, `lpass login`, gpg-Agent) |
+| OpenPGP-Schlüssel: RSA, Ed25519/Cv25519, v6 nach RFC 9580 (Argon2-S2K, AEAD, SEIPD v2) | – | ✅ R (RSA, ECC), ✅ U (v6) ¹⁵ | – |
 | Bitwardens neues Verschlüsselungsformat („Encryption V2“: COSE, XAES-256-GCM, Cipher-Blobs) | ✅ U lesen; Schreiben gesperrt ¹⁴ | – | – |
 | Anmelden mit API-Schlüssel | ✅ R | – | – |
 | Zwei-Faktor | 🟡 S ¹¹ | 🟡 S ¹² | übernimmt das CLI |
@@ -101,6 +102,8 @@ zeigt, ob das echte Programm ihn liefert.
 die Vektoren der XAES-Spezifikation, Bitwardens veröffentlichte Vektoren (nur lokal) und ein unabhängig in Python
 erzeugtes V2-Konto. Solche Konten sind in OmniVault nur lesbar, bis Schreiben im neuen Format umgesetzt ist
 (research/BITWARDEN-V2.md).
+¹⁵ OmniVault kann v6-Schlüssel; ob ein Passbolt-Server sie annimmt, entscheidet der Server (er prüft mit GnuPG,
+das RFC 9580 bisher nicht umsetzt – ungeprüft).
 
 ## Werkzeuge (anbieterübergreifend)
 
