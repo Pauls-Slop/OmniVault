@@ -176,7 +176,7 @@ Einstellungen → Darstellung → Sprache wechselt sofort.
 | „Login speichern?“ / „Passwort aktualisieren?“ nach dem Anmelden (Opt-in) | ✅ S | ❓ |
 | Auto-Sperre (Zeit, Bildschirmsperre), Zwischenablage leeren | ✅ | ❓ |
 | Native-Host für CLI-Anbieter | ✅ R | ❓ (Manifest wird installiert, nicht getestet) |
-| Passkeys: Seite fragt → OmniVault-Dialog (anlegen in neuem oder vorhandenem Login, anmelden, „anderes Gerät oder Browser“), Opt-in | ✅ R (Prüfseite mit unabhängiger Signaturprüfung, Passkeys gegen echtes Vaultwarden) | ❓ (Seitenskript in der MAIN-Welt ab Firefox 128, ungetestet) |
+| Passkeys: Seite fragt → OmniVault-Dialog (anlegen in neuem oder vorhandenem Login, anmelden, „anderes Gerät oder Browser“), Opt-in | ✅ R (Prüfseite mit unabhängiger Signaturprüfung, Passkeys gegen echtes Vaultwarden); manuell auf webauthn.io bestätigt | ✅ (manuell auf webauthn.io: anlegen und anmelden, 19.10.2026) |
 | Passkeys in der Liste eines `username webauthn`-Felds (bedingte Anfrage, „conditional mediation“) | ✅ S | ❓ |
 | Gesperrtes Konto: Dialog bietet Entsperren an, wenn dort ein Passkey für die Seite liegen kann | ✅ S | ❓ |
 
