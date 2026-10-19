@@ -82,7 +82,7 @@ zeigt nur, für welche Seite und welchen Benutzer ein Passkey existiert.
 |---|---|---|---|
 | Anmelden mit Master-Passwort / Passphrase | ✅ R (PBKDF2, Argon2id) | ✅ R (privater Schlüssel + Passphrase) | im CLI (`op signin`, `lpass login`, gpg-Agent) |
 | Anmelden mit API-Schlüssel | ✅ R | – | – |
-| Zwei-Faktor | 🟡 S ⁹ | 🟡 S ¹⁰ | übernimmt das CLI |
+| Zwei-Faktor | 🟡 S ¹¹ | 🟡 S ¹² | übernimmt das CLI |
 | Bestätigung neuer Geräte (E-Mail-Code) | ✅ S | – | – |
 | Selbst gehosteter Server | ✅ R | ✅ R | – |
 | Token-Erneuerung / Sitzung halten | ✅ R | ✅ S | ✅ S |
@@ -91,8 +91,8 @@ zeigt nur, für welche Seite und welchen Benutzer ein Passkey existiert.
 | SSO / vertrauenswürdige Geräte | ❌ | ❌ | – |
 | Biometrie | ⛔ (Browser-Erweiterungen haben keinen Zugriff) | ⛔ | – |
 
-⁹ TOTP, E-Mail, YubiKey-OTP. WebAuthn und Duo fehlen; in diesem Fall hilft der API-Schlüssel.
-¹⁰ TOTP und YubiKey-OTP. Duo fehlt.
+¹¹ TOTP, E-Mail, YubiKey-OTP. WebAuthn und Duo fehlen; in diesem Fall hilft der API-Schlüssel.
+¹² TOTP und YubiKey-OTP. Duo fehlt.
 
 ## Werkzeuge (anbieterübergreifend)
 
