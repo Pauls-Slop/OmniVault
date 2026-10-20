@@ -108,6 +108,16 @@ tools – you install them and sign in yourself.
 3. In OmniVault, add the account and click *Connect*. Your browser asks once for permission to communicate with
    native applications.
 
+What the official tools allow through the helper:
+
+- **Attachments** can be downloaded from 1Password, LastPass and Proton Pass (up to 30 MB per file). Uploading is
+  not possible through these tools.
+- **1Password:** cards and identities can be created and edited. `op` cannot write an identity's address (a new
+  address is kept in the notes) and does not show passkeys; saving a login with a passkey through `op` removes the
+  passkey, so edit such logins in the 1Password app.
+- **Password history:** LastPass's and Proton Pass's tools don't output it. For 1Password it is shown if `op`
+  includes it in its output (not documented by 1Password; `native/selftest.py` tells you).
+
 If a tool is installed in an unusual location, see [native/README.md](native/README.md) (German) for environment
 variables and troubleshooting.
 

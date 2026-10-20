@@ -50,8 +50,8 @@ Bitwarden Cloud und Vaultwarden nutzen denselben Provider; gegen bitwarden.com/.
 |---|---|---|---|---|---|---|
 | Logins lesen, anlegen, bearbeiten, löschen | ✅ R | ✅ R | ✅ R | ✅ S | ✅ S | ✅ S |
 | Notizen | ✅ R | ✅ R (v5) ² | – ³ | ✅ S | ✅ S | ✅ S |
-| Karten, Identitäten lesen | ✅ R | – | – | 🟡 S (Karten) ⁴ | – | ✅ S |
-| Karten, Identitäten anlegen und bearbeiten | ✅ R | – | – | ❌ ⁴ | – | ⛔ |
+| Karten, Identitäten lesen | ✅ R | – | – | ✅ S ⁴ | – | ✅ S |
+| Karten, Identitäten anlegen und bearbeiten | ✅ R | – | – | 🟡 S ⁴ | – | ⛔ |
 | Zusatzfelder lesen | ✅ R | ✅ R (v5) | ✅ R | ✅ S | ⛔ | ✅ S |
 | Zusatzfelder bearbeiten | ✅ R | ✅ R (v5-Logins) | ✅ R ⁵ | ✅ S | ⛔ | ⛔ |
 | TOTP lesen und ändern | ✅ R | ✅ R | ✅ R | ✅ S | ⛔ | 🟡 S (nur lesen) |
@@ -60,10 +60,10 @@ Bitwarden Cloud und Vaultwarden nutzen denselben Provider; gegen bitwarden.com/.
 | Ordner / Tresor anlegen | ✅ R | ✅ R ⁶ | ✅ R | ✅ S | ✅ S | ❌ |
 | Papierkorb: Löschen landet dort | ✅ R | – (endgültig) | – (endgültig) | ✅ S („Zuletzt gelöscht“) | – (endgültig) | ✅ S |
 | Papierkorb in OmniVault anzeigen, wiederherstellen, endgültig löschen | ✅ R | – | – | ⛔ ¹⁷ | – | ❌ (zurückgestellt) |
-| Anhänge herunterladen | ✅ R | – | – | ❌ | ❌ | ❌ |
-| Anhänge hochladen und löschen | ✅ R ¹⁸ | – | – | ❌ | ❌ | ❌ |
-| Passwortverlauf | ✅ R | – | – | ❌ | ❌ | ❌ |
-| Passkeys anzeigen | ✅ R | – ⁹ | – ⁹ | ❌ | ❌ | ✅ S (nur Seite und Benutzer) |
+| Anhänge herunterladen | ✅ R | – | – | ✅ S ¹⁹ | ✅ S ¹⁹ | ✅ S ¹⁹ |
+| Anhänge hochladen und löschen | ✅ R ¹⁸ | – | – | ❌ ²⁰ | ⛔ ²⁰ | ⛔ ²⁰ |
+| Passwortverlauf | ✅ R | – | – | 🟡 S ²¹ | ⛔ ²¹ | ⛔ ²¹ |
+| Passkeys anzeigen | ✅ R | – ⁹ | – ⁹ | ⛔ ²² | ⛔ ²² | ✅ S (nur Seite und Benutzer) |
 | Passkeys auf Webseiten anlegen und damit anmelden, entfernen | ✅ R (Bitwarden-Format, mit den offiziellen Apps austauschbar) | – ⁹ | – ⁹ | ⛔ ¹⁰ | ⛔ ¹⁰ | ⛔ ¹⁰ |
 | Teilen, Rechte ändern, Zugriff entziehen | 🟡 R ⁷ | ✅ R | – | ⛔ | ⛔ | ⛔ |
 | Geteilte Einträge bearbeiten | ✅ R (Organisation) | ✅ R (Geheimnis für alle Leser neu verschlüsselt) | – | 🟡 (wie eigene, ungetestet) | 🟡 (wie eigene, ungetestet) | ❌ |
@@ -74,8 +74,15 @@ Bitwarden Cloud und Vaultwarden nutzen denselben Provider; gegen bitwarden.com/.
 ² Ein frisch installierter Passbolt 5.16 arbeitet mit v4-Ressourcen; Notizen ohne Passwort und Zusatzfelder gibt es
 erst, wenn ein Admin die verschlüsselten Metadaten (v5) einschaltet. Beide Zustände sind gegen den echten Server getestet.
 ³ In pass beginnt jeder Eintrag mit einer Passwortzeile.
-⁴ 1Password: Kartendaten werden gelesen; das Anlegen bräuchte die genauen Feldvorlagen von `op`, die hier nicht gegen
-das echte Programm prüfbar sind.
+⁴ 1Password: Karten und Identitäten werden aus der Kategorievorlage des installierten `op` angelegt
+(`op item template get "Credit Card"` bzw. `"Identity"`, JSON über stdin), so behalten die Felder die IDs, Typen und
+Abschnitte von 1Password; Ablaufdatum als `MONTH_YEAR` im Format JJJJMM. Geschrieben werden Karteninhaber, Nummer,
+Prüfnummer, Ablaufdatum, Name, Firma, Benutzername, E-Mail und Telefon. Den Kartentyp leitet 1Password aus der Nummer
+ab. Die Adresse einer Identität (Feldtyp `ADDRESS`) wird gelesen, lässt sich über `op` aber nicht zuverlässig schreiben
+(Nutzerbericht im 1Password-Forum: Validator verlangt ein Objekt, der Parser einen Text); eine neue Adresse steht
+deshalb in den Notizen, eine Änderung lehnt OmniVault mit Hinweis auf die 1Password-App ab. Die Feld-IDs der Vorlagen
+nennt die 1Password-Doku nicht; das simulierte `op` bildet sie nach, `selftest.py onepassword --write` prüft sie
+gegen das echte Programm.
 ⁵ pass: Zusatzfelder sind `Name: Wert`-Zeilen; pass kennt keine verborgenen Felder.
 ⁶ Passbolt 5.16 lehnt v5-Ordner ab, solange sein Aktionsprotokoll aktiv ist (es verlangt einen Klartextnamen);
 OmniVault legt dann einen einfachen Ordner an, wenn der Server das erlaubt.
@@ -87,6 +94,27 @@ bearbeiten darf, mindestens eine bleibt; geprüft gegen echtes Vaultwarden mit B
 schreibgeschützter Sammlung, gegen bitwarden.com nicht automatisiert). Rechte vergibt die Organisation; das geht
 weiterhin nur in den Bitwarden-Apps. Anhänge im ganz alten Format (ohne eigenen Schlüssel) lehnt OmniVault beim
 Verschieben ab.
+¹⁹ Herunterladen bis 30 MB je Datei, über eine Datei in einem privaten temporären Ordner, nie über die Shell.
+1Password: Dateien an Einträgen mit `op read op://<Tresor-ID>/<Eintrags-ID>/<Datei-ID>` (Dateianhänge über ihren
+Namen bzw. ihre ID adressierbar laut [Secret-Reference-Syntax](https://www.1password.dev/cli/secret-reference-syntax)),
+Dokument-Einträge mit `op document get` ([Doku](https://www.1password.dev/cli/reference/management-commands/document)).
+LastPass: `lpass show` listet Anhänge als `att-<ID>: Dateiname`, `lpass show --attach=att-<ID> --quiet` gibt die Datei
+aus ([lpass.1](https://github.com/lastpass/lastpass-cli/blob/master/lpass.1.txt), Abschnitt Examples). Proton Pass:
+`pass-cli item attachment download --share-id … --item-id … --attachment-id … --output <Datei>` (vorhanden in 2.3.1
+und 2.5.0, [Doku](https://protonpass.github.io/pass-cli/commands/item/)); die Liste kommt aus `item view --output json`.
+²⁰ `lpass` und `pass-cli` (2.5.0) haben keinen Befehl zum Hochladen oder Löschen von Anhängen. `op` kann Dateien per
+Zuweisung `[file]=<Pfad>` anhängen ([Doku](https://www.1password.dev/cli/item-create)); in OmniVault noch nicht umgesetzt.
+²¹ 1Password: `op` gibt den Verlauf nicht dokumentiert aus; laut Nutzerbericht im 1Password-Forum als Liste alter
+Passwörter ohne Zeitpunkt (`password_details.history`). OmniVault zeigt ihn, wenn `op` ihn liefert; ob das echte `op`
+es tut, zeigt `selftest.py`. LastPass: `lpass show --json` enthält nur id, name, fullname, username, password,
+last_modified_gmt, last_touch, share, group, url und note
+([json-format.c](https://github.com/lastpass/lastpass-cli/blob/master/json-format.c)), keinen Verlauf. Proton Pass:
+`pass-cli` 2.5.0 hat keinen Befehl und kein Feld für den Passwortverlauf
+([Doku](https://protonpass.github.io/pass-cli/commands/item/)).
+²² 1Password: Die Doku nennt Passkeys nur mit der Warnung, dass JSON-Vorlagen sie nicht unterstützen und ein
+`op item edit` mit Vorlage einen vorhandenen Passkey überschreibt ([Edit items](https://www.1password.dev/cli/item-edit),
+seit `op` 2.33.1 auch in der Hilfe); in der Ausgabe von `op item get` sind sie nicht dokumentiert. OmniVault warnt im
+Editor vor diesem Verlust. LastPass: `lastpass-cli` kennt keine Passkeys (weder in `show` noch in `--json`).
 ¹⁷ `op` kann „Zuletzt gelöscht“ weder auflisten noch wiederherstellen; das geht laut 1Password-Doku nur in den
 1Password-Apps (geprüft 20.10.2026). Gelöschte Einträge bleiben dort 30 Tage.
 ¹⁸ Wie in den offiziellen Apps: eigener Schlüssel je Datei, mit dem Eintrags- bzw. Organisationsschlüssel verschlüsselt;
