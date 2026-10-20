@@ -725,6 +725,24 @@ const handlers = {
     return { fileName: res.fileName, data: res.data };
   },
 
+  async addAttachment({ accountId, itemId, fileName, data }) {
+    const { item } = await findItem(accountId, itemId);
+    const res = await write(accountId, (p, a, s) => {
+      if (!p.uploadAttachment) throw new Error(t('Anhänge hochladen wird für diesen Anbieter nicht unterstützt'));
+      return p.uploadAttachment(cfg(a), s, item, { fileName, data });
+    });
+    return fullItem(res.item);
+  },
+
+  async deleteAttachment({ accountId, itemId, attachmentId }) {
+    const { item } = await findItem(accountId, itemId);
+    const res = await write(accountId, (p, a, s) => {
+      if (!p.deleteAttachment) throw new Error(t('Anhänge löschen wird für diesen Anbieter nicht unterstützt'));
+      return p.deleteAttachment(cfg(a), s, item, attachmentId);
+    });
+    return fullItem(res.item);
+  },
+
   async createFolder({ accountId, name }) {
     const account = await store.getAccount(accountId);
     if (!getProvider(account.provider).capabilities?.createFolder) throw new Error(t('Dieser Anbieter kann keine Ordner anlegen'));

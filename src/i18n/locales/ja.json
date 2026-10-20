@@ -776,5 +776,22 @@
  "Bitte mindestens eine Sammlung wählen.": "コレクションを1つ以上選択してください。",
  "Der Eintrag gehört bereits einer Organisation.": "この項目はすでに組織に属しています。",
  "Schlüssel der Organisation fehlt": "組織のキーがありません",
- "Dieser Eintrag hat Anhänge im alten Format. Bitte in einer Bitwarden-App in die Organisation verschieben.": "この項目には古い形式の添付ファイルがあります。Bitwarden アプリで組織に移動してください。"
+ "Dieser Eintrag hat Anhänge im alten Format. Bitte in einer Bitwarden-App in die Organisation verschieben.": "この項目には古い形式の添付ファイルがあります。Bitwarden アプリで組織に移動してください。",
+ "Anhänge hochladen wird für diesen Anbieter nicht unterstützt": "このプロバイダーは添付ファイルのアップロードに対応していません",
+ "Anhänge löschen wird für diesen Anbieter nicht unterstützt": "このプロバイダーは添付ファイルの削除に対応していません",
+ "{name} löschen": "{name} を削除",
+ "Anhang „{name}“ endgültig löschen?": "添付ファイル「{name}」を完全に削除しますか？",
+ "Anhang gelöscht": "添付ファイルを削除しました",
+ "Die Datei ist zu groß (höchstens {n} MB).": "ファイルが大きすぎます（最大 {n} MB）。",
+ "Lade {name} hoch …": "{name} をアップロードしています…",
+ "{name} hochgeladen": "{name} をアップロードしました",
+ "Zugriff erteilt – jetzt die Datei wählen.": "アクセスが許可されました。ファイルを選択してください。",
+ "Ohne Zugriff auf Bitwardens Dateispeicher lassen sich keine Anhänge hochladen.": "Bitwarden のファイルストレージへのアクセスがないと、添付ファイルをアップロードできません。",
+ "Anhang hinzufügen …": "添付ファイルを追加…",
+ "Bitwardens Dateispeicher ist nicht erreichbar: {error}": "Bitwarden のファイルストレージに接続できません: {error}",
+ "Anhang konnte nicht hochgeladen werden (HTTP {status}).": "添付ファイルをアップロードできませんでした（HTTP {status}）。",
+ "Dieser Eintrag kann nicht bearbeitet werden.": "このアイテムは編集できません。",
+ "Der Anhang braucht einen Dateinamen.": "添付ファイルにはファイル名が必要です。",
+ "Der Server hat keinen Platz für den Anhang angelegt.": "サーバーが添付ファイルの保存先を用意しませんでした。",
+ "Unbekannte Upload-Art des Servers ({type}).": "サーバーのアップロード方式が不明です（{type}）。"
 }

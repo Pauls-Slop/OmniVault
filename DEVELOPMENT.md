@@ -35,7 +35,7 @@ npm run test:cli     # pass (echtes pass + gpg), 1Password und LastPass (simulie
 npm run test:e2e     # Erweiterung in Chromium: Popup als Tab, eigenes Fenster (Playwright)
 npm run test:popup   # echtes Toolbar-Popup über CDP; mit `xvfb-run -a` sichtbar statt headless
 npm run test:proton  # Proton Pass: Chromium → Native Messaging → Host → simuliertes pass-cli
-npm run test:vaultwarden  # startet ein lokales Vaultwarden und testet Provider, Werkzeuge, Import und das Verschieben in Organisationen dagegen
+npm run test:vaultwarden  # startet ein lokales Vaultwarden und testet Provider, Werkzeuge, Import, Anhänge und das Verschieben in Organisationen dagegen
 npm run test:passbolt     # richtet einen lokalen Passbolt CE ein (PostgreSQL) und testet Provider und Teilen dagegen
 npm run test:inline       # Knopf im Anmeldefeld, „Login speichern?“, Karten ausfüllen
 npm run test:i18n         # Sprachen: Browsersprache, Sprachwahl, alle Ansichten in allen Sprachen + Pseudosprache

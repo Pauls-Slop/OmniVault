@@ -175,6 +175,41 @@ export async function apiKeyGrant(ep, { clientId, clientSecret, deviceId, device
   throw new ProviderError(/invalid_client/i.test(msg) ? t('client_id oder client_secret falsch') : t('Anmeldung mit API-Schlüssel fehlgeschlagen: {msg}', { msg }), 'bad_password');
 }
 
+/**
+ * Authorized multipart upload of an encrypted file to the API server (direct uploads, e.g. Vaultwarden and
+ * self-hosted Bitwarden). Returns { unauthorized } on 401.
+ */
+export async function authedUpload(ep, token, path, fileName, bytes) {
+  const form = new FormData();
+  form.append('data', new Blob([bytes], { type: 'application/octet-stream' }), fileName);
+  const r = await request(`${ep.api}${path}`, { method: 'POST', headers: { Authorization: `Bearer ${token}`, ...clientHeaders() }, body: form });
+  if (r.status === 401) return { unauthorized: true };
+  if (!r.ok) {
+    const msg = r.body?.message || r.body?.errorModel?.message || r.text || `HTTP ${r.status}`;
+    throw new ProviderError(t('Bitwarden: {msg}', { msg }), 'server');
+  }
+  return { body: r.body };
+}
+
+/** Origin pattern of the cloud file storage (Bitwarden.com/.eu keep attachments in Azure Blob Storage). */
+export const AZURE_BLOB_ORIGINS = ['https://*.blob.core.windows.net/*'];
+
+/** Uploads an encrypted file to the signed Azure Blob URL the server handed out (single PUT, like the apps). */
+export async function azureUpload(url, bytes) {
+  const version = new URL(url).searchParams.get('sv') || '2020-04-08';
+  let res;
+  try {
+    res = await fetch(url, {
+      method: 'PUT',
+      headers: { 'x-ms-date': new Date().toUTCString(), 'x-ms-version': version, 'x-ms-blob-type': 'BlockBlob' },
+      body: bytes,
+    });
+  } catch (e) {
+    throw new ProviderError(t('Bitwardens Dateispeicher ist nicht erreichbar: {error}', { error: e.message }), 'network');
+  }
+  if (!res.ok) throw new ProviderError(t('Anhang konnte nicht hochgeladen werden (HTTP {status}).', { status: res.status }), 'server');
+}
+
 /** Authorized JSON call against the API server. Returns { unauthorized } on 401. */
 export async function authed(ep, token, method, path, body) {
   const r = await request(`${ep.api}${path}`, {

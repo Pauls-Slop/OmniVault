@@ -4,6 +4,7 @@
 // Popup entry point: header actions, target tab, wiring of all views.
 import { ext } from '../lib/browser.js';
 import { initAccounts, openAccountForm, renderAccounts, resumeAccountStep } from './accounts.js';
+import { openItem } from './detail.js';
 import { openEditor } from './editor.js';
 import { openGenerator } from './generator.js';
 import { initList, renderItems } from './list.js';
@@ -209,7 +210,10 @@ if (windowed) {
   $('#search').focus();
   const r = await takeResume();
   if (r?.view === 'settings') await resumeSetting(r);
-  else if (r) await resumeAccountStep(r);
+  else if (r?.view === 'item') { // asked for the cloud file storage while adding an attachment
+    await openItem(r.accountId, r.itemId);
+    toast(r.granted ? t('Zugriff erteilt – jetzt die Datei wählen.') : t('Ohne Zugriff auf Bitwardens Dateispeicher lassen sich keine Anhänge hochladen.'));
+  } else if (r) await resumeAccountStep(r);
   else if (location.hash === '#settings') { // reloaded after a language change
     history.replaceState(null, '', location.pathname + location.search);
     await openSettings();

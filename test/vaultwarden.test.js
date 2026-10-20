@@ -150,6 +150,51 @@ test('real Vaultwarden: attachments are listed, downloaded and decrypted', opts,
   keep(await BitwardenProvider.deleteItem(config, session, withFile));
 });
 
+test('real Vaultwarden: upload and delete attachments through OmniVault', opts, async () => {
+  let session = await login();
+  const keep = (r) => { if (r?.session) session = r.session; return r; };
+  const { item } = keep(await BitwardenProvider.saveItem(config, session, null, { type: 'login', name: 'Upload', username: 'u', password: 'p' }));
+  const bytes = new Uint8Array(70_000).map((_, i) => (i * 31) % 256); // binary, larger than one AES block chain chunk
+  const up = keep(await BitwardenProvider.uploadAttachment(config, session, item, { fileName: 'scan ä.bin', data: Buffer.from(bytes).toString('base64') }));
+  assert.deepEqual(up.item.attachments.map((a) => a.fileName), ['scan ä.bin']);
+  assert.equal(up.item.password, 'p', 'the item itself still decrypts');
+
+  // what a fresh sync sees, and the download decrypts to the same bytes
+  let { items } = keep(await BitwardenProvider.sync(config, session));
+  let synced = items.find((i) => i.id === item.id);
+  assert.equal(synced.attachments.length, 1);
+  const dl = keep(await BitwardenProvider.downloadAttachment(config, session, synced, synced.attachments[0].id));
+  assert.equal(dl.fileName, 'scan ä.bin');
+  assert.deepEqual(new Uint8Array(fromB64(dl.data)), bytes);
+
+  // a second file, uploaded to the item as returned by the first upload (no sync in between)
+  const two = keep(await BitwardenProvider.uploadAttachment(config, session, up.item, { fileName: 'b.txt', data: Buffer.from('zwei').toString('base64') }));
+  assert.deepEqual(two.item.attachments.map((a) => a.fileName).sort(), ['b.txt', 'scan ä.bin']);
+
+  // delete one; the other stays and still downloads
+  const first = two.item.attachments.find((a) => a.fileName === 'scan ä.bin');
+  const del = keep(await BitwardenProvider.deleteAttachment(config, session, two.item, first.id));
+  assert.deepEqual(del.item.attachments.map((a) => a.fileName), ['b.txt']);
+  ({ items } = keep(await BitwardenProvider.sync(config, session)));
+  synced = items.find((i) => i.id === item.id);
+  assert.deepEqual(synced.attachments.map((a) => a.fileName), ['b.txt']);
+  const dl2 = keep(await BitwardenProvider.downloadAttachment(config, session, synced, synced.attachments[0].id));
+  assert.equal(Buffer.from(fromB64(dl2.data)).toString(), 'zwei');
+  await assert.rejects(BitwardenProvider.deleteAttachment(config, session, synced, first.id), (e) => e.code === 'not_found');
+
+  // organization item: the file key is wrapped with the organization's key
+  const wiki = items.find((i) => i.name === 'Team-Wiki');
+  const org = keep(await BitwardenProvider.uploadAttachment(config, session, wiki, { fileName: 'team.txt', data: Buffer.from('für alle').toString('base64') }));
+  const orgFile = org.item.attachments.find((a) => a.fileName === 'team.txt');
+  assert.ok(orgFile);
+  ({ items } = keep(await BitwardenProvider.sync(config, session)));
+  const wikiSynced = items.find((i) => i.id === wiki.id);
+  const dl3 = keep(await BitwardenProvider.downloadAttachment(config, session, wikiSynced, orgFile.id));
+  assert.equal(Buffer.from(fromB64(dl3.data)).toString(), 'für alle');
+  keep(await BitwardenProvider.deleteAttachment(config, session, wikiSynced, orgFile.id));
+  keep(await BitwardenProvider.deleteItem(config, session, synced));
+});
+
 test('real Vaultwarden: edit an organization item', opts, async () => {
   let session = await login();
   let { items, session: s } = await BitwardenProvider.sync(config, session);

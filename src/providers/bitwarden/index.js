@@ -11,7 +11,7 @@ import { Provider, ProviderError } from '../provider.js';
 import * as api from './api.js';
 import {
   decryptBuffer, decryptKey, decryptRsa, decryptSym, decryptSymString, decryptUserKey,
-  deriveMasterKey, encryptSym, keyBytes, masterPasswordHash, openCose, splitKey,
+  deriveMasterKey, encryptBuffer, encryptSym, keyBytes, masterPasswordHash, openCose, splitKey,
 } from './crypto.js';
 
 /** Item types inside an encryption-v2 cipher blob (typeData.type) → Bitwarden's cipher type numbers. */
@@ -127,7 +127,7 @@ class BitwardenProvider extends Provider {
   static status = 'ready';
   static unlockLabel = mark('Master-Passwort');
   static unlockOptions = ['apikey'];
-  static capabilities = { write: true, types: ['login', 'note', 'card', 'identity'], fields: true, createFolder: true, trash: true, restore: true, attachments: true, passkeys: true, organizations: true };
+  static capabilities = { write: true, types: ['login', 'note', 'card', 'identity'], fields: true, createFolder: true, trash: true, restore: true, attachments: true, attachmentUpload: true, passkeys: true, organizations: true };
   static configFields = [
     {
       // Bitwarden runs exactly two cloud regions; anything else is self-hosted (incl. Vaultwarden).
@@ -534,6 +534,63 @@ class BitwardenProvider extends Provider {
     const key = meta.key ? await decryptKey(meta.key, itemKey) : itemKey;
     const data = await decryptBuffer(await res.arrayBuffer(), key);
     return { fileName: (await decryptSymString(meta.fileName, itemKey).catch(() => '')) || t('Anhang'), data: b64(data), session: s };
+  }
+
+  /**
+   * Adds a file to an item like the official apps: a fresh 64-byte file key encrypts the file (EncArrayBuffer); the
+   * key and the file name are encrypted with the item key (or, for items without one, the user/organization key).
+   * The server then hands out where the encrypted file goes: to itself (Vaultwarden, self-hosted) or to a signed
+   * Azure Blob URL (bitwarden.com/.eu). `data` is the plain file as base64.
+   */
+  static async uploadAttachment(config, session, existing, { fileName, data }) {
+    this.#assertWritable(session);
+    if (existing.canEdit === false) throw new ProviderError(t('Dieser Eintrag kann nicht bearbeitet werden.'), 'readonly');
+    const name = String(fileName ?? '').trim();
+    if (!name) throw new ProviderError(t('Der Anhang braucht einen Dateinamen.'), 'config');
+    const ep = api.endpoints(config.server);
+    const wrapKey = splitKey(fromB64(existing._key));
+    const fileKey = globalThis.crypto.getRandomValues(new Uint8Array(64));
+    const encFile = await encryptBuffer(fromB64(data), splitKey(fileKey));
+    let s = session;
+    const renew = (r) => { if (r.session) s = r.session; return r.result; };
+    const request = {
+      key: await encryptSym(fileKey, wrapKey), fileName: await encryptSym(name, wrapKey), fileSize: encFile.length,
+      adminRequest: false, lastKnownRevisionDate: existing._raw?.revisionDate ?? null,
+    };
+    const meta = renew(await this.#withToken(ep, s, (token) => api.authed(ep, token, 'POST', `/ciphers/${existing.id}/attachment/v2`, request))).body;
+    if (!meta?.attachmentId) throw new ProviderError(t('Der Server hat keinen Platz für den Anhang angelegt.'), 'server');
+    try {
+      if (meta.fileUploadType === 1) {
+        await api.azureUpload(meta.url, encFile);
+      } else if (meta.fileUploadType === 0 || meta.fileUploadType == null) {
+        renew(await this.#withToken(ep, s, (token) => api.authedUpload(ep, token, `/ciphers/${existing.id}/attachment/${meta.attachmentId}`, name, encFile)));
+      } else {
+        throw new ProviderError(t('Unbekannte Upload-Art des Servers ({type}).', { type: meta.fileUploadType }), 'unsupported');
+      }
+    } catch (e) {
+      // don't leave an empty attachment entry behind
+      await this.#withToken(ep, s, (token) => api.authed(ep, token, 'DELETE', `/ciphers/${existing.id}/attachment/${meta.attachmentId}`)).catch(() => {});
+      throw e;
+    }
+    return this.#reloadItem(config, ep, s, session, existing);
+  }
+
+  /** Removes one attachment from an item for good (Bitwarden has no trash for attachments). */
+  static async deleteAttachment(config, session, existing, attachmentId) {
+    this.#assertWritable(session);
+    if (existing.canEdit === false) throw new ProviderError(t('Dieser Eintrag kann nicht bearbeitet werden.'), 'readonly');
+    if (!existing._raw?.attachments?.some((a) => a.id === attachmentId)) throw new ProviderError(t('Anhang nicht gefunden'), 'not_found');
+    const ep = api.endpoints(config.server);
+    const { session: renewed } = await this.#withToken(ep, session, (token) => api.authed(ep, token, 'DELETE', `/ciphers/${existing.id}/attachment/${attachmentId}`));
+    return this.#reloadItem(config, ep, renewed ?? session, session, existing);
+  }
+
+  /** Fetches an item again after a change the server answers without the full cipher. */
+  static async #reloadItem(config, ep, s, original, existing) {
+    const { result, session: renewed } = await this.#withToken(ep, s, (token) => api.authed(ep, token, 'GET', `/ciphers/${existing.id}`));
+    if (renewed) s = renewed;
+    const saved = await this.#decryptAfterWrite(result.body, config, s, existing);
+    return { item: { ...saved, folder: existing.folder }, session: s !== original ? s : undefined };
   }
 
   static async createFolder(config, session, { name }) {

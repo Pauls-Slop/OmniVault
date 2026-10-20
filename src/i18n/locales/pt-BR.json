@@ -805,5 +805,22 @@
  "Bitte mindestens eine Sammlung wählen.": "Escolha pelo menos uma coleção.",
  "Der Eintrag gehört bereits einer Organisation.": "Este item já pertence a uma organização.",
  "Schlüssel der Organisation fehlt": "A chave da organização está faltando",
- "Dieser Eintrag hat Anhänge im alten Format. Bitte in einer Bitwarden-App in die Organisation verschieben.": "Este item tem anexos em um formato antigo. Mova-o para a organização em um app do Bitwarden."
+ "Dieser Eintrag hat Anhänge im alten Format. Bitte in einer Bitwarden-App in die Organisation verschieben.": "Este item tem anexos em um formato antigo. Mova-o para a organização em um app do Bitwarden.",
+ "Anhänge hochladen wird für diesen Anbieter nicht unterstützt": "Este provedor não permite enviar anexos",
+ "Anhänge löschen wird für diesen Anbieter nicht unterstützt": "Este provedor não permite excluir anexos",
+ "{name} löschen": "Excluir {name}",
+ "Anhang „{name}“ endgültig löschen?": "Excluir o anexo “{name}” permanentemente?",
+ "Anhang gelöscht": "Anexo excluído",
+ "Die Datei ist zu groß (höchstens {n} MB).": "O arquivo é grande demais (máximo de {n} MB).",
+ "Lade {name} hoch …": "Enviando {name} …",
+ "{name} hochgeladen": "{name} enviado",
+ "Zugriff erteilt – jetzt die Datei wählen.": "Acesso concedido – agora escolha o arquivo.",
+ "Ohne Zugriff auf Bitwardens Dateispeicher lassen sich keine Anhänge hochladen.": "Sem acesso ao armazenamento de arquivos do Bitwarden, não é possível enviar anexos.",
+ "Anhang hinzufügen …": "Adicionar anexo …",
+ "Bitwardens Dateispeicher ist nicht erreichbar: {error}": "Não foi possível acessar o armazenamento de arquivos do Bitwarden: {error}",
+ "Anhang konnte nicht hochgeladen werden (HTTP {status}).": "Não foi possível enviar o anexo (HTTP {status}).",
+ "Dieser Eintrag kann nicht bearbeitet werden.": "Este item não pode ser editado.",
+ "Der Anhang braucht einen Dateinamen.": "O anexo precisa de um nome de arquivo.",
+ "Der Server hat keinen Platz für den Anhang angelegt.": "O servidor não reservou espaço para o anexo.",
+ "Unbekannte Upload-Art des Servers ({type}).": "Tipo de envio desconhecido informado pelo servidor ({type})."
 }

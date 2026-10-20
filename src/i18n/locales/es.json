@@ -805,5 +805,22 @@
  "Bitte mindestens eine Sammlung wählen.": "Elige al menos una colección.",
  "Der Eintrag gehört bereits einer Organisation.": "Este elemento ya pertenece a una organización.",
  "Schlüssel der Organisation fehlt": "Falta la clave de la organización",
- "Dieser Eintrag hat Anhänge im alten Format. Bitte in einer Bitwarden-App in die Organisation verschieben.": "Este elemento tiene archivos adjuntos en un formato antiguo. Muévelo a la organización desde una app de Bitwarden."
+ "Dieser Eintrag hat Anhänge im alten Format. Bitte in einer Bitwarden-App in die Organisation verschieben.": "Este elemento tiene archivos adjuntos en un formato antiguo. Muévelo a la organización desde una app de Bitwarden.",
+ "Anhänge hochladen wird für diesen Anbieter nicht unterstützt": "Este proveedor no permite subir archivos adjuntos",
+ "Anhänge löschen wird für diesen Anbieter nicht unterstützt": "Este proveedor no permite eliminar archivos adjuntos",
+ "{name} löschen": "Eliminar {name}",
+ "Anhang „{name}“ endgültig löschen?": "¿Eliminar definitivamente el archivo adjunto «{name}»?",
+ "Anhang gelöscht": "Archivo adjunto eliminado",
+ "Die Datei ist zu groß (höchstens {n} MB).": "El archivo es demasiado grande (máximo {n} MB).",
+ "Lade {name} hoch …": "Subiendo {name} …",
+ "{name} hochgeladen": "{name} subido",
+ "Zugriff erteilt – jetzt die Datei wählen.": "Acceso concedido: ahora elige el archivo.",
+ "Ohne Zugriff auf Bitwardens Dateispeicher lassen sich keine Anhänge hochladen.": "Sin acceso al almacenamiento de archivos de Bitwarden no se pueden subir archivos adjuntos.",
+ "Anhang hinzufügen …": "Añadir archivo adjunto …",
+ "Bitwardens Dateispeicher ist nicht erreichbar: {error}": "No se puede acceder al almacenamiento de archivos de Bitwarden: {error}",
+ "Anhang konnte nicht hochgeladen werden (HTTP {status}).": "No se pudo subir el archivo adjunto (HTTP {status}).",
+ "Dieser Eintrag kann nicht bearbeitet werden.": "Este elemento no se puede editar.",
+ "Der Anhang braucht einen Dateinamen.": "El archivo adjunto necesita un nombre de archivo.",
+ "Der Server hat keinen Platz für den Anhang angelegt.": "El servidor no ha preparado un espacio para el archivo adjunto.",
+ "Unbekannte Upload-Art des Servers ({type}).": "Tipo de subida desconocido del servidor ({type})."
 }

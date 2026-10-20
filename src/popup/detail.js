@@ -2,7 +2,10 @@
 // If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 // Copyright (c) 2026 Die OmniVault-Mitwirkenden
 // Item detail view: every field of every item type, copy/reveal, live TOTP.
+import { ext } from '../lib/browser.js';
 import { totp } from '../lib/totp.js';
+import { AZURE_BLOB_ORIGINS, endpoints } from '../providers/bitwarden/api.js';
+import { requestPermissions } from './resume.js';
 import { openEditor } from './editor.js';
 import { fillItem, hostOf } from './list.js';
 import { openMenu } from './menu.js';
@@ -192,15 +195,7 @@ export async function openItem(accountId, itemId) {
     el('div', { className: 'detail-sub' }, [TYPE_LABEL[i.type], i.folder, i.accountLabel, i.uris?.[0] ? hostOf(i.uris[0]) : null].filter(Boolean).join(' · ')),
     el('div', { className: 'fields' }, typeFields(i), (i.passkeys ?? []).map((p) => passkeyField(i, p, caps.passkeys && canWrite))),
     history,
-    i.attachments?.length ? el('details', { className: 'history', open: true },
-      el('summary', {}, t('Anhänge ({n})', { n: i.attachments.length })),
-      el('div', { className: 'fields' }, i.attachments.map((a) => el('div', { className: 'field' },
-        el('span', { className: 'k' }, a.size ? t('{n} KB', { n: Math.max(1, Math.round(a.size / 1024)) }) : t('Anhang')),
-        el('div', { className: 'v plain' }, a.fileName),
-        el('div', { className: 'tools' }, iconButton('download', t('Herunterladen'), {
-          'aria-label': t('{name} herunterladen', { name: a.fileName }),
-          onclick: () => downloadAttachment(accountId, itemId, a.id).catch((e) => toast(e.message)),
-        })))))) : null,
+    attachmentSection(i, accountId, itemId, canWrite && caps.attachmentUpload),
     i.revisionDate ? el('p', { className: 'hint' }, t('Zuletzt geändert: {date}', { date: formatDateTime(i.revisionDate) })) : null,
     el('div', { className: 'row actions' },
       el('button', { type: 'button', className: 'secondary', onclick: () => back() }, t('Zurück')),
@@ -237,6 +232,86 @@ export async function openItem(accountId, itemId) {
         ? el('button', { type: 'button', onclick: () => fillItem(listItem).catch((e) => toast(e.message)) }, t('Ausfüllen')) : null),
   ].filter(Boolean));
   show('item', { restore: () => openItem(accountId, itemId) });
+}
+
+/** Largest file OmniVault uploads (it travels base64-encoded between popup and background). */
+const MAX_UPLOAD_MB = 30;
+
+/** Attachments of an item: download each; with write access also add and delete. */
+function attachmentSection(i, accountId, itemId, writable) {
+  const list = i.attachments ?? [];
+  if (!list.length && !writable) return null;
+  const reopen = async () => { await refresh(); await openItem(accountId, itemId); };
+  return el('details', { className: 'history', open: true },
+    el('summary', {}, t('Anhänge ({n})', { n: list.length })),
+    el('div', { className: 'fields' }, list.map((a) => el('div', { className: 'field' },
+      el('span', { className: 'k' }, a.size ? t('{n} KB', { n: Math.max(1, Math.round(a.size / 1024)) }) : t('Anhang')),
+      el('div', { className: 'v plain' }, a.fileName),
+      el('div', { className: 'tools' },
+        iconButton('download', t('Herunterladen'), {
+          'aria-label': t('{name} herunterladen', { name: a.fileName }),
+          onclick: () => downloadAttachment(accountId, itemId, a.id).catch((e) => toast(e.message)),
+        }),
+        writable ? iconButton('trash', t('Löschen'), {
+          'aria-label': t('{name} löschen', { name: a.fileName }),
+          onclick: async () => {
+            if (!await ask(t('Anhang „{name}“ endgültig löschen?', { name: a.fileName }), { ok: t('Löschen'), danger: true })) return;
+            try {
+              await call('deleteAttachment', { accountId, itemId, attachmentId: a.id });
+              toast(t('Anhang gelöscht'));
+              await reopen();
+            } catch (e) { toast(e.message); }
+          },
+        }) : null)))),
+    writable ? uploadButton(accountId, itemId, reopen) : null);
+}
+
+/**
+ * „Add attachment“. Bitwarden's cloud keeps files in Azure Blob Storage, which needs its own host permission;
+ * it is asked for on the first upload (the prompt may close the popup – it reopens on this item).
+ */
+function uploadButton(accountId, itemId, reopen) {
+  const server = accountOf(accountId)?.server;
+  const cloud = /\.bitwarden\.(com|eu)$/.test(new URL(endpoints(server).api).hostname);
+  const file = el('input', {
+    type: 'file', hidden: true,
+    onchange: async () => {
+      const f = file.files?.[0];
+      file.value = '';
+      if (!f) return;
+      if (f.size > MAX_UPLOAD_MB * 1024 * 1024) { toast(t('Die Datei ist zu groß (höchstens {n} MB).', { n: MAX_UPLOAD_MB })); return; }
+      toast(t('Lade {name} hoch …', { name: f.name }), 120_000);
+      try {
+        const data = await fileToBase64(f);
+        await call('addAttachment', { accountId, itemId, fileName: f.name, data });
+        toast(t('{name} hochgeladen', { name: f.name }));
+        await reopen();
+      } catch (e) { toast(e.message); }
+    },
+  });
+  let granted = !cloud;
+  const button = el('button', {
+    type: 'button', className: 'secondary',
+    onclick: () => {
+      if (granted) { file.click(); return; }
+      requestPermissions({ origins: AZURE_BLOB_ORIGINS }, { view: 'item', accountId, itemId }).then((ok) => {
+        granted = ok;
+        toast(ok ? t('Zugriff erteilt – jetzt die Datei wählen.') : t('Ohne Zugriff auf Bitwardens Dateispeicher lassen sich keine Anhänge hochladen.'));
+      }).catch((e) => toast(e.message));
+    },
+  }, t('Anhang hinzufügen …'));
+  if (cloud) ext.permissions.contains({ origins: AZURE_BLOB_ORIGINS }).then((ok) => { granted = ok; }).catch(() => {});
+  return el('div', { className: 'row' }, button, file);
+}
+
+/** Reads a file as base64 without building a huge intermediate string. */
+function fileToBase64(f) {
+  return new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve(String(r.result).slice(String(r.result).indexOf(',') + 1));
+    r.onerror = () => reject(new Error(t('Datei konnte nicht gelesen werden.')));
+    r.readAsDataURL(f);
+  });
 }
 
 /** Decrypts an attachment in the background and hands it to the browser as a download. */

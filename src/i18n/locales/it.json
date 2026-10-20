@@ -805,5 +805,22 @@
  "Bitte mindestens eine Sammlung wählen.": "Scegli almeno una raccolta.",
  "Der Eintrag gehört bereits einer Organisation.": "Questo elemento appartiene già a un'organizzazione.",
  "Schlüssel der Organisation fehlt": "Manca la chiave dell'organizzazione",
- "Dieser Eintrag hat Anhänge im alten Format. Bitte in einer Bitwarden-App in die Organisation verschieben.": "Questo elemento ha allegati in un formato vecchio. Spostalo nell'organizzazione da un'app Bitwarden."
+ "Dieser Eintrag hat Anhänge im alten Format. Bitte in einer Bitwarden-App in die Organisation verschieben.": "Questo elemento ha allegati in un formato vecchio. Spostalo nell'organizzazione da un'app Bitwarden.",
+ "Anhänge hochladen wird für diesen Anbieter nicht unterstützt": "Questo provider non consente di caricare allegati",
+ "Anhänge löschen wird für diesen Anbieter nicht unterstützt": "Questo provider non consente di eliminare allegati",
+ "{name} löschen": "Elimina {name}",
+ "Anhang „{name}“ endgültig löschen?": "Eliminare definitivamente l’allegato «{name}»?",
+ "Anhang gelöscht": "Allegato eliminato",
+ "Die Datei ist zu groß (höchstens {n} MB).": "Il file è troppo grande (massimo {n} MB).",
+ "Lade {name} hoch …": "Caricamento di {name} …",
+ "{name} hochgeladen": "{name} caricato",
+ "Zugriff erteilt – jetzt die Datei wählen.": "Accesso concesso: ora scegli il file.",
+ "Ohne Zugriff auf Bitwardens Dateispeicher lassen sich keine Anhänge hochladen.": "Senza accesso all’archivio file di Bitwarden non è possibile caricare allegati.",
+ "Anhang hinzufügen …": "Aggiungi allegato …",
+ "Bitwardens Dateispeicher ist nicht erreichbar: {error}": "L’archivio file di Bitwarden non è raggiungibile: {error}",
+ "Anhang konnte nicht hochgeladen werden (HTTP {status}).": "Impossibile caricare l’allegato (HTTP {status}).",
+ "Dieser Eintrag kann nicht bearbeitet werden.": "Questo elemento non può essere modificato.",
+ "Der Anhang braucht einen Dateinamen.": "L’allegato deve avere un nome file.",
+ "Der Server hat keinen Platz für den Anhang angelegt.": "Il server non ha predisposto uno spazio per l’allegato.",
+ "Unbekannte Upload-Art des Servers ({type}).": "Tipo di caricamento del server sconosciuto ({type})."
 }

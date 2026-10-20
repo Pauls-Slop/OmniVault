@@ -805,5 +805,22 @@
  "Bitte mindestens eine Sammlung wählen.": "Please choose at least one collection.",
  "Der Eintrag gehört bereits einer Organisation.": "This item already belongs to an organization.",
  "Schlüssel der Organisation fehlt": "The organization's key is missing",
- "Dieser Eintrag hat Anhänge im alten Format. Bitte in einer Bitwarden-App in die Organisation verschieben.": "This item has attachments in an old format. Please move it to the organization in a Bitwarden app."
+ "Dieser Eintrag hat Anhänge im alten Format. Bitte in einer Bitwarden-App in die Organisation verschieben.": "This item has attachments in an old format. Please move it to the organization in a Bitwarden app.",
+ "Anhänge hochladen wird für diesen Anbieter nicht unterstützt": "This provider doesn't support uploading attachments",
+ "Anhänge löschen wird für diesen Anbieter nicht unterstützt": "This provider doesn't support deleting attachments",
+ "{name} löschen": "Delete {name}",
+ "Anhang „{name}“ endgültig löschen?": "Delete the attachment “{name}” permanently?",
+ "Anhang gelöscht": "Attachment deleted",
+ "Die Datei ist zu groß (höchstens {n} MB).": "The file is too large (maximum {n} MB).",
+ "Lade {name} hoch …": "Uploading {name} …",
+ "{name} hochgeladen": "{name} uploaded",
+ "Zugriff erteilt – jetzt die Datei wählen.": "Access granted – now choose the file.",
+ "Ohne Zugriff auf Bitwardens Dateispeicher lassen sich keine Anhänge hochladen.": "Without access to Bitwarden's file storage, attachments can't be uploaded.",
+ "Anhang hinzufügen …": "Add attachment …",
+ "Bitwardens Dateispeicher ist nicht erreichbar: {error}": "Can't reach Bitwarden's file storage: {error}",
+ "Anhang konnte nicht hochgeladen werden (HTTP {status}).": "The attachment couldn't be uploaded (HTTP {status}).",
+ "Dieser Eintrag kann nicht bearbeitet werden.": "This item can't be edited.",
+ "Der Anhang braucht einen Dateinamen.": "The attachment needs a file name.",
+ "Der Server hat keinen Platz für den Anhang angelegt.": "The server didn't set up a place for the attachment.",
+ "Unbekannte Upload-Art des Servers ({type}).": "Unknown upload type from the server ({type})."
 }

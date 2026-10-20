@@ -776,5 +776,22 @@
  "Bitte mindestens eine Sammlung wählen.": "请至少选择一个集合。",
  "Der Eintrag gehört bereits einer Organisation.": "该项目已属于某个组织。",
  "Schlüssel der Organisation fehlt": "缺少组织密钥",
- "Dieser Eintrag hat Anhänge im alten Format. Bitte in einer Bitwarden-App in die Organisation verschieben.": "该项目包含旧格式的附件。请在 Bitwarden 应用中将其移至组织。"
+ "Dieser Eintrag hat Anhänge im alten Format. Bitte in einer Bitwarden-App in die Organisation verschieben.": "该项目包含旧格式的附件。请在 Bitwarden 应用中将其移至组织。",
+ "Anhänge hochladen wird für diesen Anbieter nicht unterstützt": "此提供商不支持上传附件",
+ "Anhänge löschen wird für diesen Anbieter nicht unterstützt": "此提供商不支持删除附件",
+ "{name} löschen": "删除 {name}",
+ "Anhang „{name}“ endgültig löschen?": "要永久删除附件“{name}”吗？",
+ "Anhang gelöscht": "附件已删除",
+ "Die Datei ist zu groß (höchstens {n} MB).": "文件太大（最大 {n} MB）。",
+ "Lade {name} hoch …": "正在上传 {name}…",
+ "{name} hochgeladen": "已上传 {name}",
+ "Zugriff erteilt – jetzt die Datei wählen.": "已授予访问权限，现在请选择文件。",
+ "Ohne Zugriff auf Bitwardens Dateispeicher lassen sich keine Anhänge hochladen.": "没有访问 Bitwarden 文件存储的权限，无法上传附件。",
+ "Anhang hinzufügen …": "添加附件…",
+ "Bitwardens Dateispeicher ist nicht erreichbar: {error}": "无法连接 Bitwarden 文件存储：{error}",
+ "Anhang konnte nicht hochgeladen werden (HTTP {status}).": "无法上传附件（HTTP {status}）。",
+ "Dieser Eintrag kann nicht bearbeitet werden.": "此条目无法编辑。",
+ "Der Anhang braucht einen Dateinamen.": "附件需要文件名。",
+ "Der Server hat keinen Platz für den Anhang angelegt.": "服务器未为附件分配存储位置。",
+ "Unbekannte Upload-Art des Servers ({type}).": "服务器返回了未知的上传方式（{type}）。"
 }

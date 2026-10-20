@@ -61,6 +61,7 @@ Bitwarden Cloud und Vaultwarden nutzen denselben Provider; gegen bitwarden.com/.
 | Papierkorb: Löschen landet dort | ✅ R | – (endgültig) | – (endgültig) | ✅ S („Zuletzt gelöscht“) | – (endgültig) | ✅ S |
 | Papierkorb in OmniVault anzeigen, wiederherstellen, endgültig löschen | ✅ R | – | – | ⛔ ¹⁷ | – | ❌ (zurückgestellt) |
 | Anhänge herunterladen | ✅ R | – | – | ❌ | ❌ | ❌ |
+| Anhänge hochladen und löschen | ✅ R ¹⁸ | – | – | ❌ | ❌ | ❌ |
 | Passwortverlauf | ✅ R | – | – | ❌ | ❌ | ❌ |
 | Passkeys anzeigen | ✅ R | – ⁹ | – ⁹ | ❌ | ❌ | ✅ S (nur Seite und Benutzer) |
 | Passkeys auf Webseiten anlegen und damit anmelden, entfernen | ✅ R (Bitwarden-Format, mit den offiziellen Apps austauschbar) | – ⁹ | – ⁹ | ⛔ ¹⁰ | ⛔ ¹⁰ | ⛔ ¹⁰ |
@@ -85,6 +86,11 @@ eines Organisationseintrags ändern geht weiterhin nur in den Bitwarden-Apps. An
 eigenen Schlüssel) lehnt OmniVault beim Verschieben ab.
 ¹⁷ `op` kann „Zuletzt gelöscht“ weder auflisten noch wiederherstellen; das geht laut 1Password-Doku nur in den
 1Password-Apps (geprüft 20.10.2026). Gelöschte Einträge bleiben dort 30 Tage.
+¹⁸ Wie in den offiziellen Apps: eigener Schlüssel je Datei, mit dem Eintrags- bzw. Organisationsschlüssel verschlüsselt;
+bis 30 MB je Datei. Gegen Vaultwarden (direktes Hochladen) getestet, auch für Organisationseinträge. Bitwarden.com/.eu
+legen Dateien in Azure Blob Storage ab; OmniVault fragt dafür beim ersten Hochladen nach der Berechtigung für
+`*.blob.core.windows.net`. Dieser Weg ist nicht automatisiert getestet. Anhänge setzen in der Bitwarden-Cloud ein
+Premium- oder Organisationskonto voraus.
 ⁸ pass legt URL und Benutzer in der verschlüsselten Datei ab; ohne Entschlüsseln gäbe es keinen Seitenabgleich.
 ⁹ Passbolt und pass kennen keine Passkeys.
 ¹⁰ Die Programme `op`, `lpass` und `pass-cli` geben die privaten Schlüssel von Passkeys nicht heraus; Proton Pass
@@ -212,7 +218,7 @@ Einstellungen → Darstellung → Sprache wechselt sofort.
 | Passkeys in Formularen innerhalb fremder iframes, Sicherheitsschlüssel-Erweiterungen (PRF, largeBlob) | nicht umgesetzt; der Browser übernimmt diese Anfragen |
 | Passkeys für 1Password, LastPass, Proton Pass | deren Kommandozeilenprogramme geben die Schlüssel nicht heraus |
 | Bitwarden Send, Notfallzugriff, Berichte über Datenlecks (HIBP) | nicht umgesetzt |
-| Bitwarden: Anhänge hochladen; Sammlungen und Rechte eines Organisationseintrags ändern | nicht umgesetzt |
+| Bitwarden: Sammlungen und Rechte eines Organisationseintrags ändern | nicht umgesetzt |
 | Bitwarden: WebAuthn- und Duo-Zweitfaktor, SSO | brauchen den Web-Tresor des Anbieters als Gegenstelle; Ausweg API-Schlüssel |
 | Passbolt: Duo, Kontowiederherstellung, Ordner teilen | nicht umgesetzt |
 | Entsperren nach Browser-Neustart ohne Master-Passwort | bewusst nicht: die versiegelten Sitzungen liegen nur im Arbeitsspeicher |

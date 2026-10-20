@@ -805,5 +805,22 @@
  "Bitte mindestens eine Sammlung wählen.": "Veuillez choisir au moins une collection.",
  "Der Eintrag gehört bereits einer Organisation.": "Cet élément appartient déjà à une organisation.",
  "Schlüssel der Organisation fehlt": "La clé de l'organisation est manquante",
- "Dieser Eintrag hat Anhänge im alten Format. Bitte in einer Bitwarden-App in die Organisation verschieben.": "Cet élément contient des pièces jointes dans un ancien format. Veuillez le déplacer vers l'organisation depuis une application Bitwarden."
+ "Dieser Eintrag hat Anhänge im alten Format. Bitte in einer Bitwarden-App in die Organisation verschieben.": "Cet élément contient des pièces jointes dans un ancien format. Veuillez le déplacer vers l'organisation depuis une application Bitwarden.",
+ "Anhänge hochladen wird für diesen Anbieter nicht unterstützt": "Ce fournisseur ne permet pas d’envoyer des pièces jointes",
+ "Anhänge löschen wird für diesen Anbieter nicht unterstützt": "Ce fournisseur ne permet pas de supprimer des pièces jointes",
+ "{name} löschen": "Supprimer {name}",
+ "Anhang „{name}“ endgültig löschen?": "Supprimer définitivement la pièce jointe « {name} » ?",
+ "Anhang gelöscht": "Pièce jointe supprimée",
+ "Die Datei ist zu groß (höchstens {n} MB).": "Le fichier est trop volumineux ({n} Mo au maximum).",
+ "Lade {name} hoch …": "Envoi de {name} …",
+ "{name} hochgeladen": "{name} envoyé",
+ "Zugriff erteilt – jetzt die Datei wählen.": "Accès accordé – choisissez maintenant le fichier.",
+ "Ohne Zugriff auf Bitwardens Dateispeicher lassen sich keine Anhänge hochladen.": "Sans accès au stockage de fichiers de Bitwarden, impossible d’envoyer des pièces jointes.",
+ "Anhang hinzufügen …": "Ajouter une pièce jointe …",
+ "Bitwardens Dateispeicher ist nicht erreichbar: {error}": "Le stockage de fichiers de Bitwarden est inaccessible : {error}",
+ "Anhang konnte nicht hochgeladen werden (HTTP {status}).": "La pièce jointe n’a pas pu être envoyée (HTTP {status}).",
+ "Dieser Eintrag kann nicht bearbeitet werden.": "Cet élément ne peut pas être modifié.",
+ "Der Anhang braucht einen Dateinamen.": "La pièce jointe doit avoir un nom de fichier.",
+ "Der Server hat keinen Platz für den Anhang angelegt.": "Le serveur n’a pas préparé d’emplacement pour la pièce jointe.",
+ "Unbekannte Upload-Art des Servers ({type}).": "Type d’envoi inconnu indiqué par le serveur ({type})."
 }
