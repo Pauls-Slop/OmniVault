@@ -92,6 +92,7 @@ export const ext = {
   /** Runs the extension's own injected function in the sample website next to the popup. */
   scripting: {
     async executeScript({ func, args = [] }) {
+      await window.parent?.ovDemo?.showPage?.(); // the sample page is behind a button; filling needs it on screen
       const w = pageWindow();
       if (!w) return [{ result: 0 }];
       const fn = w.eval(`(${func.toString()})`);
@@ -102,5 +103,5 @@ export const ext = {
 
 globalThis.chrome = ext; // i18n reads the UI language from the global, as in the extension
 
-/** The toolbar popup closes after filling; on the demo page the surrounding page hides it (see demo/README.md). */
+/** The toolbar popup closes after filling; the demo window keeps it open and shows the sample page instead. */
 window.close = () => { if (window.parent !== window) window.parent.postMessage({ omnivaultDemo: 'close' }, location.origin); };
