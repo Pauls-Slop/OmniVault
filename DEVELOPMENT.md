@@ -112,6 +112,8 @@ src/
   lib/               TOTP, URL-Abgleich, Generator, Duplikate, Import, Export, Passwortprüfung, PIN-Sperre
   i18n/              Sprachwahl, t()/tn()/tx(), Übersetzungen (locales/*.json)
 tools/i18n-extract.mjs  sammelt alle Texte für die Übersetzung
+tools/store-screenshots.mjs  Bildschirmfotos (1280 × 800) aus der Web-Demo: `npm run build:demo`, dann
+                     `node tools/store-screenshots.mjs <Zielordner> [Playwright-Pfad] [en,de]`
 native/              ein Host für alle CLI-Anbieter (Python 3, nur Standardbibliothek), Installer, Selbsttest
 vendor/              OpenPGP.js und argon2id (separate Dateien), Quellen-Manifest, Build-Skripte
 ```

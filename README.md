@@ -146,6 +146,8 @@ Shortcuts*. You can also right-click any input field and choose *Fill with OmniV
 
 ## Security and privacy
 
+What OmniVault stores and where it sends data is described in detail in the [privacy policy](PRIVACY.md).
+
 - **No master passwords are stored.** Decrypted keys live only in the browser's session memory and are discarded
   when you lock OmniVault, after the inactivity timeout you choose, when your computer locks and when the browser
   closes.
