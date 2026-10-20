@@ -186,7 +186,9 @@ export async function authedUpload(ep, token, path, fileName, bytes) {
   if (r.status === 401) return { unauthorized: true };
   if (!r.ok) {
     const msg = r.body?.message || r.body?.errorModel?.message || r.text || `HTTP ${r.status}`;
-    throw new ProviderError(t('Bitwarden: {msg}', { msg }), 'server');
+    const e = new ProviderError(t('Bitwarden: {msg}', { msg }), 'server');
+    e.status = r.status;
+    throw e;
   }
   return { body: r.body };
 }
@@ -220,7 +222,9 @@ export async function authed(ep, token, method, path, body) {
   if (r.status === 401) return { unauthorized: true };
   if (!r.ok) {
     const msg = r.body?.message || r.body?.errorModel?.message || r.text || `HTTP ${r.status}`;
-    throw new ProviderError(t('Bitwarden: {msg}', { msg }), 'server');
+    const e = new ProviderError(t('Bitwarden: {msg}', { msg }), 'server');
+    e.status = r.status;
+    throw e;
   }
   return { body: r.body };
 }

@@ -85,7 +85,7 @@ export async function seedVaultwarden(origin, {
   await callC('POST', '/ciphers', { type: 2, name: await encryptSym('Notiz', userKey), notes: await encryptSym('Privat', userKey), secureNote: { type: 0 }, favorite: false });
 
   for (const [n, u, p, uri] of extraLogins) await callC('POST', '/ciphers', await login(n, u, p, uri));
-  if (!withOrg) return { email, password, kdf, userId, folderId: folder.id ?? folder.Id, githubId: gh.id ?? gh.Id };
+  if (!withOrg) return { email, password, kdf, userId, publicKey: rsa.spki, folderId: folder.id ?? folder.Id, githubId: gh.id ?? gh.Id };
 
   // organization with its own key, shared to us via RSA-OAEP
   const orgKeyBytes = crypto.getRandomValues(new Uint8Array(64));
@@ -100,6 +100,9 @@ export async function seedVaultwarden(origin, {
   const orgId = org.id ?? org.Id;
   const cols = await call('GET', `/organizations/${orgId}/collections`);
   const colId = (cols.data ?? cols.Data)[0].id ?? (cols.data ?? cols.Data)[0].Id;
+  // a second collection, so items can be moved between collections
+  const col2 = await call('POST', `/organizations/${orgId}/collections`, { name: await encryptSym('Vertrieb', orgKey), groups: [], users: [] });
+  const collections = { Standard: colId, Vertrieb: col2.id ?? col2.Id };
   await callC('POST', '/ciphers/create', {
     cipher: { type: 2, organizationId: orgId, name: await encryptSym('Team-Notiz', orgKey), notes: await encryptSym('Nur für das Team', orgKey), secureNote: { type: 0 }, favorite: false },
     collectionIds: [colId],
@@ -108,7 +111,23 @@ export async function seedVaultwarden(origin, {
     cipher: { ...(await login('Team-Wiki', 'team', 'wiki-pass', 'https://wiki.example', orgKey)), organizationId: orgId },
     collectionIds: [colId],
   });
-  return { email, password, kdf, userId, folderId: folder.id ?? folder.Id, orgId, githubId: gh.id ?? gh.Id };
+  /**
+   * Adds another seeded account to the organization as a plain member (invited, accepted – automatic without mail –
+   * and confirmed with the organization key) with the given access per collection name:
+   * { Standard: { readOnly: false }, Vertrieb: { readOnly: true } }.
+   */
+  const addMember = async (member, access) => {
+    await call('POST', `/organizations/${orgId}/users/invite`, {
+      emails: [member.email], groups: [], type: 2, accessAll: false, permissions: {},
+      collections: Object.entries(access).map(([name, a]) => ({ id: collections[name], readOnly: !!a.readOnly, hidePasswords: false, manage: false })),
+    });
+    const users = await call('GET', `/organizations/${orgId}/users`);
+    const m = (users.data ?? users.Data).find((u) => (u.email ?? u.Email) === member.email);
+    const pub = await crypto.subtle.importKey('spki', Uint8Array.from(atob(member.publicKey), (c) => c.charCodeAt(0)), { name: 'RSA-OAEP', hash: 'SHA-1' }, false, ['encrypt']);
+    const key = `4.${b64(new Uint8Array(await crypto.subtle.encrypt({ name: 'RSA-OAEP' }, pub, orgKeyBytes)))}`;
+    await call('POST', `/organizations/${orgId}/users/${m.id ?? m.Id}/confirm`, { key });
+  };
+  return { email, password, kdf, userId, publicKey: rsa.spki, folderId: folder.id ?? folder.Id, orgId, collections, addMember, githubId: gh.id ?? gh.Id };
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {

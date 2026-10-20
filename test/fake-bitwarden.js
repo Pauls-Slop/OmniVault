@@ -24,7 +24,7 @@ async function encryptedPasskey(key, fields) {
   return out;
 }
 
-export async function fakeBitwarden({ kdf, twoFactor = false, loginUri = 'https://github.com/login', extraItems = 0 }) {
+export async function fakeBitwarden({ kdf, twoFactor = false, loginUri = 'https://github.com/login', extraItems = 0, collections = false, collectionsV2 = true }) {
   const mk = await deriveMasterKey(PASSWORD, EMAIL, kdf);
   const hash = await masterPasswordHash(mk, PASSWORD);
   const userKeyBytes = crypto.getRandomValues(new Uint8Array(64));
@@ -40,6 +40,7 @@ export async function fakeBitwarden({ kdf, twoFactor = false, loginUri = 'https:
   const itemKeyBytes = crypto.getRandomValues(new Uint8Array(64));
   const itemKey = splitKey(itemKeyBytes);
 
+  const findCipherInit = (id) => sync.Ciphers.find((c) => (c.Id ?? c.id) === id);
   const sync = {
     Profile: { // PascalCase on purpose (Vaultwarden/older servers)
       Id: USER_ID,
@@ -119,6 +120,15 @@ export async function fakeBitwarden({ kdf, twoFactor = false, loginUri = 'https:
       PasswordHistory: [{ Password: await encryptSym('shop-older', userKey), LastUsedDate: '2025-06-01T10:00:00Z' }],
     },
   );
+  if (collections) {
+    // organization collections: "Team" (writable, holds c3), "Vertrieb" (writable), "Archiv" (read only)
+    sync.Collections = [
+      { Id: 'col1', OrganizationId: 'org1', Name: await encryptSym('Team', orgKey), ReadOnly: false },
+      { Id: 'col2', OrganizationId: 'org1', Name: await encryptSym('Vertrieb', orgKey), ReadOnly: false },
+      { Id: 'col3', OrganizationId: 'org1', Name: await encryptSym('Archiv', orgKey), ReadOnly: true },
+    ];
+    findCipherInit('c3').CollectionIds = ['col1', 'col3'];
+  }
   const folderSeq = { n: 0 };
   void folderSeq;
   const protectedKey = await encryptSym(userKeyBytes, await stretchMasterKey(mk));
@@ -159,6 +169,26 @@ export async function fakeBitwarden({ kdf, twoFactor = false, loginUri = 'https:
       delete c.lastKnownRevisionDate;
       sync.Ciphers.push(c);
       return { status: 200, body: c };
+    }
+    if ((m = /\/api\/ciphers\/([^/]+)\/(collections|collections_v2)$/.exec(path)) && method === 'PUT' && collections) {
+      if (m[2] === 'collections_v2' && !collectionsV2) return { status: 404, body: {} };
+      const c = findCipher(m[1]);
+      if (!c?.organizationId && !c?.OrganizationId) return { status: 400, body: { message: 'Cipher is not owned by an organization' } };
+      // like Vaultwarden: the request is compared with the collections the user may write to; read-only ones stay,
+      // and naming one that would change is refused
+      const current = c.CollectionIds ?? c.collectionIds ?? [];
+      const ro = new Set(sync.Collections.filter((x) => x.ReadOnly).map((x) => x.Id));
+      const before = new Set(current.filter((x) => !ro.has(x)));
+      const after = new Set(json.collectionIds);
+      for (const id of [...before, ...after].filter((x) => before.has(x) !== after.has(x))) {
+        const col = sync.Collections.find((x) => x.Id === id);
+        if (!col) return { status: 400, body: { message: 'Invalid collection ID provided' } };
+        if (col.ReadOnly) return { status: 400, body: { message: 'No rights to modify the collection' } };
+      }
+      delete c.collectionIds;
+      c.CollectionIds = [...current.filter((x) => ro.has(x)), ...after];
+      c.RevisionDate = new Date().toISOString();
+      return { status: 200, body: m[2] === 'collections_v2' ? { object: 'optionalCipherDetails', unavailable: false, cipher: c } : c };
     }
     if ((m = /\/api\/ciphers\/([^/]+)\/partial$/.exec(path)) && method === 'PUT') {
       const c = findCipher(m[1]);

@@ -659,6 +659,32 @@ const handlers = {
     return fullItem(res.item);
   },
 
+  /** Collections of an organization item: all the user can see, which ones the item is in, which ones may change. */
+  async itemCollections({ accountId, itemId }) {
+    const { item, entry } = await findItem(accountId, itemId);
+    const org = (entry?.organizations ?? []).find((o) => o.id === item.organizationId);
+    if (!org) throw new Error(t('Der Eintrag gehört keiner Organisation.'));
+    const inItem = new Set(item.collectionIds ?? []);
+    return {
+      organization: { id: org.id, name: org.name },
+      collections: org.collections.map((c) => ({ id: c.id, name: c.name, checked: inItem.has(c.id), editable: !c.readOnly })),
+    };
+  },
+  async setCollections({ accountId, itemId, collectionIds }) {
+    const { item, entry } = await findItem(accountId, itemId);
+    const org = (entry?.organizations ?? []).find((o) => o.id === item.organizationId);
+    // collections the user may not change keep their assignment, whatever the interface sends
+    const fixed = new Set((org?.collections ?? []).filter((c) => c.readOnly).map((c) => c.id));
+    const known = new Set((org?.collections ?? []).map((c) => c.id));
+    const keep = (item.collectionIds ?? []).filter((id) => fixed.has(id) || !known.has(id));
+    const wanted = (collectionIds ?? []).filter((id) => known.has(id) && !fixed.has(id));
+    const res = await write(accountId, (p, a, s) => {
+      if (!p.setCollections) throw new Error(t('{provider}: Organisationen werden nicht unterstützt', { provider: p.label }));
+      return p.setCollections(cfg(a), s, item, { collectionIds: [...keep, ...wanted], readOnlyIds: [...fixed] });
+    });
+    return res?.unavailable ? { unavailable: true } : { item: fullItem(res.item) };
+  },
+
   // unlock with a PIN
   async setPin({ pin }) {
     await ext.storage.local.set({ pinLock: await createPinLock(pin) });

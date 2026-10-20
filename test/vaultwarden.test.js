@@ -300,7 +300,7 @@ test('real Vaultwarden: move a personal item into an organization (values, histo
   let sync = keep(await BitwardenProvider.sync(config, session));
   const org = sync.organizations.find((o) => o.id === seed.orgId);
   assert.ok(org, 'organization listed');
-  assert.deepEqual(org.collections.map((c) => c.name), ['Standard']);
+  assert.deepEqual(org.collections.map((c) => c.name), ['Standard', 'Vertrieb']);
   const before = sync.items.find((i) => i.id === item.id);
   assert.equal(before.organizationId, null);
   assert.equal(before._passkeyKeys.b64cred, 'geheimer-schluessel');
@@ -373,4 +373,62 @@ test('real Vaultwarden: move an item with its own item key into an organization'
   const dl = keep(await BitwardenProvider.downloadAttachment(config, session, after, after.attachments[0].id));
   assert.equal(new TextDecoder().decode(fromB64(dl.data)), 'Datei mit Item-Key');
   keep(await BitwardenProvider.deleteItem(config, session, after));
+});
+
+test('real Vaultwarden: change the collections of an organization item (owner and restricted member)', opts, async () => {
+  const owner = await seedVaultwarden(URL_);
+  const ownerCfg = { id: 'vw-own', server: URL_, email: owner.email };
+  let s = await login(ownerCfg, { password: owner.password });
+  const keep = (r) => { if (r.session) s = r.session; return r; };
+  let sync = keep(await BitwardenProvider.sync(ownerCfg, s));
+  const org = sync.organizations.find((o) => o.id === owner.orgId);
+  assert.deepEqual(org.collections.map((c) => c.name), ['Standard', 'Vertrieb']);
+  const { Standard, Vertrieb } = owner.collections;
+  const wiki = sync.items.find((i) => i.name === 'Team-Wiki');
+  assert.deepEqual(wiki.collectionIds, [Standard], 'collections of the item come with the sync');
+
+  // add a second collection, then leave only the second one
+  let { item } = keep(await BitwardenProvider.setCollections(ownerCfg, s, wiki, { collectionIds: [Standard, Vertrieb] }));
+  assert.deepEqual(item.collectionIds.sort(), [Standard, Vertrieb].sort());
+  sync = keep(await BitwardenProvider.sync(ownerCfg, s));
+  assert.deepEqual(sync.items.find((i) => i.id === wiki.id).collectionIds.sort(), [Standard, Vertrieb].sort());
+  ({ item } = keep(await BitwardenProvider.setCollections(ownerCfg, s, sync.items.find((i) => i.id === wiki.id), { collectionIds: [Vertrieb] })));
+  sync = keep(await BitwardenProvider.sync(ownerCfg, s));
+  const moved = sync.items.find((i) => i.id === wiki.id);
+  assert.deepEqual(moved.collectionIds, [Vertrieb]);
+  assert.equal(moved.password, 'wiki-pass', 'values untouched');
+  // editing still works after the change (revision date kept in step)
+  keep(await BitwardenProvider.saveItem(ownerCfg, s, item, { ...item, type: 'login', password: 'wiki-neu' }));
+  await assert.rejects(BitwardenProvider.setCollections(ownerCfg, s, moved, { collectionIds: [] }), /mindestens eine Sammlung/);
+  await assert.rejects(BitwardenProvider.setCollections(ownerCfg, s, sync.items.find((i) => i.name === 'Bank'), { collectionIds: [Standard] }), /keiner Organisation/);
+
+  // a member who may write to "Standard" but only read "Vertrieb"
+  const member = await seedVaultwarden(URL_, { withOrg: false });
+  await owner.addMember(member, { Standard: { readOnly: false }, Vertrieb: { readOnly: true } });
+  const memberCfg = { id: 'vw-mem', server: URL_, email: member.email };
+  let ms = await login(memberCfg, { password: member.password });
+  const mkeep = (r) => { if (r.session) ms = r.session; return r; };
+  let msync = mkeep(await BitwardenProvider.sync(memberCfg, ms));
+  const morg = msync.organizations.find((o) => o.id === owner.orgId);
+  assert.deepEqual(morg.collections.map((c) => [c.name, c.readOnly]), [['Standard', false], ['Vertrieb', true]]);
+  const note = msync.items.find((i) => i.name === 'Team-Notiz');
+  assert.deepEqual(note.collectionIds, [Standard]);
+  // the server refuses a change to the read-only collection (if OmniVault sent one)
+  await assert.rejects(BitwardenProvider.setCollections(memberCfg, ms, note, { collectionIds: [Standard, Vertrieb] }), /rights|Collection/i);
+  const readOnlyIds = morg.collections.filter((c) => c.readOnly).map((c) => c.id);
+  // the read-only item (only in "Vertrieb") cannot be changed either
+  const ro = msync.items.find((i) => i.id === wiki.id);
+  assert.equal(ro.canEdit, false, 'item only in a read-only collection is read-only');
+  await assert.rejects(BitwardenProvider.setCollections(memberCfg, ms, ro, { collectionIds: [Standard, Vertrieb], readOnlyIds }), /cannot be changed|rights/i);
+
+  // the owner puts the note into "Vertrieb" as well; the member removes "Standard" → the item becomes read-only for them
+  sync = keep(await BitwardenProvider.sync(ownerCfg, s));
+  keep(await BitwardenProvider.setCollections(ownerCfg, s, sync.items.find((i) => i.id === note.id), { collectionIds: [Standard, Vertrieb] }));
+  msync = mkeep(await BitwardenProvider.sync(memberCfg, ms));
+  const res = mkeep(await BitwardenProvider.setCollections(memberCfg, ms, msync.items.find((i) => i.id === note.id), { collectionIds: [Vertrieb], readOnlyIds }));
+  msync = mkeep(await BitwardenProvider.sync(memberCfg, ms));
+  const after = msync.items.find((i) => i.id === note.id);
+  assert.deepEqual(after.collectionIds, [Vertrieb]);
+  assert.equal(after.canEdit, false);
+  assert.ok(res.item || res.unavailable);
 });

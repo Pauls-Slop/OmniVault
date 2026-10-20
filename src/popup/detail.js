@@ -10,7 +10,7 @@ import { openEditor } from './editor.js';
 import { fillItem, hostOf } from './list.js';
 import { openMenu } from './menu.js';
 import { S, accountOf, providerOf, refresh, writableAccounts } from './state.js';
-import { openMoveToOrganization } from './organization.js';
+import { openItemCollections, openMoveToOrganization } from './organization.js';
 import { openShare } from './share.js';
 import { transferWithDialog } from './tools.js';
 import { formatDateTime, mark } from '../i18n/index.js';
@@ -166,6 +166,8 @@ export async function openItem(accountId, itemId) {
   const caps = providerOf(i.provider)?.capabilities ?? {};
   // Bitwarden: a personal item can go into an organization the user may add items to
   const toOrganization = caps.organizations && canDelete && !i.organizationId && !!accountOf(accountId)?.canMoveToOrganization;
+  // Bitwarden: the collections of an organization item (the server checks the rights for each collection)
+  const collections = caps.organizations && canWrite && !!i.organizationId && !!i.collectionIds;
   // Providers without favorites of their own get them from OmniVault (stored locally, see background/favorites.js).
   const localFav = caps.favorites === false;
   const favTitle = i.favorite ? (localFav ? t('Kein Favorit mehr (nur in OmniVault)') : t('Kein Favorit mehr'))
@@ -210,7 +212,7 @@ export async function openItem(accountId, itemId) {
           show('main');
         },
       }, t('Löschen')) : null,
-      (['login', 'note'].includes(i.type) && writableAccounts().length) || toOrganization ? iconButton('transfer', t('Kopieren, verschieben, teilen'), {
+      (['login', 'note'].includes(i.type) && writableAccounts().length) || toOrganization || collections ? iconButton('transfer', t('Kopieren, verschieben, teilen'), {
         'aria-haspopup': 'menu',
         onclick: (e) => openMenu(e.currentTarget, [
           ...(caps.share && canDelete ? [{ ico: 'user', text: t('Teilen …'), onSelect: async () => {
@@ -219,6 +221,13 @@ export async function openItem(accountId, itemId) {
           ...(toOrganization ? [{ ico: 'user', text: t('In Organisation verschieben …'), onSelect: async () => {
             try {
               if (await openMoveToOrganization({ ...i, accountId })) { toast(t('In die Organisation verschoben')); await refresh(); openItem(accountId, itemId); }
+            } catch (x) { toast(x.message); }
+          } }] : []),
+          ...(collections ? [{ ico: 'folder', text: t('Sammlungen ändern …'), onSelect: async () => {
+            try {
+              const r = await openItemCollections({ ...i, accountId });
+              if (r === 'saved') { toast(t('Sammlungen gespeichert')); await refresh(); openItem(accountId, itemId); }
+              if (r === 'gone') { toast(t('Sammlungen gespeichert. Du hast keinen Zugriff mehr auf den Eintrag.')); await refresh(); show('main'); }
             } catch (x) { toast(x.message); }
           } }] : []),
           ...(['login', 'note'].includes(i.type) && writableAccounts().length ? [

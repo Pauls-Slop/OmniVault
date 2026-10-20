@@ -196,3 +196,35 @@ test('passkeys: stored encrypted in Bitwarden form, added to a login, replaced a
   assert.equal(replaced.item.passkeys.length, 1);
   assert.equal(replaced.item.passkeys[0].credentialId, record.credentialId);
 });
+
+test('collections of an organization item: listed, changed (collections_v2), read-only ones kept', async () => {
+  await makeServer({ kdf: { kdf: 0, kdfIterations: 600000 }, collections: true });
+  const { session } = await BitwardenProvider.login(config, { password: PASSWORD });
+  const { items, organizations } = await BitwardenProvider.sync(config, session);
+  const org = organizations.find((o) => o.id === 'org1');
+  assert.deepEqual(org.collections.map((c) => [c.name, c.readOnly]), [['Archiv', true], ['Team', false], ['Vertrieb', false]]);
+  const note = items.find((i) => i.id === 'c3');
+  assert.deepEqual(note.collectionIds, ['col1', 'col3']);
+  assert.equal(items.find((i) => i.id === 'c1').collectionIds, undefined, 'personal items have no collections');
+
+  const { item } = await BitwardenProvider.setCollections(config, session, note, { collectionIds: ['col2', 'col3'], readOnlyIds: ['col3'] });
+  assert.deepEqual(item.collectionIds, ['col2', 'col3']);
+  const req = serverHandle.requests.at(-1);
+  assert.equal(req.path, '/api/ciphers/c3/collections_v2');
+  assert.deepEqual(req.json, { collectionIds: ['col2'] }, 'read-only collections are not sent (the server keeps them)');
+  assert.deepEqual((await BitwardenProvider.sync(config, session)).items.find((i) => i.id === 'c3').collectionIds, ['col3', 'col2']);
+
+  // the server refuses changes to a read-only collection; at least one collection is required; personal items refused
+  await assert.rejects(BitwardenProvider.setCollections(config, session, item, { collectionIds: ['col2', 'col3'] }), /No rights/);
+  await assert.rejects(BitwardenProvider.setCollections(config, session, item, { collectionIds: [] }), /mindestens eine Sammlung/);
+  await assert.rejects(BitwardenProvider.setCollections(config, session, items.find((i) => i.id === 'c1'), { collectionIds: ['col1'] }), /keiner Organisation/);
+});
+
+test('collections: older servers without collections_v2 get the classic endpoint', async () => {
+  await makeServer({ kdf: { kdf: 0, kdfIterations: 600000 }, collections: true, collectionsV2: false });
+  const { session } = await BitwardenProvider.login(config, { password: PASSWORD });
+  const note = (await BitwardenProvider.sync(config, session)).items.find((i) => i.id === 'c3');
+  const { item } = await BitwardenProvider.setCollections(config, session, note, { collectionIds: ['col1', 'col2', 'col3'], readOnlyIds: ['col3'] });
+  assert.deepEqual(item.collectionIds, ['col1', 'col2', 'col3']);
+  assert.deepEqual(serverHandle.requests.slice(-2).map((r) => r.path), ['/api/ciphers/c3/collections_v2', '/api/ciphers/c3/collections']);
+});

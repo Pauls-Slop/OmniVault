@@ -282,7 +282,7 @@ class BitwardenProvider extends Provider {
       if (!orgKeys[o.id] || orgKeys[o.id].cose) continue;
       const collections = [];
       for (const c of (data.collections ?? []).filter((x) => x.organizationId === o.id)) {
-        collections.push({ id: c.id, name: await decryptSymString(c.name, orgKeys[o.id]).catch(() => '') || c.id, readOnly: !!c.readOnly });
+        collections.push({ id: c.id, name: await decryptSymString(c.name, orgKeys[o.id]).catch(() => '') || c.id, readOnly: !!c.readOnly, hidePasswords: !!c.hidePasswords, manage: !!c.manage });
       }
       collections.sort((a, b) => a.name.localeCompare(b.name, 'de'));
       organizations.push({ id: o.id, name: o.name ?? o.id, collections });
@@ -349,6 +349,7 @@ class BitwardenProvider extends Provider {
       folder: c.folderId ? folderNames[c.folderId] : undefined,
       favorite: !!c.favorite,
       organizationId: c.organizationId ?? null,
+      collectionIds: c.organizationId ? [...(c.collectionIds ?? [])] : undefined,
       canEdit: c.edit !== false && !blob && !key.cose,
       revisionDate: c.revisionDate,
       uris: [],
@@ -652,6 +653,46 @@ class BitwardenProvider extends Provider {
     if (renewed2) s = renewed2;
     const item = await this.#decryptCipher(result.body, { userKey, orgKeys: { [organizationId]: orgKey }, folderNames: {}, accountId: config.id });
     return { item: { ...item, folder: existing.folder }, session: s !== session ? s : undefined };
+  }
+
+  /**
+   * Changes the collections of an organization item. Only the assignment changes; nothing is re-encrypted, and the
+   * server checks that the user may edit every collection that is added or removed. Uses `collections_v2` (current
+   * Bitwarden and Vaultwarden) and falls back to the older `collections` endpoint on servers without it.
+   * `collectionIds` is the complete new assignment; `readOnlyIds` are collections the user may only read. Those are
+   * left out of the request: both servers keep them as they are (Vaultwarden refuses a request that names them).
+   */
+  static async setCollections(config, session, existing, { collectionIds, readOnlyIds = [] }) {
+    this.#assertWritable(session);
+    const raw = existing._raw;
+    if (!raw.organizationId) throw new ProviderError(t('Der Eintrag gehört keiner Organisation.'), 'config');
+    const ids = [...new Set(collectionIds ?? [])];
+    if (!ids.length) throw new ProviderError(t('Bitte mindestens eine Sammlung wählen.'), 'config');
+    const fixed = new Set(readOnlyIds);
+    const writable = ids.filter((id) => !fixed.has(id));
+    const ep = api.endpoints(config.server);
+    const put = (path) => this.#withToken(ep, session, (token) => api.authed(ep, token, 'PUT', `/ciphers/${existing.id}/${path}`, { collectionIds: writable }));
+    let res;
+    let cipher;
+    let unavailable = false;
+    try {
+      res = await put('collections_v2');
+      unavailable = !!res.result.body?.unavailable;
+      cipher = res.result.body?.cipher ?? null;
+    } catch (e) {
+      if (e.status !== 404 && e.status !== 405) throw e;
+      res = await put('collections');
+      cipher = res.result.body;
+    }
+    // the user may have given up their own access (e.g. the remaining collection only lets others see the item)
+    if (unavailable) return { resync: true, unavailable: true, session: res.session };
+    const revisionDate = cipher?.revisionDate ?? raw.revisionDate;
+    const item = {
+      ...existing, collectionIds: ids, revisionDate,
+      _raw: { ...raw, collectionIds: ids, revisionDate, ...(cipher?.edit !== undefined ? { edit: cipher.edit } : {}) },
+    };
+    if (cipher?.edit === false) item.canEdit = false;
+    return { item, session: res.session };
   }
 
   /** Restores an item from the trash. */

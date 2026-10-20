@@ -45,3 +45,44 @@ export async function openMoveToOrganization(item) {
   await new Promise((r) => d.addEventListener('close', r, { once: true }));
   return d.returnValue === 'ok' ? moved : null;
 }
+
+/**
+ * Dialog (Bitwarden): change the collections of an organization item. Collections the user may only read are shown
+ * but cannot be changed; at least one collection stays selected. Resolves 'saved', 'gone' (the user no longer sees
+ * the item) or null if cancelled.
+ */
+export async function openItemCollections(item) {
+  const { organization, collections } = await call('itemCollections', { accountId: item.accountId, itemId: item.id });
+  if (!collections.some((c) => c.editable)) { toast(t('Du darfst in dieser Organisation keine Sammlungen ändern.')); return null; }
+  const d = $('#dialog-transfer');
+  const boxes = el('fieldset', { className: 'collections' }, el('legend', {}, t('Sammlungen')),
+    ...collections.map((c) => el('label', { className: 'inline-check', title: c.editable ? '' : t('Nur lesen – nicht änderbar') },
+      el('input', { type: 'checkbox', value: c.id, checked: c.checked, disabled: !c.editable }), c.name)));
+  const err = el('p', { className: 'error', hidden: true });
+  const ok = el('button', { type: 'button' }, t('Speichern'));
+  d.replaceChildren(el('div', {},
+    el('h3', {}, t('Sammlungen von „{name}“', { name: item.name })),
+    el('p', {}, el('strong', {}, organization.name)),
+    boxes,
+    el('p', { className: 'hint' }, t('Wer Zugriff auf eine der gewählten Sammlungen hat, sieht den Eintrag. Die Rechte legt die Organisation fest.')),
+    err,
+    el('div', { className: 'row' }, el('button', { type: 'button', className: 'secondary', onclick: () => d.close('cancel') }, t('Abbrechen')), ok)));
+
+  let outcome = null;
+  ok.addEventListener('click', async () => {
+    const collectionIds = [...boxes.querySelectorAll('input:checked:not(:disabled)')].map((b) => b.value);
+    if (!boxes.querySelector('input:checked')) { err.textContent = t('Bitte mindestens eine Sammlung wählen.'); err.hidden = false; return; }
+    ok.disabled = true;
+    try {
+      const res = await call('setCollections', { accountId: item.accountId, itemId: item.id, collectionIds });
+      outcome = res.unavailable ? 'gone' : 'saved';
+      d.close('ok');
+    } catch (x) {
+      err.textContent = x.message; err.hidden = false; ok.disabled = false;
+    }
+  });
+  d.returnValue = '';
+  d.showModal();
+  await new Promise((r) => d.addEventListener('close', r, { once: true }));
+  return d.returnValue === 'ok' ? outcome : null;
+}

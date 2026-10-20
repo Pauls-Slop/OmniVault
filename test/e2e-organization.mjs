@@ -1,8 +1,9 @@
 // This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 // Copyright (c) 2026 Die OmniVault-Mitwirkenden
-// Browser test: move a personal Bitwarden item into an organization through the item menu – against a REAL
-// Vaultwarden server (one account with an organization, one without).
+// Browser test: move a personal Bitwarden item into an organization and change the collections of an organization
+// item through the item menu – against a REAL Vaultwarden server (an owner, a member with a read-only collection,
+// and an account without organization).
 // Usage: VAULTWARDEN_URL=http://localhost:8800 node test/e2e-organization.mjs [path-to-playwright] [screenshot-dir]
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -16,6 +17,8 @@ const { chromium } = await import(pwPath);
 
 const A = await seedVaultwarden(VW);
 const B = await seedVaultwarden(VW, { withOrg: false });
+const C = await seedVaultwarden(VW, { withOrg: false });
+await A.addMember(C, { Standard: { readOnly: false }, Vertrieb: { readOnly: true } });
 
 const ext = await extensionCopy();
 const { ctx, extId } = await launch(chromium, ext);
@@ -82,13 +85,12 @@ try {
   await popup.waitForSelector('#dialog-transfer[open] fieldset.collections');
   const dialog = await popup.textContent('#dialog-transfer');
   check(dialog.includes('„Bank“ in eine Organisation verschieben') && dialog.includes('Team') && dialog.includes('Standard'), 'dialog names the item, the organization and its collection');
-  check(await popup.isChecked('#dialog-transfer fieldset.collections input[type=checkbox]'), 'the only collection is preselected');
+  check(await popup.$$eval('#dialog-transfer fieldset.collections input:checked', (b) => b.length) === 0, 'with two collections nothing is preselected');
   await popup.screenshot({ path: join(shots, 'organization-move.png') });
   // nothing chosen → message, nothing happens
-  await popup.uncheck('#dialog-transfer fieldset.collections input[type=checkbox]');
   await popup.click('#dialog-transfer button:has-text("Verschieben")');
   check(await popup.isVisible('#dialog-transfer .error:has-text("mindestens eine Sammlung")'), 'a collection is required');
-  await popup.check('#dialog-transfer fieldset.collections input[type=checkbox]');
+  await popup.check('#dialog-transfer label:has-text("Standard") input');
   await popup.click('#dialog-transfer button:has-text("Verschieben")');
   await popup.waitForFunction(() => /In die Organisation verschoben/.test(document.querySelector('#toast')?.textContent || ''), null, { timeout: 20000 });
   check(true, 'moved: confirmation shown');
@@ -102,6 +104,40 @@ try {
   await popup.click('#view-item button[aria-label="Kopieren, verschieben, teilen"]').catch(() => {});
   const again = await popup.$$eval('#menu [role=menuitem]', (m) => m.map((x) => x.textContent)).catch(() => []);
   check(!again.some((t) => t.includes('In Organisation verschieben')), 'not offered again for the moved item');
+  await closeMenu().catch(() => {});
+
+  // --- collections of an organization item (owner: both collections writable)
+  const wiki = (await msg('items')).find((i) => i.accountId === accA.id && i.name === 'Team-Wiki');
+  const menuWiki = await openMenuOf('Team-Wiki', badgeA);
+  check(menuWiki.some((t) => t.includes('Sammlungen ändern')), 'menu of an organization item offers "Sammlungen ändern …"');
+  await popup.click('#menu [role=menuitem]:has-text("Sammlungen ändern")');
+  await popup.waitForSelector('#dialog-transfer[open] fieldset.collections');
+  const boxState = () => popup.$$eval('#dialog-transfer fieldset.collections label', (l) => l.map((x) => [x.textContent, x.querySelector('input').checked, x.querySelector('input').disabled]));
+  check(JSON.stringify(await boxState()) === JSON.stringify([['Standard', true, false], ['Vertrieb', false, false]]), `dialog shows the current collections: ${JSON.stringify(await boxState())}`);
+  check((await popup.textContent('#dialog-transfer h3')).includes('Sammlungen von „Team-Wiki“'), 'dialog names the item');
+  await popup.screenshot({ path: join(shots, 'organization-collections.png') });
+  await popup.uncheck('#dialog-transfer label:has-text("Standard") input');
+  await popup.click('#dialog-transfer button:has-text("Speichern")');
+  check(await popup.isVisible('#dialog-transfer .error:has-text("mindestens eine Sammlung")'), 'at least one collection stays required');
+  await popup.check('#dialog-transfer label:has-text("Vertrieb") input');
+  await popup.click('#dialog-transfer button:has-text("Speichern")');
+  await popup.waitForFunction(() => /Sammlungen gespeichert/.test(document.querySelector('#toast')?.textContent || ''), null, { timeout: 20000 });
+  await msg('sync', { id: accA.id });
+  const wikiAfter = await msg('item', { accountId: accA.id, itemId: wiki.id });
+  check(JSON.stringify(wikiAfter.collectionIds) === JSON.stringify([A.collections.Vertrieb]), 'after a fresh sync the item is only in "Vertrieb"');
+  check(await msg('secret', { accountId: accA.id, itemId: wiki.id, field: 'password' }) === 'wiki-pass', 'values untouched');
+  await closeMenu().catch(() => {});
+
+  // --- member: "Vertrieb" is read-only for them – shown, but not changeable; the item there cannot be edited at all
+  await addAccount('Firma', C);
+  const accC = (await msg('state')).accounts.find((a) => a.label === 'Firma');
+  check(!(await openMenuOf('Team-Wiki', accC.short)).some((t) => t.includes('Sammlungen ändern')), 'item only in a read-only collection: no collection change offered');
+  await closeMenu();
+  await openMenuOf('Team-Notiz', accC.short);
+  await popup.click('#menu [role=menuitem]:has-text("Sammlungen ändern")');
+  await popup.waitForSelector('#dialog-transfer[open] fieldset.collections');
+  check(JSON.stringify(await boxState()) === JSON.stringify([['Standard', true, false], ['Vertrieb', false, true]]), `read-only collection shown but disabled: ${JSON.stringify(await boxState())}`);
+  await popup.click('#dialog-transfer button:has-text("Abbrechen")');
   check(errors.length === 0, `no script errors (${errors.join('; ')})`);
 } catch (e) {
   failures++;
