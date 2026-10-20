@@ -7,6 +7,7 @@ Installs (or removes) the OmniVault native messaging host for the current user.
 
   python3 install.py --chrome-id <EXTENSION_ID>     # Chrome/Chromium/Brave/Edge + Firefox
   python3 install.py --firefox-only
+  python3 install.py --chrome-id <ID> --keepassxc   # also connect KeePassXC (via its own keepassxc-proxy)
   python3 install.py --uninstall
 
 One host (org.omnivault.host) serves Proton Pass (`pass-cli`), pass (+ gpg), 1Password (`op`) and
@@ -32,7 +33,23 @@ HOSTS = [
      "desc": "OmniVault – Proton Pass, pass, 1Password, LastPass (CLI)"},
 ]
 LEGACY_HOST_NAMES = ["org.omnivault.proton", "org.omnivault.cli"]  # before 2.0: removed on install/uninstall
-ALL_HOST_NAMES = [h["name"] for h in HOSTS] + LEGACY_HOST_NAMES
+# KeePassXC: no OmniVault code runs; the manifest under OmniVault's own name points to KeePassXC's keepassxc-proxy
+# (KeePassXC's own manifest only admits the official extensions and is rewritten by KeePassXC).
+KEEPASSXC_HOST = "org.omnivault.keepassxc"
+ALL_HOST_NAMES = [h["name"] for h in HOSTS] + LEGACY_HOST_NAMES + [KEEPASSXC_HOST]
+
+
+def find_keepassxc_proxy():
+    """Where keepassxc-proxy usually lives; None if not found (then --keepassxc-proxy PATH)."""
+    found = shutil.which("keepassxc-proxy")
+    if found:
+        return found
+    candidates = {
+        "Darwin": ["/Applications/KeePassXC.app/Contents/MacOS/keepassxc-proxy"],
+        "Windows": [os.path.join(os.environ.get(v, ""), "KeePassXC", "keepassxc-proxy.exe") for v in ("ProgramFiles", "ProgramFiles(x86)", "LOCALAPPDATA")],
+        "Linux": ["/usr/bin/keepassxc-proxy", "/usr/local/bin/keepassxc-proxy", "/snap/bin/keepassxc.proxy"],
+    }.get(SYSTEM, [])
+    return next((c for c in candidates if c and os.path.isfile(c)), None)
 
 
 def install_dir():
@@ -135,6 +152,8 @@ def main():
     ap.add_argument("--firefox-only", action="store_true")
     ap.add_argument("--chrome-profile-dir", help="nur für Tests: Chromium-Benutzerdatenordner (--user-data-dir)")
     ap.add_argument("--uninstall", action="store_true")
+    ap.add_argument("--keepassxc", action="store_true", help="KeePassXC über dessen keepassxc-proxy anbinden")
+    ap.add_argument("--keepassxc-proxy", help="Pfad zu keepassxc-proxy, falls nicht automatisch gefunden")
     a = ap.parse_args()
 
     dirs = manifest_dirs()
@@ -163,8 +182,16 @@ def main():
     remove_legacy(dirs)
     written = []
     targets = ([] if a.firefox_only else [("chrome", d) for d in dirs["chrome"]]) + [("firefox", d) for d in dirs["firefox"]]
-    for host in HOSTS:
-        path = install_host_files(host)
+    hosts = list(HOSTS)
+    if a.keepassxc or a.keepassxc_proxy:
+        proxy = a.keepassxc_proxy or find_keepassxc_proxy()
+        if not proxy or not os.path.isfile(proxy):
+            print("keepassxc-proxy wurde nicht gefunden. Bitte mit --keepassxc-proxy PFAD angeben "
+                  "(bei Flatpak: siehe native/README.md).", file=sys.stderr)
+            sys.exit(1)
+        hosts.append({"name": KEEPASSXC_HOST, "proxy": os.path.abspath(proxy), "desc": "OmniVault – KeePassXC (keepassxc-proxy)"})
+    for host in hosts:
+        path = host["proxy"] if "proxy" in host else install_host_files(host)
         chrome, firefox = manifests(host, path, a.chrome_id)
         if SYSTEM == "Windows":
             import winreg
@@ -186,7 +213,7 @@ def main():
                 p = os.path.join(d, f"{host['name']}.json")
                 write_json(p, chrome if kind == "chrome" else firefox)
                 written.append(p)
-        print(f"Host installiert: {path}")
+        print(f"KeePassXC-Proxy verwendet: {path}" if "proxy" in host else f"Host installiert: {path}")
     for w in written:
         print(f"registriert: {w}")
     if not written:

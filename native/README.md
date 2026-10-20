@@ -96,6 +96,38 @@ pass kennt keinen eigenen Notiz-Typ: Jeder Eintrag beginnt mit einer Passwortzei
 - Nur die OmniVault-Erweiterung darf den Host starten (`allowed_origins` bzw. `allowed_extensions` im Manifest).
 - Antworten über 1 MB (Browser-Grenze) werden in Teilen gesendet.
 
+## KeePassXC
+
+KeePassXC braucht den OmniVault-Host nicht. OmniVault spricht KeePassXCs eigenes, öffentlich dokumentiertes
+Browser-Protokoll ([keepassxc-protocol.md](https://github.com/keepassxreboot/keepassxc-browser/blob/develop/keepassxc-protocol.md))
+über das mitgelieferte Programm `keepassxc-proxy`. Die Nachrichten sind mit einer NaCl-Box verschlüsselt
+(TweetNaCl.js); der Proxy reicht sie nur weiter.
+
+```
+Browser-Erweiterung ⇄ (Native Messaging, NaCl-Box) ⇄ keepassxc-proxy ⇄ KeePassXC
+```
+
+1. In KeePassXC unter *Einstellungen → Browser-Integration* die Integration einschalten. Unter *Erweitert* die
+   Option „Allow keepassxc-proxy to list all entries …“ einschalten, sonst kann OmniVault keine Liste zeigen.
+2. Manifest registrieren: `python3 install.py --chrome-id <ERWEITERUNGS-ID> --keepassxc`. Das Skript sucht
+   `keepassxc-proxy` (Linux `/usr/bin`, Snap `/snap/bin/keepassxc.proxy`, macOS im Programmpaket, Windows im
+   Installationsordner); sonst `--keepassxc-proxy PFAD` angeben. Es legt ein Manifest unter OmniVaults eigenem
+   Namen `org.omnivault.keepassxc` an. KeePassXCs eigenes Manifest bleibt unberührt: Es lässt nur die offiziellen
+   Erweiterungen zu und wird von KeePassXC selbst neu geschrieben.
+3. In OmniVault *Konto hinzufügen → KeePassXC → Verbinden*. KeePassXC fragt, ob es die Verbindung annehmen soll, und
+   nach einem Namen dafür (z. B. „OmniVault“). Diese Zuordnung lässt sich in KeePassXC unter *Datenbank →
+   Datenbankeinstellungen → Browser-Integration* jederzeit wieder entfernen.
+
+**Flatpak:** Ein Manifest muss auf eine ausführbare Datei zeigen. Legen Sie ein kleines Skript an, z. B.
+`~/.local/bin/keepassxc-proxy-flatpak` mit dem Inhalt `#!/bin/sh` und
+`exec flatpak run --command=keepassxc-proxy org.keepassxc.KeePassXC "$@"`, machen Sie es ausführbar und geben Sie
+es mit `--keepassxc-proxy` an. (Dieser Weg ist nicht getestet.)
+
+Was über das Protokoll geht: Einträge auflisten (Titel, Adresse), Benutzer und Passwort je Eintrag über seine
+Adresse holen (KeePassXC kann dabei nachfragen), den aktuellen TOTP-Code anzeigen, Logins anlegen und ändern
+(KeePassXC benennt neue Einträge nach der Seite), Gruppen anlegen, löschen (KeePassXC fragt). Nicht möglich:
+Notizen, Zusatzfelder, Titel ändern, TOTP-Schlüssel, Einträge ohne Website-Adresse auslesen, Verschieben.
+
 ## Fehlersuche
 
 | Meldung | Ursache und Abhilfe |
@@ -106,6 +138,9 @@ pass kennt keinen eigenen Notiz-Typ: Jeder Eintrag beginnt mit einer Passwortzei
 | „Your account is not yet allowed to use our CLI“ | Proton hat das CLI für Ihr Konto (noch) nicht freigegeben |
 | „mit einem Sperrcode gesperrt“ | `pass-cli`-Sitzung mit Sperrcode: im Terminal `pass-cli session unlock` |
 | „bitte pass-cli aktualisieren“ | Version älter als 2.3: `pass-cli update` |
+| „KeePassXC erlaubt das Auflisten der Einträge nicht“ | in KeePassXC unter Browser-Integration → Erweitert „Allow keepassxc-proxy to list all entries“ einschalten |
+| „KeePassXC: Die Datenbank ist gesperrt“ | Datenbank in KeePassXC entsperren |
+| „KeePassXC kennt diese Verbindung nicht (mehr)“ | Zuordnung wurde in KeePassXC entfernt: Konto bearbeiten → neu verbinden |
 
 ## Mit dem eigenen Konto testen
 

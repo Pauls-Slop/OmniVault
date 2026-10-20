@@ -14,8 +14,9 @@ Passwörter finden, Exporte anderer Manager importieren und alles wieder exporti
 | pass (password-store) | lokaler Host → `pass` + GnuPG | lesen und schreiben, gegen echtes pass getestet |
 | 1Password | lokaler Host → offizielles `op` | lesen und schreiben, gegen simuliertes CLI getestet |
 | LastPass | lokaler Host → offizielles `lpass` | lesen und schreiben, gegen simuliertes CLI getestet |
+| KeePassXC | KeePassXCs Browser-Schnittstelle über `keepassxc-proxy` | Logins lesen, anlegen, ändern, löschen; gegen simulierten KeePassXC getestet |
 | Proton Pass | lokaler Host → offizielles `pass-cli` | zurückgestellt: Proton gibt das CLI nur für kostenpflichtige Tarife frei |
-| KeePass, KeePassXC, Browser und andere | Dateiimport (CSV, JSON, KeePass-XML) | in ein beliebiges beschreibbares Konto |
+| KeePass-Dateien, Browser und andere | Dateiimport (CSV, JSON, KeePass-XML) | in ein beliebiges beschreibbares Konto |
 
 - **Stand je Funktion und Anbieter:** [FEATURES.md](FEATURES.md)
 - **Lokaler Host für pass, 1Password, LastPass, Proton:** [native/README.md](native/README.md)

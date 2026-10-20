@@ -581,8 +581,14 @@ const handlers = {
   },
 
   async secret({ accountId, itemId, field }) {
-    const { item } = await findItem(accountId, itemId);
-    if (field === 'totp') return item.totp ? totp(item.totp) : null;
+    const { item, account } = await findItem(accountId, itemId);
+    if (field === 'totp') {
+      if (item.totp) return totp(item.totp);
+      // providers that hand out the current code but never the secret (KeePassXC)
+      const provider = getProvider(account.provider);
+      if (item.hasTotp && provider.currentTotp) return provider.currentTotp(cfg(account), await store.getSession(accountId), item);
+      return null;
+    }
     if (!['password', 'username', 'notes'].includes(field)) throw new Error(t('Unbekanntes Feld'));
     return item[field] ?? '';
   },

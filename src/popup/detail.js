@@ -42,18 +42,33 @@ function field(key, value, { secret = false, plain = false, link = null, copyLab
   return el('div', { className: 'field', 'data-field': key }, el('span', { className: 'k' }, label), v, tools);
 }
 
-function totpField(uri) {
+/**
+ * Live TOTP code. `source` is the otpauth URI, or a function that fetches the current code (providers that hand
+ * out codes but not the secret, e.g. KeePassXC): then it is fetched once per period and counted down here.
+ */
+function totpField(source) {
   const code = el('span', {}, '······');
   const ring = el('span', { className: 'totp-ring' });
+  let fetched = null;
+  const current = async () => {
+    if (typeof source !== 'function') return totp(source);
+    const now = Date.now();
+    if (!fetched || now >= fetched.until) {
+      const otp = await source();
+      if (!otp) throw new Error('no code');
+      fetched = { code: otp.code, until: now + otp.remaining * 1000 };
+    }
+    return { code: fetched.code, remaining: Math.max(1, Math.ceil((fetched.until - now) / 1000)) };
+  };
   const row = el('div', { className: 'field', 'data-field': 'TOTP' },
     el('span', { className: 'k' }, t('Einmalcode (TOTP)')),
     el('div', { className: 'v' }, code, ring),
     el('div', { className: 'tools' }, iconButton('copy', t('Kopieren'), {
-      'aria-label': t('TOTP kopieren'), onclick: async () => copy((await totp(uri)).code, 'TOTP'),
+      'aria-label': t('TOTP kopieren'), onclick: async () => copy((await current()).code, 'TOTP'),
     })));
   const tick = async () => {
     try {
-      const otp = await totp(uri);
+      const otp = await current();
       code.textContent = `${otp.code.slice(0, Math.ceil(otp.code.length / 2))} ${otp.code.slice(Math.ceil(otp.code.length / 2))}`;
       ring.textContent = t('{n} s', { n: otp.remaining });
     } catch { code.textContent = t('ungültig'); }
@@ -70,6 +85,7 @@ function typeFields(i) {
     out.push(field(mark('Benutzername'), i.username, { copyLabel: mark('Benutzer') }));
     out.push(field(mark('Passwort'), i.password, { secret: true }));
     if (i.totp) out.push(totpField(i.totp));
+    else if (i.hasTotp) out.push(totpField(() => call('secret', { accountId: i.accountId, itemId: i.id, field: 'totp' })));
     (i.uris ?? []).forEach((u, n) => out.push(field(n ? t('Website {n}', { n: n + 1 }) : mark('Website'), u, { own: !!n, link: /^https?:/.test(u) ? u : null, plain: true })));
   }
   if (i.type === 'card' && i.card) {

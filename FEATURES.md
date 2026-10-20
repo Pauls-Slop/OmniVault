@@ -27,12 +27,20 @@ umsetzt und womit das geprüft ist. Wer einen Provider ändert, passt die Zeile 
 | pass (password-store) | Native-Host → `pass` + GnuPG | R |
 | 1Password | Native-Host → offizielles `op` | S |
 | LastPass | Native-Host → offizielles `lpass` | S |
+| KeePassXC | Browser-Schnittstelle von KeePassXC über `keepassxc-proxy` (kein OmniVault-Host) | S ¹⁶ |
 | Proton Pass | Native-Host → offizielles `pass-cli` | S, **zurückgestellt** ¹ |
-| alle anderen (KeePass, KeePassXC, Chrome, Firefox …) | Dateiimport in ein beschreibbares Konto | siehe Import |
+| alle anderen (KeePass-Dateien, Chrome, Firefox …) | Dateiimport in ein beschreibbares Konto | siehe Import |
 
 ¹ Proton gibt `pass-cli` derzeit nur für kostenpflichtige Tarife frei („Your account is not yet allowed to use our
 CLI“). Der Provider bleibt im Code und in den Tests, wird aber nicht weiterentwickelt, bis das CLI für alle Konten
 nutzbar ist. Ein Ersatz für das offizielle CLI ist bewusst nicht vorgesehen.
+
+¹⁶ KeePassXC: gegen einen simulierten KeePassXC getestet, der das dokumentierte Protokoll mit echter NaCl-Box
+spricht (Unit-Test und Browsertest). Über das Protokoll gehen: Logins auflisten, Benutzer und Passwort je Eintrag
+über seine Adresse holen, aktueller TOTP-Code, Logins anlegen, ändern und löschen, Gruppen anlegen. Nicht möglich
+(⛔ über die Schnittstelle): Notizen, Zusatzfelder, Titel, TOTP-Schlüssel, Karten und Identitäten, Favoriten,
+Verschieben, Einträge ohne Website-Adresse auslesen, Passkeys (das Protokoll kennt sie, OmniVault nutzt sie noch
+nicht). Gegentest mit echtem KeePassXC steht aus (TODO T-040).
 
 Bitwarden Cloud und Vaultwarden nutzen denselben Provider; gegen bitwarden.com/.eu ist nichts automatisiert getestet.
 

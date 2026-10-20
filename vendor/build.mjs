@@ -91,3 +91,4 @@ await esbuild.build({
 });
 console.log('vendor/openpgp.mjs and vendor/argon2id.mjs written');
 await import('./build-noble.mjs');
+await import('./build-tweetnacl.mjs');

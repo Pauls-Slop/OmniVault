@@ -141,6 +141,10 @@ export async function openEditor({ accountId, item = null, preset = {} } = {}) {
   const save = el('button', { type: 'submit' }, t('Speichern'));
   const folderLabel = picker.label;
   const otherHint = el('p', { className: 'hint' }, t('Bei diesem Typ werden Name, Ordner, Favorit und Notizen bearbeitet; die übrigen Felder bleiben unverändert.'));
+  // some providers keep only part of a login (KeePassXC: no name, notes or TOTP secret through its interface)
+  const nameLabel = el('label', {}, t('Name'), name);
+  const nameHint = el('p', { className: 'hint', 'data-hint': 'name-from-site' }, t('Den Namen vergibt der Anbieter selbst (nach der Website).'));
+  const notesLabel = el('label', {}, t('Notizen'), notes);
   const editable = (type) => ['login', 'note'].includes(type) || typesFor(acc).includes(type);
   const updateType = () => {
     const type = typeSel.value;
@@ -148,7 +152,11 @@ export async function openEditor({ accountId, item = null, preset = {} } = {}) {
     card.box.hidden = type !== 'card' || !editable(type);
     identity.box.hidden = type !== 'identity' || !editable(type);
     fieldsSection.hidden = !caps().fields;
-    totpIn.closest('label').hidden = editing && caps().editTotp === false;
+    totpIn.closest('label').hidden = caps().totp === false || (editing && caps().editTotp === false);
+    nameLabel.hidden = caps().name === false;
+    nameHint.hidden = caps().name !== false;
+    name.required = caps().name !== false;
+    notesLabel.hidden = caps().notes === false;
     otherHint.hidden = !editing || editable(type);
   };
   typeSel.addEventListener('change', updateType);
@@ -172,11 +180,11 @@ export async function openEditor({ accountId, item = null, preset = {} } = {}) {
   form.append(
     el('div', { className: 'two', style: { gridTemplateColumns: '1fr 1fr' } },
       el('label', {}, t('Konto'), accountSel), el('label', {}, t('Typ'), typeSel)),
-    el('label', {}, t('Name'), name),
+    nameLabel, nameHint,
     loginOnly, card.box, identity.box, otherHint,
     folderLabel,
     transferBox,
-    el('label', {}, t('Notizen'), notes),
+    notesLabel,
     fieldsSection,
     item?.passkeys?.length ? el('p', { className: 'hint', 'data-hint': 'passkey' }, t('Der Passkey für {site} bleibt beim Speichern erhalten.', { site: item.passkeys[0].rpId })) : null,
     el('label', { className: 'inline-check', title: caps().favorites === false ? t('Wird nur in OmniVault gespeichert') : null }, favorite, t('Favorit')),
@@ -187,8 +195,12 @@ export async function openEditor({ accountId, item = null, preset = {} } = {}) {
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     err.hidden = true;
-    if (!name.value.trim()) { err.textContent = t('Bitte einen Namen angeben.'); err.hidden = false; name.focus(); return; }
+    if (caps().name !== false && !name.value.trim()) { err.textContent = t('Bitte einen Namen angeben.'); err.hidden = false; name.focus(); return; }
     const type = typeSel.value;
+    if (type === 'login' && caps().needsUrl && ![...uriBox.querySelectorAll('[data-uri]')].some((x) => x.value.trim())) {
+      err.textContent = t('Dieser Anbieter braucht für einen Login eine Website-Adresse.'); err.hidden = false;
+      uriBox.querySelector('[data-uri]')?.focus(); return;
+    }
     const data = {
       type, name: name.value.trim(), notes: notes.value, favorite: favorite.checked,
       folderId: folderSel.value || null,
