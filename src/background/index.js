@@ -35,13 +35,13 @@ async function ensureSynced(account, force = false) {
     const result = await provider.sync(cfg(account), session);
     if (result.session) await store.setSession(account.id, result.session);
     await applyLocalFavorites(provider, account.id, result.items);
-    const entry = { items: result.items, trash: result.trash ?? [], folders: result.folders ?? [], syncedAt: Date.now(), error: null, warning: result.warning ?? null, readOnly: !!result.readOnly };
+    const entry = { items: result.items, trash: result.trash ?? [], folders: result.folders ?? [], organizations: result.organizations ?? [], syncedAt: Date.now(), error: null, warning: result.warning ?? null, readOnly: !!result.readOnly };
     cache.set(account.id, entry);
     if (provider.capabilities?.passkeys) passkeys.indexAccount(account.id, result.items).catch(() => {});
     return entry;
   } catch (e) {
     if (e.code === 'session_expired') await lock(account.id);
-    const entry = { items: cached?.items ?? [], trash: cached?.trash ?? [], folders: cached?.folders ?? [], syncedAt: cached?.syncedAt, error: e.message, readOnly: cached?.readOnly };
+    const entry = { items: cached?.items ?? [], trash: cached?.trash ?? [], folders: cached?.folders ?? [], organizations: cached?.organizations ?? [], syncedAt: cached?.syncedAt, error: e.message, readOnly: cached?.readOnly };
     cache.set(account.id, entry);
     return entry;
   }
@@ -393,6 +393,7 @@ const handlers = {
         config: a.config, server: a.config.server, email: a.config.email,
         unlocked, itemCount: c?.items.length ?? null, syncedAt: c?.syncedAt ?? null, error: c?.error ?? null,
         warning: c?.warning ?? null, readOnly: !!c?.readOnly,
+        canMoveToOrganization: !!c?.organizations?.some((o) => o.collections.some((x) => !x.readOnly)),
       });
     }
     return { providers: describeProviders(), accounts: out, settings: await getSettings(), pin: await pinStatus() };
@@ -640,6 +641,22 @@ const handlers = {
   async share({ accountId, itemId, changes }) {
     const { item } = await findItem(accountId, itemId);
     await write(accountId, (p, a, s) => p.share(cfg(a), s, item, changes));
+  },
+
+  // organizations (Bitwarden): where a personal item can be moved, and the move itself
+  async organizations({ accountId }) {
+    const entry = await ensureSynced(await store.getAccount(accountId));
+    return (entry?.organizations ?? [])
+      .map((o) => ({ id: o.id, name: o.name, collections: o.collections.filter((c) => !c.readOnly).map(({ id, name }) => ({ id, name })) }))
+      .filter((o) => o.collections.length);
+  },
+  async moveToOrganization({ accountId, itemId, organizationId, collectionIds }) {
+    const { item } = await findItem(accountId, itemId);
+    const res = await write(accountId, (p, a, s) => {
+      if (!p.moveToOrganization) throw new Error(t('{provider}: Organisationen werden nicht unterstützt', { provider: p.label }));
+      return p.moveToOrganization(cfg(a), s, item, { organizationId, collectionIds });
+    });
+    return fullItem(res.item);
   },
 
   // unlock with a PIN

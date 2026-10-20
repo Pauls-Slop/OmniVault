@@ -2,7 +2,8 @@
 // If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 // Copyright (c) 2026 Die OmniVault-Mitwirkenden
 // Bitwarden & Vaultwarden provider: login (password or personal API key), sync of all item types,
-// create / edit (logins, notes, cards, identities, custom fields) / favorite / folders / trash with restore.
+// create / edit (logins, notes, cards, identities, custom fields) / favorite / folders / trash with restore /
+// move personal items into an organization (collections).
 import { mark, t, tn } from '../../i18n/index.js';
 import { b64, fromB64 } from '../../lib/bytes.js';
 import { cborToPlain, decodeCbor } from '../../lib/cbor.js';
@@ -88,6 +89,21 @@ async function encryptPasskeys(passkeys, key) {
   })));
 }
 
+// An old-format symmetric EncString (type 0 or 2); everything else in a cipher (ids, dates, numbers) stays as it is.
+const SYM_ENC = /^[02]\.[A-Za-z0-9+/=]+\|[A-Za-z0-9+/=]+(\|[A-Za-z0-9+/=]+)?$/;
+
+/** Re-encrypts every EncString inside `v` (string, array, object) from key `from` to key `to`. */
+async function reencrypt(v, from, to) {
+  if (typeof v === 'string') return SYM_ENC.test(v) ? encryptSym(await decryptSym(v, from), to) : v;
+  if (Array.isArray(v)) return Promise.all(v.map((x) => reencrypt(x, from, to)));
+  if (v && typeof v === 'object') {
+    const out = {};
+    for (const [k, x] of Object.entries(v)) out[k] = await reencrypt(x, from, to);
+    return out;
+  }
+  return v;
+}
+
 /** Custom fields from the editor (text, hidden, boolean); linked fields cannot be edited and are kept. */
 async function encryptFields(fields, rawFields = [], key) {
   const kept = (rawFields ?? []).filter((f) => f.type === 3);
@@ -111,7 +127,7 @@ class BitwardenProvider extends Provider {
   static status = 'ready';
   static unlockLabel = mark('Master-Passwort');
   static unlockOptions = ['apikey'];
-  static capabilities = { write: true, types: ['login', 'note', 'card', 'identity'], fields: true, createFolder: true, trash: true, restore: true, attachments: true, passkeys: true };
+  static capabilities = { write: true, types: ['login', 'note', 'card', 'identity'], fields: true, createFolder: true, trash: true, restore: true, attachments: true, passkeys: true, organizations: true };
   static configFields = [
     {
       // Bitwarden runs exactly two cloud regions; anything else is self-hosted (incl. Vaultwarden).
@@ -260,10 +276,22 @@ class BitwardenProvider extends Provider {
         console.warn('OmniVault: Eintrag nicht entschlüsselbar', c.id, e);
       }
     }
+    // organizations with the collections the user may put items into (names are encrypted with the org key)
+    const organizations = [];
+    for (const o of data.profile?.organizations ?? []) {
+      if (!orgKeys[o.id] || orgKeys[o.id].cose) continue;
+      const collections = [];
+      for (const c of (data.collections ?? []).filter((x) => x.organizationId === o.id)) {
+        collections.push({ id: c.id, name: await decryptSymString(c.name, orgKeys[o.id]).catch(() => '') || c.id, readOnly: !!c.readOnly });
+      }
+      collections.sort((a, b) => a.name.localeCompare(b.name, 'de'));
+      organizations.push({ id: o.id, name: o.name ?? o.id, collections });
+    }
     const userId = data.profile?.id;
     return {
       items,
       trash,
+      organizations,
       folders: Object.entries(folderNames).map(([id, name]) => ({ id, name })).sort((a, b) => a.name.localeCompare(b.name, 'de')),
       // remember the user id: current Vaultwarden requires it as `encryptedFor` when writing ciphers
       session: userId && userId !== s.userId ? { ...s, userId } : renewed,
@@ -320,6 +348,7 @@ class BitwardenProvider extends Provider {
       folderId: c.folderId ?? null,
       folder: c.folderId ? folderNames[c.folderId] : undefined,
       favorite: !!c.favorite,
+      organizationId: c.organizationId ?? null,
       canEdit: c.edit !== false && !blob && !key.cose,
       revisionDate: c.revisionDate,
       uris: [],
@@ -513,6 +542,59 @@ class BitwardenProvider extends Provider {
     const enc = await encryptSym(name, this.#session(session).userKey);
     const { result, session: s } = await this.#withToken(ep, session, (token) => api.authed(ep, token, 'POST', '/folders', { name: enc }));
     return { folder: { id: result.body.id, name }, session: s };
+  }
+
+  /**
+   * Moves a personal item into an organization (Bitwarden's way of sharing): the item key – or, for items without
+   * one, every encrypted value – is re-encrypted with the organization key and the item is put into the chosen
+   * collections. Attachments keep their content; their names and keys are re-encrypted as well.
+   */
+  static async moveToOrganization(config, session, existing, { organizationId, collectionIds }) {
+    this.#assertWritable(session);
+    const raw = existing._raw;
+    if (raw.organizationId) throw new ProviderError(t('Der Eintrag gehört bereits einer Organisation.'), 'config');
+    if (!collectionIds?.length) throw new ProviderError(t('Bitte mindestens eine Sammlung wählen.'), 'config');
+    const ep = api.endpoints(config.server);
+    const { userKey } = this.#session(session);
+    // the organization key comes with the profile (encrypted for the user's private key)
+    const { result: prof, session: renewed } = await this.#withToken(ep, session, (token) => api.authed(ep, token, 'GET', '/accounts/profile'));
+    let s = renewed ?? session;
+    const profile = api.normalizeKeys(prof.body);
+    const orgKey = (await this.#orgKeys(profile, userKey))[organizationId];
+    if (!orgKey) throw new ProviderError(t('Schlüssel der Organisation fehlt'), 'crypto');
+    if (orgKey.cose) throw new ProviderError(t(V2_READ_ONLY), 'readonly');
+
+    const fieldKey = splitKey(fromB64(existing._key)); // item key if the item has one, otherwise the user key
+    const cipher = {
+      type: raw.type, organizationId, folderId: raw.folderId ?? null, favorite: !!raw.favorite, reprompt: raw.reprompt ?? 0,
+      name: raw.name, notes: raw.notes ?? null, login: raw.login ?? null, card: raw.card ?? null, identity: raw.identity ?? null,
+      secureNote: raw.secureNote ?? null, sshKey: raw.sshKey ?? null, fields: raw.fields ?? null,
+      passwordHistory: raw.passwordHistory ?? null, lastKnownRevisionDate: raw.revisionDate ?? null, key: null,
+    };
+    if (raw.key) {
+      // the values stay encrypted with the item key; only the item key moves to the organization key
+      cipher.key = await encryptSym(keyBytes(fieldKey), orgKey);
+    } else {
+      for (const k of ['name', 'notes', 'login', 'card', 'identity', 'secureNote', 'sshKey', 'fields', 'passwordHistory']) {
+        cipher[k] = await reencrypt(cipher[k], fieldKey, orgKey);
+      }
+    }
+    if (raw.attachments?.length) {
+      cipher.attachments2 = {};
+      for (const a of raw.attachments) {
+        // very old attachments are encrypted directly with the item's key and would have to be uploaded again
+        if (!a.key && !raw.key) throw new ProviderError(t('Dieser Eintrag hat Anhänge im alten Format. Bitte in einer Bitwarden-App in die Organisation verschieben.'), 'unsupported');
+        cipher.attachments2[a.id] = raw.key
+          ? { fileName: a.fileName, key: a.key ?? null }
+          : { fileName: await reencrypt(a.fileName, fieldKey, orgKey), key: await reencrypt(a.key, fieldKey, orgKey) };
+      }
+    }
+    const userId = await this.#userId(ep, s).then((r) => { if (r.session) s = r.session; return r.userId; });
+    if (userId) cipher.encryptedFor = userId;
+    const { result, session: renewed2 } = await this.#withToken(ep, s, (token) => api.authed(ep, token, 'PUT', `/ciphers/${existing.id}/share`, { cipher, collectionIds }));
+    if (renewed2) s = renewed2;
+    const item = await this.#decryptCipher(result.body, { userKey, orgKeys: { [organizationId]: orgKey }, folderNames: {}, accountId: config.id });
+    return { item: { ...item, folder: existing.folder }, session: s !== session ? s : undefined };
   }
 
   /** Restores an item from the trash. */

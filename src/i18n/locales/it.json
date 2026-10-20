@@ -793,5 +793,17 @@
  "KeePassXC antwortet nicht (Zeitüberschreitung). Wartet KeePassXC auf eine Bestätigung?": "KeePassXC non risponde (tempo scaduto). KeePassXC è in attesa di una conferma?",
  "KeePassXC hat unerwartet geantwortet.": "KeePassXC ha risposto in modo inatteso.",
  "Über KeePassXCs Browser-Schnittstelle (keepassxc-proxy). Voraussetzung: KeePassXC läuft mit geöffneter Datenbank, Browser-Integration ist eingeschaltet, unter „Erweitert“ ist das Auflisten aller Einträge erlaubt, und die Verbindung ist eingerichtet (native/README.md). Beim ersten Verbinden fragt KeePassXC nach einem Namen für OmniVault.": "Tramite l’interfaccia browser di KeePassXC (keepassxc-proxy). Requisiti: KeePassXC è in esecuzione con un database aperto, l’integrazione browser è attiva, in «Avanzate» è consentito elencare tutte le voci e la connessione è configurata (native/README.md). Al primo collegamento KeePassXC chiede un nome per OmniVault.",
- "KeePassXC gibt Einträge ohne Website-Adresse nicht an Browser-Erweiterungen heraus.": "KeePassXC non fornisce alle estensioni del browser gli elementi senza indirizzo web."
+ "KeePassXC gibt Einträge ohne Website-Adresse nicht an Browser-Erweiterungen heraus.": "KeePassXC non fornisce alle estensioni del browser gli elementi senza indirizzo web.",
+ "{provider}: Organisationen werden nicht unterstützt": "{provider} non supporta le organizzazioni",
+ "In Organisation verschieben …": "Sposta in un'organizzazione …",
+ "In die Organisation verschoben": "Spostato nell'organizzazione",
+ "Keine Organisation mit einer Sammlung, in die du Einträge legen darfst": "Nessuna organizzazione ha una raccolta in cui puoi aggiungere elementi",
+ "Sammlungen": "Raccolte",
+ "„{name}“ in eine Organisation verschieben": "Sposta «{name}» in un'organizzazione",
+ "Organisation": "Organizzazione",
+ "Danach gehört der Eintrag der Organisation: Alle, die Zugriff auf die gewählten Sammlungen haben, sehen ihn. OmniVault kann das nicht rückgängig machen.": "L'elemento apparterrà poi all'organizzazione: chiunque abbia accesso alle raccolte scelte potrà vederlo. OmniVault non può annullare l'operazione.",
+ "Bitte mindestens eine Sammlung wählen.": "Scegli almeno una raccolta.",
+ "Der Eintrag gehört bereits einer Organisation.": "Questo elemento appartiene già a un'organizzazione.",
+ "Schlüssel der Organisation fehlt": "Manca la chiave dell'organizzazione",
+ "Dieser Eintrag hat Anhänge im alten Format. Bitte in einer Bitwarden-App in die Organisation verschieben.": "Questo elemento ha allegati in un formato vecchio. Spostalo nell'organizzazione da un'app Bitwarden."
 }

@@ -72,7 +72,7 @@ try {
 
   await openAddAccount();
   const options = await popup.$$eval('#acc-provider option', (o) => o.map((x) => x.textContent));
-  check(options.length === 6, `providers listed: ${options.join(' | ')}`);
+  check(options.length === 7, `providers listed: ${options.join(' | ')}`);
   const servers = await popup.$$eval('#acc-fields select[name=server] option', (o) => o.map((x) => x.textContent));
   check(servers.some((t) => t.includes('bitwarden.com')) && servers.some((t) => t.includes('bitwarden.eu')) && servers.length === 3,
     `server choices: ${servers.join(' | ')}`);

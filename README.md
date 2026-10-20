@@ -38,6 +38,8 @@ For a detailed, per-feature overview see [FEATURES.md](FEATURES.md) (German).
   "Save login?" prompt
 - Create and edit logins, notes, cards and identities, custom fields and folders (as far as each manager supports them)
 - Password generator with strength meter and a history of recently generated passwords
+- Sharing: Passbolt items with people and groups; Bitwarden / Vaultwarden items by moving them into an organization
+  and its collections
 
 **Passkeys**
 - Create passkeys on websites and sign in with them, stored in your Bitwarden or Vaultwarden account in the same

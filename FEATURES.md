@@ -64,7 +64,7 @@ Bitwarden Cloud und Vaultwarden nutzen denselben Provider; gegen bitwarden.com/.
 | Passwortverlauf | ✅ R | – | – | ❌ | ❌ | ❌ |
 | Passkeys anzeigen | ✅ R | – ⁹ | – ⁹ | ❌ | ❌ | ✅ S (nur Seite und Benutzer) |
 | Passkeys auf Webseiten anlegen und damit anmelden, entfernen | ✅ R (Bitwarden-Format, mit den offiziellen Apps austauschbar) | – ⁹ | – ⁹ | ⛔ ¹⁰ | ⛔ ¹⁰ | ⛔ ¹⁰ |
-| Teilen, Rechte ändern, Zugriff entziehen | ❌ ⁷ | ✅ R | – | ⛔ | ⛔ | ⛔ |
+| Teilen, Rechte ändern, Zugriff entziehen | 🟡 R ⁷ | ✅ R | – | ⛔ | ⛔ | ⛔ |
 | Geteilte Einträge bearbeiten | ✅ R (Organisation) | ✅ R (Geheimnis für alle Leser neu verschlüsselt) | – | 🟡 (wie eigene, ungetestet) | 🟡 (wie eigene, ungetestet) | ❌ |
 | Konflikterkennung (veralteter Stand wird nicht überschrieben) | ✅ R | ✅ R | – | ✅ S ¹³ | ✅ S ¹³ | ✅ S ¹³ |
 | Geheimnisse erst bei Bedarf entschlüsseln | – (alles lokal) | ✅ R | ❌ ⁸ | ✅ S | ✅ S | ✅ S |
@@ -78,7 +78,11 @@ das echte Programm prüfbar sind.
 ⁵ pass: Zusatzfelder sind `Name: Wert`-Zeilen; pass kennt keine verborgenen Felder.
 ⁶ Passbolt 5.16 lehnt v5-Ordner ab, solange sein Aktionsprotokoll aktiv ist (es verlangt einen Klartextnamen);
 OmniVault legt dann einen einfachen Ordner an, wenn der Server das erlaubt.
-⁷ Bitwarden teilt über Organisationen und Sammlungen; das Verschieben in eine Organisation fehlt noch.
+⁷ Bitwarden teilt über Organisationen und Sammlungen: OmniVault verschiebt persönliche Einträge in eine Organisation
+und wählt die Sammlungen (alle Werte samt Passwortverlauf, Passkeys und Anhängen werden mit dem Organisationsschlüssel
+neu verschlüsselt, bzw. nur der Item-Key; geprüft gegen echtes Vaultwarden). Rechte in der Organisation und Sammlungen
+eines Organisationseintrags ändern geht weiterhin nur in den Bitwarden-Apps. Anhänge im ganz alten Format (ohne
+eigenen Schlüssel) lehnt OmniVault beim Verschieben ab.
 ¹⁷ `op` kann „Zuletzt gelöscht“ weder auflisten noch wiederherstellen; das geht laut 1Password-Doku nur in den
 1Password-Apps (geprüft 20.10.2026). Gelöschte Einträge bleiben dort 30 Tage.
 ⁸ pass legt URL und Benutzer in der verschlüsselten Datei ab; ohne Entschlüsseln gäbe es keinen Seitenabgleich.
@@ -159,6 +163,7 @@ stehen sie in den Notizen. Nicht zugeordnete CSV-Spalten landen in den Notizen.
 | Editor: Logins, Notizen, Karten, Identitäten, Zusatzfelder (Text, verborgen, Ja/Nein), mehrere Adressen | ✅ R |
 | „Neuer Ordner …“ direkt im Ordnerfeld | ✅ R |
 | Teilen-Dialog (Passbolt): Personen und Gruppen suchen, Rechte Lesen/Bearbeiten/Besitzer | ✅ R |
+| „In Organisation verschieben …“ (Bitwarden): Organisation und Sammlungen wählen | ✅ R (echtes Vaultwarden, Browsertest) |
 | Passwortgenerator (Zeichenklassen, ohne Verwechsler, PIN, Stärkeanzeige), Liste zuletzt erzeugter Passwörter; Passwörter verdeckt, Anzeigen per Auge | ✅ R + U |
 | Helles und dunkles Erscheinungsbild (folgt dem System), eigene Strich-Icons | ✅ |
 | Tastaturbedienung: Menüs mit Pfeiltasten, Esc geht zurück | ✅ R |
@@ -208,7 +213,7 @@ Einstellungen → Darstellung → Sprache wechselt sofort.
 | Passkeys in Formularen innerhalb fremder iframes, Sicherheitsschlüssel-Erweiterungen (PRF, largeBlob) | nicht umgesetzt; der Browser übernimmt diese Anfragen |
 | Passkeys für 1Password, LastPass, Proton Pass | deren Kommandozeilenprogramme geben die Schlüssel nicht heraus |
 | Bitwarden Send, Notfallzugriff, Berichte über Datenlecks (HIBP) | nicht umgesetzt |
-| Bitwarden: Einträge in Organisationen/Sammlungen verschieben, Anhänge hochladen | nicht umgesetzt |
+| Bitwarden: Anhänge hochladen; Sammlungen und Rechte eines Organisationseintrags ändern | nicht umgesetzt |
 | Bitwarden: WebAuthn- und Duo-Zweitfaktor, SSO | brauchen den Web-Tresor des Anbieters als Gegenstelle; Ausweg API-Schlüssel |
 | Passbolt: Duo, Kontowiederherstellung, Ordner teilen | nicht umgesetzt |
 | Entsperren nach Browser-Neustart ohne Master-Passwort | bewusst nicht: die versiegelten Sitzungen liegen nur im Arbeitsspeicher |

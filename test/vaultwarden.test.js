@@ -222,3 +222,110 @@ test('real Vaultwarden: passkeys are stored, synced back unchanged and usable fo
   assert.equal(items.find((i) => i.id === item.id).passkeys, undefined, 'removed');
   keep(await BitwardenProvider.deleteItem(config, session, edited));
 });
+
+/** Uploads one attachment like the official clients (per-file key wrapped with `wrapKey`). */
+async function uploadAttachment(session, itemId, wrapKey, fileName, text) {
+  const fileKey = crypto.getRandomValues(new Uint8Array(64));
+  const encFile = await encryptBuffer(new TextEncoder().encode(text), splitKey(fileKey));
+  const auth = { authorization: `Bearer ${session.accessToken}` };
+  const meta = await fetch(`${URL_}/api/ciphers/${itemId}/attachment/v2`, {
+    method: 'POST', headers: { ...auth, 'content-type': 'application/json' },
+    body: JSON.stringify({ key: await encryptSym(fileKey, wrapKey), fileName: await encryptSym(fileName, wrapKey), fileSize: encFile.length, adminRequest: false }),
+  }).then((r) => r.json());
+  const form = new FormData();
+  form.append('data', new Blob([encFile]), fileName);
+  const up = await fetch(`${URL_}/api/ciphers/${itemId}/attachment/${meta.attachmentId}`, { method: 'POST', headers: auth, body: form });
+  assert.ok(up.ok, `upload ${up.status}`);
+}
+
+test('real Vaultwarden: move a personal item into an organization (values, history, passkey, attachment)', opts, async () => {
+  let session = await login();
+  const keep = (r) => { if (r?.session) session = r.session; return r; };
+  const passkey = {
+    credentialId: 'b64cred', keyType: 'public-key', keyAlgorithm: 'ECDSA', keyCurve: 'P-256', keyValue: 'geheimer-schluessel',
+    rpId: 'umzug.example', userHandle: 'aGFuZGxl', userName: 'umzug', counter: '0', rpName: 'Umzug', userDisplayName: 'Umzug', discoverable: 'true',
+  };
+  let { item } = keep(await BitwardenProvider.saveItem(config, session, null, {
+    type: 'login', name: 'Umzug', username: 'umzug', password: 'alt-1', uris: ['https://umzug.example'], notes: 'Notiz zum Umzug',
+    fields: [{ name: 'PIN', value: '4711', type: 'hidden' }], passkeys: [passkey],
+  }));
+  ({ item } = keep(await BitwardenProvider.saveItem(config, session, item, { ...item, passkeys: undefined, type: 'login', password: 'neu-2' })));
+  await uploadAttachment(session, item.id, splitKey(fromB64(item._key)), 'umzug.txt', 'Inhalt der Datei');
+
+  let sync = keep(await BitwardenProvider.sync(config, session));
+  const org = sync.organizations.find((o) => o.id === seed.orgId);
+  assert.ok(org, 'organization listed');
+  assert.deepEqual(org.collections.map((c) => c.name), ['Standard']);
+  const before = sync.items.find((i) => i.id === item.id);
+  assert.equal(before.organizationId, null);
+  assert.equal(before._passkeyKeys.b64cred, 'geheimer-schluessel');
+
+  const moved = keep(await BitwardenProvider.moveToOrganization(config, session, before, { organizationId: org.id, collectionIds: [org.collections[0].id] }));
+  assert.equal(moved.item.organizationId, org.id);
+  assert.equal(moved.item.password, 'neu-2');
+
+  sync = keep(await BitwardenProvider.sync(config, session));
+  const after = sync.items.find((i) => i.id === item.id);
+  assert.equal(after.organizationId, org.id);
+  assert.equal(after._raw.organizationId, org.id);
+  assert.deepEqual(after._raw.collectionIds, [org.collections[0].id]);
+  assert.equal(after.name, 'Umzug');
+  assert.equal(after.username, 'umzug');
+  assert.equal(after.password, 'neu-2');
+  assert.equal(after.notes, 'Notiz zum Umzug');
+  assert.deepEqual(after.uris, ['https://umzug.example']);
+  assert.deepEqual(after.fields.map((f) => [f.name, f.value, f.type]), [['PIN', '4711', 'hidden']]);
+  assert.deepEqual(after.passwordHistory.map((h) => h.password), ['alt-1']);
+  assert.equal(after.passkeys[0].rpId, 'umzug.example');
+  assert.equal(after._passkeyKeys.b64cred, 'geheimer-schluessel');
+  const dl = keep(await BitwardenProvider.downloadAttachment(config, session, after, after.attachments[0].id));
+  assert.equal(dl.fileName, 'umzug.txt');
+  assert.equal(new TextDecoder().decode(fromB64(dl.data)), 'Inhalt der Datei');
+
+  // the item is an ordinary organization item now: editing works, moving again is refused
+  keep(await BitwardenProvider.saveItem(config, session, after, { ...after, passkeys: undefined, type: 'login', password: 'org-3' }));
+  sync = keep(await BitwardenProvider.sync(config, session));
+  const edited = sync.items.find((i) => i.id === item.id);
+  assert.equal(edited.password, 'org-3');
+  await assert.rejects(BitwardenProvider.moveToOrganization(config, session, edited, { organizationId: org.id, collectionIds: [org.collections[0].id] }), /bereits einer Organisation/);
+  keep(await BitwardenProvider.deleteItem(config, session, edited));
+});
+
+test('real Vaultwarden: move an item with its own item key into an organization', opts, async () => {
+  let session = await login();
+  const keep = (r) => { if (r?.session) session = r.session; return r; };
+  // like newer official clients: values encrypted with a per-item key, which is wrapped with the user key
+  const userKey = splitKey(fromB64(session.userKey));
+  const itemKeyBytes = crypto.getRandomValues(new Uint8Array(64));
+  const itemKey = splitKey(itemKeyBytes);
+  const auth = { authorization: `Bearer ${session.accessToken}`, 'content-type': 'application/json' };
+  const created = await fetch(`${URL_}/api/ciphers`, {
+    method: 'POST', headers: auth,
+    body: JSON.stringify({
+      type: 1, name: await encryptSym('Mit Item-Key', itemKey), notes: null, favorite: false, key: await encryptSym(itemKeyBytes, userKey),
+      login: { username: await encryptSym('ik-user', itemKey), password: await encryptSym('ik-pass', itemKey), uris: [] }, encryptedFor: seed.userId,
+    }),
+  }).then((r) => r.json());
+  assert.ok(created.id || created.Id, JSON.stringify(created));
+  const id = created.id ?? created.Id;
+  await uploadAttachment(session, id, itemKey, 'ik.txt', 'Datei mit Item-Key');
+
+  let sync = keep(await BitwardenProvider.sync(config, session));
+  const before = sync.items.find((i) => i.id === id);
+  assert.equal(before.password, 'ik-pass');
+  const org = sync.organizations.find((o) => o.id === seed.orgId);
+  keep(await BitwardenProvider.moveToOrganization(config, session, before, { organizationId: org.id, collectionIds: [org.collections[0].id] }));
+
+  sync = keep(await BitwardenProvider.sync(config, session));
+  const after = sync.items.find((i) => i.id === id);
+  assert.equal(after.organizationId, org.id);
+  assert.equal(after.name, 'Mit Item-Key');
+  assert.equal(after.username, 'ik-user');
+  assert.equal(after.password, 'ik-pass');
+  // the values themselves were not re-encrypted, only the item key
+  assert.equal(after._raw.login.password, before._raw.login.password);
+  assert.notEqual(after._raw.key, before._raw.key);
+  const dl = keep(await BitwardenProvider.downloadAttachment(config, session, after, after.attachments[0].id));
+  assert.equal(new TextDecoder().decode(fromB64(dl.data)), 'Datei mit Item-Key');
+  keep(await BitwardenProvider.deleteItem(config, session, after));
+});

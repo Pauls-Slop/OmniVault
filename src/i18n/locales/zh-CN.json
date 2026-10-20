@@ -764,5 +764,17 @@
  "KeePassXC antwortet nicht (Zeitüberschreitung). Wartet KeePassXC auf eine Bestätigung?": "KeePassXC 无响应（超时）。KeePassXC 是否在等待确认？",
  "KeePassXC hat unerwartet geantwortet.": "KeePassXC 的响应出乎意料。",
  "Über KeePassXCs Browser-Schnittstelle (keepassxc-proxy). Voraussetzung: KeePassXC läuft mit geöffneter Datenbank, Browser-Integration ist eingeschaltet, unter „Erweitert“ ist das Auflisten aller Einträge erlaubt, und die Verbindung ist eingerichtet (native/README.md). Beim ersten Verbinden fragt KeePassXC nach einem Namen für OmniVault.": "通过 KeePassXC 的浏览器接口（keepassxc-proxy）。前提条件：KeePassXC 正在运行且数据库已打开，浏览器集成已开启，并在“高级”中允许列出所有条目，且已设置好连接（native/README.md）。首次连接时，KeePassXC 会要求为 OmniVault 命名。",
- "KeePassXC gibt Einträge ohne Website-Adresse nicht an Browser-Erweiterungen heraus.": "KeePassXC 不会向浏览器扩展提供没有网站地址的项目。"
+ "KeePassXC gibt Einträge ohne Website-Adresse nicht an Browser-Erweiterungen heraus.": "KeePassXC 不会向浏览器扩展提供没有网站地址的项目。",
+ "{provider}: Organisationen werden nicht unterstützt": "{provider} 不支持组织",
+ "In Organisation verschieben …": "移至组织…",
+ "In die Organisation verschoben": "已移至组织",
+ "Keine Organisation mit einer Sammlung, in die du Einträge legen darfst": "没有可供你添加项目的组织集合",
+ "Sammlungen": "集合",
+ "„{name}“ in eine Organisation verschieben": "将“{name}”移至组织",
+ "Organisation": "组织",
+ "Danach gehört der Eintrag der Organisation: Alle, die Zugriff auf die gewählten Sammlungen haben, sehen ihn. OmniVault kann das nicht rückgängig machen.": "之后该项目将归组织所有：凡能访问所选集合的人都能看到它。OmniVault 无法撤销此操作。",
+ "Bitte mindestens eine Sammlung wählen.": "请至少选择一个集合。",
+ "Der Eintrag gehört bereits einer Organisation.": "该项目已属于某个组织。",
+ "Schlüssel der Organisation fehlt": "缺少组织密钥",
+ "Dieser Eintrag hat Anhänge im alten Format. Bitte in einer Bitwarden-App in die Organisation verschieben.": "该项目包含旧格式的附件。请在 Bitwarden 应用中将其移至组织。"
 }

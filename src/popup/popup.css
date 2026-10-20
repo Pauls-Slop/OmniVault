@@ -138,6 +138,9 @@ label > input, label > select, label > textarea { color: var(--text); }
 .short input { text-transform: uppercase; text-align: center; font-weight: 600; }
 fieldset.colors { border: 0; padding: 0; margin: 0 0 10px; }
 fieldset.colors legend { color: var(--muted); padding: 0; margin-bottom: 3px; }
+fieldset.collections { border: 0; padding: 0; margin: 0 0 10px; max-height: 180px; overflow-y: auto; }
+fieldset.collections legend { color: var(--muted); padding: 0; margin-bottom: 3px; }
+fieldset.collections label { margin-bottom: 4px; }
 .swatches { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 6px; }
 .swatch {
   width: 22px; height: 22px; border-radius: 50%; padding: 0; border: 2px solid transparent;

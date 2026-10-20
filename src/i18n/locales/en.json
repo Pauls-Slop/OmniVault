@@ -793,5 +793,17 @@
  "KeePassXC antwortet nicht (Zeitüberschreitung). Wartet KeePassXC auf eine Bestätigung?": "KeePassXC isn't responding (timeout). Is KeePassXC waiting for a confirmation?",
  "KeePassXC hat unerwartet geantwortet.": "KeePassXC sent an unexpected response.",
  "Über KeePassXCs Browser-Schnittstelle (keepassxc-proxy). Voraussetzung: KeePassXC läuft mit geöffneter Datenbank, Browser-Integration ist eingeschaltet, unter „Erweitert“ ist das Auflisten aller Einträge erlaubt, und die Verbindung ist eingerichtet (native/README.md). Beim ersten Verbinden fragt KeePassXC nach einem Namen für OmniVault.": "Through KeePassXC's browser interface (keepassxc-proxy). Requirements: KeePassXC is running with an open database, browser integration is on, listing all entries is allowed under “Advanced”, and the connection is set up (native/README.md). When you first connect, KeePassXC asks for a name for OmniVault.",
- "KeePassXC gibt Einträge ohne Website-Adresse nicht an Browser-Erweiterungen heraus.": "KeePassXC doesn't hand out items without a website address to browser extensions."
+ "KeePassXC gibt Einträge ohne Website-Adresse nicht an Browser-Erweiterungen heraus.": "KeePassXC doesn't hand out items without a website address to browser extensions.",
+ "{provider}: Organisationen werden nicht unterstützt": "{provider} doesn't support organizations",
+ "In Organisation verschieben …": "Move to organization …",
+ "In die Organisation verschoben": "Moved to the organization",
+ "Keine Organisation mit einer Sammlung, in die du Einträge legen darfst": "No organization has a collection you're allowed to add items to",
+ "Sammlungen": "Collections",
+ "„{name}“ in eine Organisation verschieben": "Move “{name}” to an organization",
+ "Organisation": "Organization",
+ "Danach gehört der Eintrag der Organisation: Alle, die Zugriff auf die gewählten Sammlungen haben, sehen ihn. OmniVault kann das nicht rückgängig machen.": "The item will then belong to the organization: everyone with access to the selected collections can see it. OmniVault can't undo this.",
+ "Bitte mindestens eine Sammlung wählen.": "Please choose at least one collection.",
+ "Der Eintrag gehört bereits einer Organisation.": "This item already belongs to an organization.",
+ "Schlüssel der Organisation fehlt": "The organization's key is missing",
+ "Dieser Eintrag hat Anhänge im alten Format. Bitte in einer Bitwarden-App in die Organisation verschieben.": "This item has attachments in an old format. Please move it to the organization in a Bitwarden app."
 }

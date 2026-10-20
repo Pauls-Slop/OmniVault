@@ -6,7 +6,8 @@ import { totp } from '../lib/totp.js';
 import { openEditor } from './editor.js';
 import { fillItem, hostOf } from './list.js';
 import { openMenu } from './menu.js';
-import { S, providerOf, refresh, writableAccounts } from './state.js';
+import { S, accountOf, providerOf, refresh, writableAccounts } from './state.js';
+import { openMoveToOrganization } from './organization.js';
 import { openShare } from './share.js';
 import { transferWithDialog } from './tools.js';
 import { formatDateTime, mark } from '../i18n/index.js';
@@ -160,6 +161,8 @@ export async function openItem(accountId, itemId) {
   const view = $('#view-item');
 
   const caps = providerOf(i.provider)?.capabilities ?? {};
+  // Bitwarden: a personal item can go into an organization the user may add items to
+  const toOrganization = caps.organizations && canDelete && !i.organizationId && !!accountOf(accountId)?.canMoveToOrganization;
   // Providers without favorites of their own get them from OmniVault (stored locally, see background/favorites.js).
   const localFav = caps.favorites === false;
   const favTitle = i.favorite ? (localFav ? t('Kein Favorit mehr (nur in OmniVault)') : t('Kein Favorit mehr'))
@@ -212,14 +215,21 @@ export async function openItem(accountId, itemId) {
           show('main');
         },
       }, t('Löschen')) : null,
-      ['login', 'note'].includes(i.type) && writableAccounts().length ? iconButton('transfer', t('Kopieren, verschieben, teilen'), {
+      (['login', 'note'].includes(i.type) && writableAccounts().length) || toOrganization ? iconButton('transfer', t('Kopieren, verschieben, teilen'), {
         'aria-haspopup': 'menu',
         onclick: (e) => openMenu(e.currentTarget, [
           ...(caps.share && canDelete ? [{ ico: 'user', text: t('Teilen …'), onSelect: async () => {
             if (await openShare({ ...i, accountId })) { toast(t('Freigaben gespeichert')); await refresh(); openItem(accountId, itemId); }
           } }] : []),
-          { ico: 'copy', text: t('Kopieren nach …'), onSelect: () => transferWithDialog([{ accountId, itemId }], 'copy').catch((x) => toast(x.message)) },
-          ...(canDelete && canWrite ? [{ ico: 'transfer', text: t('Verschieben nach …'), onSelect: () => transferWithDialog([{ accountId, itemId }], 'move').then((r) => { if (r?.[0]?.ok) show('main'); }).catch((x) => toast(x.message)) }] : []),
+          ...(toOrganization ? [{ ico: 'user', text: t('In Organisation verschieben …'), onSelect: async () => {
+            try {
+              if (await openMoveToOrganization({ ...i, accountId })) { toast(t('In die Organisation verschoben')); await refresh(); openItem(accountId, itemId); }
+            } catch (x) { toast(x.message); }
+          } }] : []),
+          ...(['login', 'note'].includes(i.type) && writableAccounts().length ? [
+            { ico: 'copy', text: t('Kopieren nach …'), onSelect: () => transferWithDialog([{ accountId, itemId }], 'copy').catch((x) => toast(x.message)) },
+            ...(canDelete && canWrite ? [{ ico: 'transfer', text: t('Verschieben nach …'), onSelect: () => transferWithDialog([{ accountId, itemId }], 'move').then((r) => { if (r?.[0]?.ok) show('main'); }).catch((x) => toast(x.message)) }] : []),
+          ] : []),
         ]),
       }) : null,
       canWrite ? el('button', { type: 'button', className: 'secondary', onclick: () => openEditor({ accountId, item: i }) }, t('Bearbeiten')) : null,

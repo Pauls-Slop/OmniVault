@@ -793,5 +793,17 @@
  "KeePassXC antwortet nicht (Zeitüberschreitung). Wartet KeePassXC auf eine Bestätigung?": "KeePassXC no responde (tiempo agotado). ¿Está KeePassXC esperando una confirmación?",
  "KeePassXC hat unerwartet geantwortet.": "KeePassXC respondió de forma inesperada.",
  "Über KeePassXCs Browser-Schnittstelle (keepassxc-proxy). Voraussetzung: KeePassXC läuft mit geöffneter Datenbank, Browser-Integration ist eingeschaltet, unter „Erweitert“ ist das Auflisten aller Einträge erlaubt, und die Verbindung ist eingerichtet (native/README.md). Beim ersten Verbinden fragt KeePassXC nach einem Namen für OmniVault.": "A través de la interfaz de navegador de KeePassXC (keepassxc-proxy). Requisitos: KeePassXC está abierto con una base de datos desbloqueada, la integración con el navegador está activada, en «Avanzado» se permite listar todas las entradas y la conexión está configurada (native/README.md). La primera vez que te conectes, KeePassXC pedirá un nombre para OmniVault.",
- "KeePassXC gibt Einträge ohne Website-Adresse nicht an Browser-Erweiterungen heraus.": "KeePassXC no entrega a las extensiones del navegador los elementos sin dirección de sitio web."
+ "KeePassXC gibt Einträge ohne Website-Adresse nicht an Browser-Erweiterungen heraus.": "KeePassXC no entrega a las extensiones del navegador los elementos sin dirección de sitio web.",
+ "{provider}: Organisationen werden nicht unterstützt": "{provider} no admite organizaciones",
+ "In Organisation verschieben …": "Mover a una organización …",
+ "In die Organisation verschoben": "Movido a la organización",
+ "Keine Organisation mit einer Sammlung, in die du Einträge legen darfst": "Ninguna organización tiene una colección en la que puedas añadir elementos",
+ "Sammlungen": "Colecciones",
+ "„{name}“ in eine Organisation verschieben": "Mover «{name}» a una organización",
+ "Organisation": "Organización",
+ "Danach gehört der Eintrag der Organisation: Alle, die Zugriff auf die gewählten Sammlungen haben, sehen ihn. OmniVault kann das nicht rückgängig machen.": "A partir de entonces, el elemento pertenece a la organización: todas las personas con acceso a las colecciones seleccionadas podrán verlo. OmniVault no puede deshacerlo.",
+ "Bitte mindestens eine Sammlung wählen.": "Elige al menos una colección.",
+ "Der Eintrag gehört bereits einer Organisation.": "Este elemento ya pertenece a una organización.",
+ "Schlüssel der Organisation fehlt": "Falta la clave de la organización",
+ "Dieser Eintrag hat Anhänge im alten Format. Bitte in einer Bitwarden-App in die Organisation verschieben.": "Este elemento tiene archivos adjuntos en un formato antiguo. Muévelo a la organización desde una app de Bitwarden."
 }
