@@ -798,7 +798,7 @@
  "Anhang hinzufügen …": "添加附件…",
  "Bitwardens Dateispeicher ist nicht erreichbar: {error}": "无法连接 Bitwarden 文件存储：{error}",
  "Anhang konnte nicht hochgeladen werden (HTTP {status}).": "无法上传附件（HTTP {status}）。",
- "Dieser Eintrag kann nicht bearbeitet werden.": "此条目无法编辑。",
+ "Dieser Eintrag kann nicht bearbeitet werden.": "此项目无法编辑。",
  "Der Anhang braucht einen Dateinamen.": "附件需要文件名。",
  "Der Server hat keinen Platz für den Anhang angelegt.": "服务器未为附件分配存储位置。",
  "Unbekannte Upload-Art des Servers ({type}).": "服务器返回了未知的上传方式（{type}）。",
