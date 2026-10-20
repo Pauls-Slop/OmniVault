@@ -8,6 +8,7 @@
     "build": "node build.mjs",
     "watch": "node build.mjs --watch",
     "package": "node tools/package.mjs",
+    "build:demo": "node demo/build.mjs",
     "test": "node --test test/*.test.js",
     "lint:firefox": "web-ext lint --source-dir dist/firefox",
     "test:e2e": "node test/e2e-chrome.mjs",

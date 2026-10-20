@@ -1,0 +1,86 @@
+<!doctype html>
+<!-- This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
+     If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/. -->
+<!-- Demo build only: a neutral sample website (example.com) for the popup to fill into. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Example – Sign in</title>
+<style>
+  :root { color-scheme: light; --ink: #1d2433; --muted: #5b6577; --line: #d8dde6; --bg: #f5f7fa; --brand: #3a5a9b; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  .bar { display: flex; align-items: center; gap: 10px; padding: 14px 24px; background: #fff; border-bottom: 1px solid var(--line); font-weight: 700; }
+  .bar i { width: 22px; height: 22px; border-radius: 50%; background: var(--brand); display: inline-block; }
+  main { max-width: 380px; margin: 40px auto; padding: 0 20px; }
+  /* wide windows: keep the forms left of where the OmniVault popup opens */
+  @media (min-width: 820px) { main { margin-left: max(24px, calc((100% - 400px - 380px) / 2)); } }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  p.sub { color: var(--muted); margin: 0 0 22px; }
+  form { background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 22px; }
+  label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 14px; }
+  input { display: block; width: 100%; margin-top: 5px; padding: 9px 10px; font: inherit; border: 1px solid var(--line); border-radius: 6px; color: var(--ink); background: #fff; transition: background-color .6s; }
+  input:focus { outline: 2px solid var(--brand); outline-offset: 0; border-color: transparent; }
+  input.filled { background: #fff7d6; }
+  button { width: 100%; padding: 10px; font: inherit; font-weight: 600; color: #fff; background: var(--brand); border: 0; border-radius: 6px; cursor: pointer; margin-top: 4px; }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .done { margin-top: 14px; padding: 10px 12px; border-radius: 6px; background: #e3f4e8; color: #1e5b33; font-size: 14px; }
+  h2 { font-size: 17px; margin: 36px 0 4px; }
+  footer { color: var(--muted); font-size: 12px; text-align: center; padding: 30px 20px 40px; }
+</style>
+</head>
+<body>
+<div class="bar"><i></i>Example</div>
+<main>
+  <h1>Sign in</h1>
+  <p class="sub">A sample page for the OmniVault demo. Nothing you enter leaves it.</p>
+  <form id="login" autocomplete="on">
+    <label>Email or username<input name="username" id="username" type="text" autocomplete="username"></label>
+    <label>Password<input name="password" id="password" type="password" autocomplete="current-password"></label>
+    <button type="submit">Sign in</button>
+    <div class="done" id="login-done" hidden></div>
+  </form>
+
+  <h2>Checkout</h2>
+  <p class="sub">Cards and identities fill payment and address forms.</p>
+  <form id="checkout" autocomplete="on">
+    <div class="row">
+      <label>First name<input name="given-name" autocomplete="given-name"></label>
+      <label>Last name<input name="family-name" autocomplete="family-name"></label>
+    </div>
+    <label>Street address<input name="address-line1" autocomplete="address-line1"></label>
+    <div class="row">
+      <label>Postal code<input name="postal-code" autocomplete="postal-code"></label>
+      <label>City<input name="city" autocomplete="address-level2"></label>
+    </div>
+    <label>Name on card<input name="cc-name" autocomplete="cc-name"></label>
+    <label>Card number<input name="cc-number" autocomplete="cc-number" inputmode="numeric"></label>
+    <div class="row">
+      <label>Expiry (MM/YY)<input name="cc-exp" autocomplete="cc-exp"></label>
+      <label>Security code<input name="cc-csc" autocomplete="cc-csc" inputmode="numeric"></label>
+    </div>
+    <button type="submit">Place order</button>
+    <div class="done" id="checkout-done" hidden>Order placed – just kidding, this is a demo.</div>
+  </form>
+</main>
+<footer>example.com is reserved for documentation and examples.</footer>
+<script>
+  // show what the extension filled: a short highlight on every field that changed
+  document.addEventListener('input', (e) => {
+    const f = e.target;
+    if (!(f instanceof HTMLInputElement)) return;
+    f.classList.add('filled');
+    setTimeout(() => f.classList.remove('filled'), 1200);
+  });
+  document.getElementById('login').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const user = document.getElementById('username').value.trim();
+    const done = document.getElementById('login-done');
+    done.textContent = user && document.getElementById('password').value ? `Signed in as ${user}.` : 'Enter a username and a password.';
+    done.hidden = false;
+  });
+  document.getElementById('checkout').addEventListener('submit', (e) => { e.preventDefault(); document.getElementById('checkout-done').hidden = false; });
+</script>
+</body>
+</html>
