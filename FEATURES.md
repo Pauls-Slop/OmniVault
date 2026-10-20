@@ -1,6 +1,6 @@
 # Featureliste
 
-Stand 19.10.2026, Version 0.5.3. Diese Datei ist die Tracking-Liste: Jede Zeile sagt, ob **OmniVault** eine Funktion
+Stand 20.10.2026, Version 0.5.3. Diese Datei ist die Tracking-Liste: Jede Zeile sagt, ob **OmniVault** eine Funktion
 umsetzt und womit das geprüft ist. Wer einen Provider ändert, passt die Zeile im selben Commit an.
 
 **Legende**
@@ -81,9 +81,12 @@ das echte Programm prüfbar sind.
 OmniVault legt dann einen einfachen Ordner an, wenn der Server das erlaubt.
 ⁷ Bitwarden teilt über Organisationen und Sammlungen: OmniVault verschiebt persönliche Einträge in eine Organisation
 und wählt die Sammlungen (alle Werte samt Passwortverlauf, Passkeys und Anhängen werden mit dem Organisationsschlüssel
-neu verschlüsselt, bzw. nur der Item-Key; geprüft gegen echtes Vaultwarden). Rechte in der Organisation und Sammlungen
-eines Organisationseintrags ändern geht weiterhin nur in den Bitwarden-Apps. Anhänge im ganz alten Format (ohne
-eigenen Schlüssel) lehnt OmniVault beim Verschieben ab.
+neu verschlüsselt, bzw. nur der Item-Key; geprüft gegen echtes Vaultwarden). Bei Organisationseinträgen ändert
+OmniVault die Sammlungen (`collections_v2`, Rückfall auf den älteren Endpunkt; nur Sammlungen, die der Nutzer
+bearbeiten darf, mindestens eine bleibt; geprüft gegen echtes Vaultwarden mit Besitzer und Mitglied mit
+schreibgeschützter Sammlung, gegen bitwarden.com nicht automatisiert). Rechte vergibt die Organisation; das geht
+weiterhin nur in den Bitwarden-Apps. Anhänge im ganz alten Format (ohne eigenen Schlüssel) lehnt OmniVault beim
+Verschieben ab.
 ¹⁷ `op` kann „Zuletzt gelöscht“ weder auflisten noch wiederherstellen; das geht laut 1Password-Doku nur in den
 1Password-Apps (geprüft 20.10.2026). Gelöschte Einträge bleiben dort 30 Tage.
 ¹⁸ Wie in den offiziellen Apps: eigener Schlüssel je Datei, mit dem Eintrags- bzw. Organisationsschlüssel verschlüsselt;
@@ -134,7 +137,7 @@ das RFC 9580 bisher nicht umsetzt – ungeprüft).
 | Kopieren / Verschieben aus Detailansicht und Editor | ✅ R |
 | Übertragen zwischen Anbietern | ✅ R: Logins, Notizen, Karten, Identitäten und Zusatzfelder, soweit das Ziel sie speichern kann; sonst stehen sie lesbar in den Notizen. Passkeys gehen mit, wenn das Ziel sie speichern kann (Bitwarden → Bitwarden); Anhänge, Verlauf und sonst auch Passkeys bleiben im Original (Hinweis vorher, je nach Zielkonto). |
 | Spiegel-Regeln (Quelle → Ziel, optional mit Löschen, ohne Ping-Pong) | ✅ R + U |
-| Automatischer Abgleich entsperrter Konten | ✅ (Alarm geprüft) |
+| Automatischer Abgleich entsperrter Konten (auch nach Neustart des Service Workers, mit Spiegel-Regeln) | ✅ R (Browsertest: Worker beendet, Alarm weckt ihn, Änderung eines anderen Clients kommt an und wird gespiegelt) |
 | Papierkorb (Werkzeuge → Papierkorb) | ✅ R (Bitwarden/Vaultwarden) |
 | Export: Bitwarden-JSON (vollständig, mit Passkeys samt Schlüssel wie bei Bitwarden) und CSV, je Konto oder alle | ✅ R + U |
 
@@ -169,6 +172,7 @@ stehen sie in den Notizen. Nicht zugeordnete CSV-Spalten landen in den Notizen.
 | „Neuer Ordner …“ direkt im Ordnerfeld | ✅ R |
 | Teilen-Dialog (Passbolt): Personen und Gruppen suchen, Rechte Lesen/Bearbeiten/Besitzer | ✅ R |
 | „In Organisation verschieben …“ (Bitwarden): Organisation und Sammlungen wählen | ✅ R (echtes Vaultwarden, Browsertest) |
+| „Sammlungen ändern …“ (Bitwarden-Organisationseintrag): schreibgeschützte Sammlungen sichtbar, aber gesperrt | ✅ R (echtes Vaultwarden, Browsertest) |
 | Passwortgenerator (Zeichenklassen, ohne Verwechsler, PIN, Stärkeanzeige), Liste zuletzt erzeugter Passwörter; Passwörter verdeckt, Anzeigen per Auge | ✅ R + U |
 | Helles und dunkles Erscheinungsbild (folgt dem System), eigene Strich-Icons | ✅ |
 | Tastaturbedienung: Menüs mit Pfeiltasten, Esc geht zurück | ✅ R |
@@ -218,7 +222,7 @@ Einstellungen → Darstellung → Sprache wechselt sofort.
 | Passkeys in Formularen innerhalb fremder iframes, Sicherheitsschlüssel-Erweiterungen (PRF, largeBlob) | nicht umgesetzt; der Browser übernimmt diese Anfragen |
 | Passkeys für 1Password, LastPass, Proton Pass | deren Kommandozeilenprogramme geben die Schlüssel nicht heraus |
 | Bitwarden Send, Notfallzugriff, Berichte über Datenlecks (HIBP) | nicht umgesetzt |
-| Bitwarden: Sammlungen und Rechte eines Organisationseintrags ändern | nicht umgesetzt |
+| Bitwarden: Rechte in einer Organisation verwalten (Mitglieder, Gruppen, Rechte je Sammlung) | nicht umgesetzt; Sammlungen eines Eintrags ändert OmniVault |
 | Bitwarden: WebAuthn- und Duo-Zweitfaktor, SSO | brauchen den Web-Tresor des Anbieters als Gegenstelle; Ausweg API-Schlüssel |
 | Passbolt: Duo, Kontowiederherstellung, Ordner teilen | nicht umgesetzt |
 | Entsperren nach Browser-Neustart ohne Master-Passwort | bewusst nicht: die versiegelten Sitzungen liegen nur im Arbeitsspeicher |
