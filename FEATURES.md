@@ -59,7 +59,7 @@ Bitwarden Cloud und Vaultwarden nutzen denselben Provider; gegen bitwarden.com/.
 | Ordner / Tresore anzeigen und verschieben | ✅ R | ✅ R (anzeigen), ✅ S (verschieben) | ✅ R (Pfade) | ✅ S (Tresore) | ✅ S (Gruppen) | ✅ S (Tresore) |
 | Ordner / Tresor anlegen | ✅ R | ✅ R ⁶ | ✅ R | ✅ S | ✅ S | ❌ |
 | Papierkorb: Löschen landet dort | ✅ R | – (endgültig) | – (endgültig) | ✅ S („Zuletzt gelöscht“) | – (endgültig) | ✅ S |
-| Papierkorb in OmniVault anzeigen, wiederherstellen, endgültig löschen | ✅ R | – | – | ❌ | – | ❌ |
+| Papierkorb in OmniVault anzeigen, wiederherstellen, endgültig löschen | ✅ R | – | – | ⛔ ¹⁷ | – | ❌ (zurückgestellt) |
 | Anhänge herunterladen | ✅ R | – | – | ❌ | ❌ | ❌ |
 | Passwortverlauf | ✅ R | – | – | ❌ | ❌ | ❌ |
 | Passkeys anzeigen | ✅ R | – ⁹ | – ⁹ | ❌ | ❌ | ✅ S (nur Seite und Benutzer) |
@@ -79,6 +79,8 @@ das echte Programm prüfbar sind.
 ⁶ Passbolt 5.16 lehnt v5-Ordner ab, solange sein Aktionsprotokoll aktiv ist (es verlangt einen Klartextnamen);
 OmniVault legt dann einen einfachen Ordner an, wenn der Server das erlaubt.
 ⁷ Bitwarden teilt über Organisationen und Sammlungen; das Verschieben in eine Organisation fehlt noch.
+¹⁷ `op` kann „Zuletzt gelöscht“ weder auflisten noch wiederherstellen; das geht laut 1Password-Doku nur in den
+1Password-Apps (geprüft 20.10.2026). Gelöschte Einträge bleiben dort 30 Tage.
 ⁸ pass legt URL und Benutzer in der verschlüsselten Datei ab; ohne Entschlüsseln gäbe es keinen Seitenabgleich.
 ⁹ Passbolt und pass kennen keine Passkeys.
 ¹⁰ Die Programme `op`, `lpass` und `pass-cli` geben die privaten Schlüssel von Passkeys nicht heraus; Proton Pass
