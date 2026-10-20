@@ -1,6 +1,6 @@
 # Verwendete Open-Source-Software und Lizenzen
 
-Lizenztexte: Ordner [`LICENSES/`](LICENSES/). Lizenzfragen: [LICENSING.md](LICENSING.md). Marken: [TRADEMARKS.md](TRADEMARKS.md).
+Lizenztexte: Ordner [`LICENSES/`](LICENSES/). OmniVault selbst steht unter der MPL-2.0 ([LICENSE](LICENSE)).
 Grundsatz: so wenig Fremdsoftware wie möglich. Fremdcode kommt nur für Kryptografie hinzu, und zwar als etablierte, quelloffene Bibliothek.
 
 ## In der Extension enthalten
@@ -48,8 +48,7 @@ XAES-256-GCM), für TOTP und für Passkeys (ECDSA P-256) kommen aus der WebCrypt
 
 `src/lib/psl-data.js` enthält nur die Regeln der Liste (Kommentare entfernt, Domains in ASCII-Schreibweise) und wird
 mit `npm run psl:build` neu erzeugt. Aktualisieren (vor jedem Release): `git clone --depth 1
-https://github.com/publicsuffix/list` (raw.githubusercontent.com und publicsuffix.org sind in der Agent-Umgebung
-gesperrt, GitHub-Klone nicht), `public_suffix_list.dat` nach `vendor/` und `tests/test_psl.txt` nach
+https://github.com/publicsuffix/list`, `public_suffix_list.dat` nach `vendor/` und `tests/test_psl.txt` nach
 `test/fixtures/psl-test.txt` kopieren, `npm run psl:build`, `npm test`, Datum, Hash und Commit hier eintragen.
 
 ## Externe Programme (nicht enthalten, nur aufgerufen)

@@ -184,5 +184,12 @@ Developer documentation – build scripts, tests, project layout and how transla
 
 OmniVault is licensed under the [Mozilla Public License 2.0](LICENSE). © The OmniVault contributors.
 
-Third-party components and their licenses are listed in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md); notes on
-trademarks are in [TRADEMARKS.md](TRADEMARKS.md).
+Third-party components and their licenses are listed in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+
+## Trademarks
+
+Bitwarden is a registered trademark of Bitwarden Inc. Passbolt is a trademark of Passbolt S.A.
+([passbolt.com](https://www.passbolt.com)). LastPass is a trademark of LastPass US LP. 1Password is a trademark of
+AgileBits Inc. Proton and Proton Pass are trademarks of Proton AG.
+All other names are trademarks of their respective owners and are used only to describe compatibility. OmniVault is
+not affiliated with, endorsed by or sponsored by any of them.

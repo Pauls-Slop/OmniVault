@@ -20,9 +20,7 @@ Passwörter finden, Exporte anderer Manager importieren und alles wieder exporti
 
 - **Stand je Funktion und Anbieter:** [FEATURES.md](FEATURES.md)
 - **Lokaler Host für pass, 1Password, LastPass, Proton:** [native/README.md](native/README.md)
-- **Bewertung weiterer Anbieter:** [PROVIDERS.md](PROVIDERS.md)
-- Fremdsoftware: [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) · Lizenzen: [LICENSING.md](LICENSING.md) ·
-  Marken: [TRADEMARKS.md](TRADEMARKS.md) · Plan: [PLAN.md](PLAN.md) · Verlauf: [PROGRESS.md](PROGRESS.md)
+- Fremdsoftware und Lizenzen: [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)
 
 OmniVault ist ein unabhängiges Projekt und nicht mit Bitwarden Inc., Passbolt S.A., Proton AG, AgileBits Inc.
 (1Password) oder LastPass US LP verbunden. Alle genannten Marken gehören ihren Inhabern.

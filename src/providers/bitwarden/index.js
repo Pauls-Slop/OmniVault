@@ -19,7 +19,7 @@ const BLOB_TYPES = { login: 1, secureNote: 2, card: 3, identity: 4, sshKey: 5 };
 
 /**
  * Encryption-v2 accounts are read-only for now: writing in the old format under a v2 user key would produce
- * items the official apps may reject (research/BITWARDEN-V2.md).
+ * items the official apps may reject.
  */
 const V2_READ_ONLY = mark('Dieses Konto nutzt Bitwardens neues Verschlüsselungsformat. OmniVault kann es bisher nur lesen.');
 

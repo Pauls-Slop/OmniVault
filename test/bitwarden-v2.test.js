@@ -1,7 +1,7 @@
 // This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 // Copyright (c) 2026 Die OmniVault-Mitwirkenden
-// Bitwarden "encryption v2" (research/BITWARDEN-V2.md): XAES-256-GCM against the C2SP vectors, COSE messages,
+// Bitwarden "encryption v2": XAES-256-GCM against the C2SP vectors, COSE messages,
 // padded COSE keys, and a whole v2 account built by an independent generator (test/fixtures/make-bitwarden-v2.py).
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';

@@ -8,7 +8,7 @@ keys, XAES-256-GCM, cipher blobs), as login response and /api/sync body.
 
 Written independently of OmniVault's JavaScript (own CBOR, XAES-256-GCM, padding and type-2 code; only AES,
 AES-GCM, RSA and PBKDF2 come from the `cryptography` package), so the test does not check the implementation
-against itself. Format: research/BITWARDEN-V2.md. Run: python3 test/fixtures/make-bitwarden-v2.py
+against itself. Run: python3 test/fixtures/make-bitwarden-v2.py
 """
 import base64
 import hashlib

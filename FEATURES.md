@@ -40,7 +40,7 @@ spricht (Unit-Test und Browsertest). Über das Protokoll gehen: Logins auflisten
 über seine Adresse holen, aktueller TOTP-Code, Logins anlegen, ändern und löschen, Gruppen anlegen. Nicht möglich
 (⛔ über die Schnittstelle): Notizen, Zusatzfelder, Titel, TOTP-Schlüssel, Karten und Identitäten, Favoriten,
 Verschieben, Einträge ohne Website-Adresse auslesen, Passkeys (das Protokoll kennt sie, OmniVault nutzt sie noch
-nicht). Gegentest mit echtem KeePassXC steht aus (TODO T-040).
+nicht). Ein Gegentest mit echtem KeePassXC steht noch aus.
 
 Bitwarden Cloud und Vaultwarden nutzen denselben Provider; gegen bitwarden.com/.eu ist nichts automatisiert getestet.
 
@@ -114,8 +114,7 @@ zeigt, ob das echte Programm ihn liefert.
 ¹² TOTP und YubiKey-OTP. Duo fehlt.
 ¹⁴ Noch von keinem Produktivkonto genutzt und von Vaultwarden nicht unterstützt (Stand 19.10.2026). Geprüft gegen
 die Vektoren der XAES-Spezifikation, Bitwardens veröffentlichte Vektoren (nur lokal) und ein unabhängig in Python
-erzeugtes V2-Konto. Solche Konten sind in OmniVault nur lesbar, bis Schreiben im neuen Format umgesetzt ist
-(research/BITWARDEN-V2.md).
+erzeugtes V2-Konto. Solche Konten sind in OmniVault nur lesbar, bis Schreiben im neuen Format umgesetzt ist.
 ¹⁵ OmniVault kann v6-Schlüssel; ob ein Passbolt-Server sie annimmt, entscheidet der Server (er prüft mit GnuPG,
 das RFC 9580 bisher nicht umsetzt – ungeprüft).
 

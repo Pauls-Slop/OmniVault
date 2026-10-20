@@ -161,4 +161,4 @@ die die Formate von `op` 2.x und `lastpass-cli` 1.x nachbilden; Proton Pass gege
 Befehle, Fehlermeldungen und Exit-Codes mit dem echten `pass-cli` 2.3.1 (ohne Anmeldung) abgeglichen sind. Prüfen Sie
 diese drei vor dem produktiven Einsatz mit `selftest.py` gegen die echten Programme.
 
-Alle genannten Namen sind Marken ihrer Inhaber; OmniVault ist mit ihnen nicht verbunden (siehe `../TRADEMARKS.md`).
+Alle genannten Namen sind Marken ihrer Inhaber; OmniVault ist mit ihnen nicht verbunden.

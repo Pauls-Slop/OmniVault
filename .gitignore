@@ -5,3 +5,13 @@ vendor/src/
 vendor/build/
 __pycache__/
 *.pyc
+
+# Interne Projektdokumente liegen nur im claude.ai-Projekt, nie im Repository
+/STAND.md
+/TODO.md
+/PROGRESS.md
+/PLAN.md
+/PROVIDERS.md
+/LICENSING.md
+/TRADEMARKS.md
+/research/

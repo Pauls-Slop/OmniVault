@@ -3,7 +3,7 @@
 // Copyright (c) 2026 Die OmniVault-Mitwirkenden
 // Bitwarden client-side cryptography (also used by Vaultwarden).
 // Reference: Bitwarden Security Whitepaper + open-source clients. Encryption v2 (EncString type 7, COSE keys,
-// XAES-256-GCM): format as described in research/BITWARDEN-V2.md, implemented here independently.
+// XAES-256-GCM): format read from Bitwarden's public sources (no code taken), implemented here independently.
 import { t } from '../../i18n/index.js';
 import loadArgon2id from '../../../vendor/argon2id.mjs';
 import { xchacha20poly1305 } from '../../../vendor/noble-ciphers.mjs';
