@@ -830,5 +830,15 @@
  "Dieser Eintrag kann nicht bearbeitet werden.": "Cet élément ne peut pas être modifié.",
  "Der Anhang braucht einen Dateinamen.": "La pièce jointe doit avoir un nom de fichier.",
  "Der Server hat keinen Platz für den Anhang angelegt.": "Le serveur n’a pas préparé d’emplacement pour la pièce jointe.",
- "Unbekannte Upload-Art des Servers ({type}).": "Type d’envoi inconnu indiqué par le serveur ({type})."
+ "Unbekannte Upload-Art des Servers ({type}).": "Type d’envoi inconnu indiqué par le serveur ({type}).",
+ "Das Programm hat keine Datei geschrieben": "Le programme n’a écrit aucun fichier",
+ "Ungültiges Ablaufdatum": "Date d’expiration non valide",
+ "1Password CLI lieferte keine Vorlage": "1Password CLI n’a renvoyé aucun modèle",
+ "Nur Logins, Notizen, Karten und Identitäten können angelegt werden": "Seuls les identifiants, notes, cartes et identités peuvent être créés",
+ "Die Adresse lässt sich über op nicht ändern – bitte in der 1Password-App ändern": "L’adresse ne peut pas être modifiée via op – modifiez-la dans l’app 1Password",
+ "Anhang zu groß (höchstens {n} MB)": "Pièce jointe trop volumineuse ({n} Mo maximum)",
+ "Feld {name} fehlt in der 1Password-Vorlage": "Le champ {name} manque dans le modèle 1Password",
+ "Programm konnte nicht gestartet werden: {error}": "Impossible de lancer le programme : {error}",
+ "1Password: Eine neue Adresse steht in den Notizen; ändern lässt sie sich nur in der 1Password-App.": "1Password : une nouvelle adresse est enregistrée dans les notes ; elle ne peut être modifiée que dans l’app 1Password.",
+ "1Password: Hat dieser Login einen Passkey, geht er beim Speichern über op verloren. Logins mit Passkey bitte in der 1Password-App bearbeiten.": "1Password : si cet identifiant possède une clé d’accès, elle est perdue lors de l’enregistrement via op. Modifiez les identifiants avec clé d’accès dans l’app 1Password."
 }

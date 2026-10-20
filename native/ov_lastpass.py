@@ -4,10 +4,15 @@
 """
 LastPass backend via the official `lpass` CLI (lastpass-cli 1.x). `lpass ls` lists without secrets; `reveal`
 uses `lpass show --json`. Writes feed `Field: value` lines to `lpass add/edit --non-interactive` over stdin.
+Attachments: `lpass show` lists them as fields named `att-<id>`; `lpass show --attach=att-<id> --quiet` prints one.
 """
 import json
+import re
 
-from ov_common import HostError, assert_unchanged, check_id, run, which
+from ov_common import HostError, assert_unchanged, attachment_result, check_id, run, run_binary, which
+
+ATTACH_ID = re.compile(r"^att-[0-9]+(-[0-9]+)?$")
+SEP = "\x1f"  # between field name and value in our --format (not part of names or file names)
 
 
 def lp_bin():
@@ -49,6 +54,31 @@ def lp_show(iid):
         raise HostError("Eintrag nicht gefunden")
     return arr[0]
 
+def lp_attachments(iid):
+    """Attachments of an entry: the `att-…` lines of `lpass show` (field format: name SEP value). Fields come
+    before the notes, so reading stops at "Reprompt"/"Notes"."""
+    out = run(lp_bin(), ["show", "--color=never", "--title-format=", f"--format=%fn{SEP}%fv", check_id(iid, "Eintrags-ID")]).stdout
+    found = []
+    for line in out.splitlines():
+        name, sep, value = line.partition(SEP)
+        if not sep:
+            continue
+        if name in ("Reprompt", "Notes"):
+            break
+        if ATTACH_ID.match(name):
+            found.append({"id": name, "fileName": value, "size": 0})
+    return found
+
+
+def lp_attachment(a):
+    iid = check_id(a.get("id"), "Eintrags-ID")
+    fid = check_id(a.get("fileId"), "Anhang-ID", ATTACH_ID)
+    meta = next((x for x in lp_attachments(iid) if x["id"] == fid), None)
+    if meta is None:
+        raise HostError("Anhang nicht gefunden")
+    return attachment_result(meta["fileName"], run_binary(lp_bin(), ["show", f"--attach={fid}", "--quiet", iid]))
+
+
 def lp_reveal(a):
     e = lp_show(a.get("id"))
     note = e.get("note") or ""
@@ -58,6 +88,7 @@ def lp_reveal(a):
         "password": e.get("password") or "", "uris": [e["url"]] if e.get("url") and e["url"] != "http://" else [],
         "totp": "", "notes": note, "type": "note" if is_note else "login",
         "folder": e.get("group") or None, "revision": e.get("last_modified_gmt") or None,
+        "attachments": lp_attachments(e.get("id") or a.get("id")),
     }
 
 def lp_body(a):
@@ -96,4 +127,4 @@ def lp_delete(a):
     return {"deleted": True}
 
 COMMANDS = {"status": lp_status, "list": lp_list, "reveal": lp_reveal,
-      "create": lp_create, "update": lp_update, "delete": lp_delete}
+      "create": lp_create, "update": lp_update, "delete": lp_delete, "attachment": lp_attachment}

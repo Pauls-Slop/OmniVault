@@ -9,7 +9,8 @@ import json
 import re
 from concurrent.futures import ThreadPoolExecutor
 
-from ov_common import VERSION, HostError, assert_unchanged, check_id as _check_id, run, which
+from ov_common import (VERSION, HostError, assert_unchanged, attachment_result, check_id as _check_id, read_output_file,
+                       run, too_large, which)
 
 ID_RE = re.compile(r"^[A-Za-z0-9_=\-]{1,200}$")
 # no update check (it may try to download), no colours, no Rust backtraces in error output
@@ -92,6 +93,16 @@ def passkey_info(p):
             "userName": pick("user_name", "userName"), "creationDate": None}
 
 
+def attachments(details):
+    """Files of an item as `item view --output json` lists them next to the item: id, size, content.name."""
+    out = []
+    for f in details.get("attachments") or [] if isinstance(details, dict) else []:
+        fid = f.get("id")
+        if isinstance(fid, str) and ID_RE.match(fid):
+            out.append({"id": fid, "fileName": (f.get("content") or {}).get("name") or "", "size": int(f.get("size") or 0)})
+    return out
+
+
 def normalize(details, vault_name):
     item = details.get("item", details)
     data = item.get("content") or {}
@@ -104,7 +115,8 @@ def normalize(details, vault_name):
         "trashed": str(item.get("state")) in ("Trashed", "2"),
     }
     public = {"username": None, "email": None, "urls": [], "subtitle": None, "hasPassword": False, "hasTotp": False}
-    secret = {"note": data.get("note") or "", "fields": extra_fields(data.get("extra_fields"))}
+    secret = {"note": data.get("note") or "", "fields": extra_fields(data.get("extra_fields")),
+              "attachments": attachments(details)}
     if kind == "Login":
         public.update(username=content.get("username") or content.get("email") or None,
                       email=content.get("email") or None, urls=content.get("urls") or [],
@@ -260,6 +272,22 @@ def cmd_untrash(args):
     return {"restored": True}
 
 
+def cmd_attachment(args):
+    """Downloads one attachment with `item attachment download` into a private temporary directory."""
+    share_id = check_id(args.get("shareId"), "Tresor-ID")
+    item_id = check_id(args.get("itemId"), "Eintrags-ID")
+    file_id = check_id(args.get("fileId"), "Anhang-ID")
+    meta = next((f for f in attachments(view(share_id, item_id)) if f["id"] == file_id), None)
+    if meta is None:
+        raise HostError("Anhang nicht gefunden")
+    err = too_large(meta["size"])
+    if err:
+        raise err
+    data = read_output_file(lambda path: run_cli(["item", "attachment", "download", "--share-id", share_id, "--item-id", item_id,
+                                                  "--attachment-id", file_id, "--output", path]))
+    return attachment_result(meta["fileName"], data)
+
+
 def cmd_move(args):
     """Moves an item to another vault with `item move` (keeps passkeys, attachments, history)."""
     share_id = check_id(args.get("shareId"), "Tresor-ID")
@@ -282,4 +310,5 @@ def cmd_move(args):
 
 
 COMMANDS = {"status": cmd_status, "list": cmd_list, "reveal": cmd_reveal, "create": cmd_create,
-            "update": cmd_update, "delete": cmd_delete, "untrash": cmd_untrash, "move": cmd_move}
+            "update": cmd_update, "delete": cmd_delete, "untrash": cmd_untrash, "move": cmd_move,
+            "attachment": cmd_attachment}

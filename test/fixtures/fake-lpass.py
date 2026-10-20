@@ -3,6 +3,7 @@
 # If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # Copyright (c) 2026 Die OmniVault-Mitwirkenden
 """Test double for the LastPass CLI `lpass` (subset used by OmniVault). State in $FAKE_LPASS_STATE."""
+import base64
 import json
 import os
 import re
@@ -17,7 +18,9 @@ def load():
     if not os.path.exists(STATE):
         seed = {"items": [
             {"id": "1001", "name": "GitHub", "group": "Arbeit", "fullname": "Arbeit/GitHub",
-             "username": "ada", "password": "lp-secret", "url": "https://github.com", "note": ""},
+             "username": "ada", "password": "lp-secret", "url": "https://github.com", "note": "att-9-1: nur Text",
+             "attachments": [{"id": "1001-77", "filename": "backup codes.txt", "data": "Y29kZS0xCmNvZGUtMgo="},
+                             {"id": "1001-78", "filename": "scan.png", "data": "iVBORw0KGgoAAAA="}]},
             {"id": "1002", "name": "Gedanke", "group": "", "fullname": "Gedanke",
              "username": "", "password": "", "url": "http://", "note": "nur text"},
         ]}
@@ -62,6 +65,31 @@ def main():
         if not it:
             print("Error: Could not find specified account.", file=sys.stderr)
             sys.exit(1)
+        attach = next((x.split("=", 1)[1] for x in a if x.startswith("--attach=")), None)
+        if attach is not None:
+            att = next((x for x in it.get("attachments", []) if "att-" + x["id"] == attach), None)
+            if not att:
+                print(f"Error: Could not find specified attachment '{attach}'.", file=sys.stderr)
+                sys.exit(1)
+            if "--quiet" not in a:  # lpass would ask whether to print a binary file
+                print("Error: no prompt possible", file=sys.stderr)
+                sys.exit(1)
+            sys.stdout.buffer.write(base64.b64decode(att["data"]))
+            return
+        fmt = next((x.split("=", 1)[1] for x in a if x.startswith("--format=")), None)
+        if "--json" not in a:  # like lpass show: title line, fields, attachments, then the notes
+            fmt = fmt or "%fn: %fv"
+            title = next((x.split("=", 1)[1] for x in a if x.startswith("--title-format=")), "%an [id: %ai]")
+            print(title.replace("%an", it["name"]).replace("%ai", it["id"]))
+            rows = [("Username", it["username"]), ("Password", it["password"])]
+            rows += [("URL", it["url"])] if it["url"] and it["url"] != "http://" else []
+            rows += [("att-" + x["id"], x["filename"]) for x in it.get("attachments", [])]
+            rows += [("Notes", it["note"])] if it["note"] else []
+            for name, value in rows:
+                if value:
+                    print(fmt.replace("%fn", name).replace("%fv", value))
+            return
+        it = {k: v for k, v in it.items() if k != "attachments"}  # --json does not list attachments
         print(json.dumps([{**it, "last_modified_gmt": it.get("last_modified_gmt", "1700000000"), "last_touch": "1700000000"}]))
         return
     if a[:1] == ["add"]:

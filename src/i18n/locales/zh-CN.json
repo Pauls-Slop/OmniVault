@@ -801,5 +801,15 @@
  "Dieser Eintrag kann nicht bearbeitet werden.": "此条目无法编辑。",
  "Der Anhang braucht einen Dateinamen.": "附件需要文件名。",
  "Der Server hat keinen Platz für den Anhang angelegt.": "服务器未为附件分配存储位置。",
- "Unbekannte Upload-Art des Servers ({type}).": "服务器返回了未知的上传方式（{type}）。"
+ "Unbekannte Upload-Art des Servers ({type}).": "服务器返回了未知的上传方式（{type}）。",
+ "Das Programm hat keine Datei geschrieben": "程序未写入任何文件",
+ "Ungültiges Ablaufdatum": "到期日期无效",
+ "1Password CLI lieferte keine Vorlage": "1Password CLI 未返回模板",
+ "Nur Logins, Notizen, Karten und Identitäten können angelegt werden": "只能创建登录信息、笔记、银行卡和身份",
+ "Die Adresse lässt sich über op nicht ändern – bitte in der 1Password-App ändern": "无法通过 op 更改地址，请在 1Password 应用中更改",
+ "Anhang zu groß (höchstens {n} MB)": "附件过大（最大 {n} MB）",
+ "Feld {name} fehlt in der 1Password-Vorlage": "1Password 模板中缺少字段 {name}",
+ "Programm konnte nicht gestartet werden: {error}": "无法启动程序：{error}",
+ "1Password: Eine neue Adresse steht in den Notizen; ändern lässt sie sich nur in der 1Password-App.": "1Password：新地址会保存在备注中；只能在 1Password 应用中更改。",
+ "1Password: Hat dieser Login einen Passkey, geht er beim Speichern über op verloren. Logins mit Passkey bitte in der 1Password-App bearbeiten.": "1Password：如果此登录信息有通行密钥，通过 op 保存会将其删除。请在 1Password 应用中编辑带有通行密钥的登录信息。"
 }

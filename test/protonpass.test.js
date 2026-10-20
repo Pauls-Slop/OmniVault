@@ -184,3 +184,17 @@ print(json.dumps({"sizes": sizes, "total": total}))
   assert.equal(total, 2500);
   assert.ok(sizes.length >= 3 && sizes.every((s) => s < 1024 * 1024), `chunks ${sizes.join(', ')}`);
 });
+
+test('attachments: listed from item view, downloaded with item attachment download into a private file', async () => {
+  const { t, config, log } = setup();
+  try {
+    const note = (await ProtonPassProvider.sync(config)).items.find((i) => i.name === 'Gedanken');
+    const r = await ProtonPassProvider.reveal(config, {}, note);
+    assert.deepEqual(r.attachments, [{ id: 'att_A1', fileName: 'skizze.txt', size: 10 }]);
+    const file = await ProtonPassProvider.downloadAttachment(config, {}, note, 'att_A1');
+    assert.deepEqual([file.fileName, Buffer.from(file.data, 'base64').toString()], ['skizze.txt', 'hallo welt']);
+    assert.match(log(), /"item", "attachment", "download", "--share-id", "s1", "--item-id", "i5", "--attachment-id", "att_A1", "--output", "[^"]+\/download"/);
+    await assert.rejects(ProtonPassProvider.downloadAttachment(config, {}, note, '../x'), /Ungültige/);
+    await assert.rejects(ProtonPassProvider.downloadAttachment(config, {}, note, 'att_B2'), /Anhang nicht gefunden/);
+  } finally { t.close(); }
+});

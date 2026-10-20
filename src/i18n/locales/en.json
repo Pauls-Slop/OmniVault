@@ -830,5 +830,15 @@
  "Dieser Eintrag kann nicht bearbeitet werden.": "This item can't be edited.",
  "Der Anhang braucht einen Dateinamen.": "The attachment needs a file name.",
  "Der Server hat keinen Platz für den Anhang angelegt.": "The server didn't set up a place for the attachment.",
- "Unbekannte Upload-Art des Servers ({type}).": "Unknown upload type from the server ({type})."
+ "Unbekannte Upload-Art des Servers ({type}).": "Unknown upload type from the server ({type}).",
+ "Das Programm hat keine Datei geschrieben": "The program did not write a file",
+ "Ungültiges Ablaufdatum": "Invalid expiration date",
+ "1Password CLI lieferte keine Vorlage": "1Password CLI returned no template",
+ "Nur Logins, Notizen, Karten und Identitäten können angelegt werden": "Only logins, notes, cards and identities can be created",
+ "Die Adresse lässt sich über op nicht ändern – bitte in der 1Password-App ändern": "The address cannot be changed through op – please change it in the 1Password app",
+ "Anhang zu groß (höchstens {n} MB)": "Attachment too large (maximum {n} MB)",
+ "Feld {name} fehlt in der 1Password-Vorlage": "Field {name} is missing from the 1Password template",
+ "Programm konnte nicht gestartet werden: {error}": "Could not start the program: {error}",
+ "1Password: Eine neue Adresse steht in den Notizen; ändern lässt sie sich nur in der 1Password-App.": "1Password: a new address is saved in the notes; it can only be changed in the 1Password app.",
+ "1Password: Hat dieser Login einen Passkey, geht er beim Speichern über op verloren. Logins mit Passkey bitte in der 1Password-App bearbeiten.": "1Password: if this login has a passkey, saving through op removes it. Please edit logins with a passkey in the 1Password app."
 }

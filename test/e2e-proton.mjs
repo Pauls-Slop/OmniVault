@@ -108,6 +108,17 @@ try {
   await site.waitForFunction(() => document.querySelector('input[type=password]').value !== '', null, { timeout: 5000 }).catch(() => {});
   check(await site.inputValue('input[type=password]') === 'proton-pw', 'login form filled from Proton Pass');
 
+  // attachment: listed in the detail view, downloaded through the host (pass-cli item attachment download)
+  await popup.bringToFront();
+  await popup.click('.item:has-text("Gedanken")');
+  await popup.waitForSelector('#view-item:not([hidden]) summary:has-text("Anhänge (1)")');
+  check(await popup.isVisible('#view-item .field:has-text("skizze.txt")'), 'attachment listed in the detail view');
+  const [download] = await Promise.all([popup.waitForEvent('download'), popup.click('#view-item [aria-label="skizze.txt herunterladen"]')]);
+  const saved = join(work, 'download.txt');
+  await download.saveAs(saved);
+  check(download.suggestedFilename() === 'skizze.txt' && readFileSync(saved, 'utf8') === 'hallo welt', 'attachment downloaded through the host');
+  await popup.click('#view-item button:has-text("Zurück")');
+
   // create + delete (permanent)
   await popup.bringToFront();
   await popup.click('#btn-new');

@@ -66,7 +66,10 @@ nach der Berechtigung „Mit kooperierenden nativen Anwendungen kommunizieren“
 | Funktion | pass | 1Password | LastPass | Proton Pass |
 |---|---|---|---|---|
 | Lesen (Benutzer, Passwort, URL, Notizen) | ✅ | ✅ | ✅ | ✅ |
-| Karten, Identitäten, SSH-Schlüssel lesen | – | – | – | ✅ |
+| Karten, Identitäten, SSH-Schlüssel lesen | – | ✅ (Karten, Identitäten) | – | ✅ |
+| Karten, Identitäten anlegen und ändern | – | ✅ (aus der `op`-Vorlage; Adresse nur lesen) | – | – |
+| Anhänge herunterladen (bis 30 MB) | – | ✅ (`op read`, `op document get`) | ✅ (`lpass show --attach`) | ✅ (`item attachment download`) |
+| Passwortverlauf | – | wenn `op` ihn ausgibt | – | – |
 | TOTP lesen | ✅ (`otpauth://`-Zeile) | ✅ | – | ✅ |
 | Login / Notiz anlegen, ändern, löschen | ✅ (nur Logins) | ✅ (Löschen nach „Zuletzt gelöscht“) | ✅ | ✅ (Löschen in den Papierkorb) |
 | Zusatzfelder lesen und ändern | ✅ (`Name: Wert`-Zeilen) | ✅ (andere Felder und Abschnitte bleiben erhalten) | – | nur lesen |
@@ -84,6 +87,15 @@ pass kennt keinen eigenen Notiz-Typ: Jeder Eintrag beginnt mit einer Passwortzei
   `pass insert -m` liest den Inhalt, `op item create -` und `op item edit <id>` lesen ein JSON (beim Ändern das
   vollständige Element mit den geänderten Werten, weil die Vorlage das Element ersetzt),
   `lpass add/edit --non-interactive` liest `Feld: Wert`-Zeilen. So stehen sie nicht in der Prozessliste.
+- 1Password-Karten und -Identitäten beginnen mit der Vorlage des installierten `op` (`op item template get`), damit
+  Feld-IDs, Typen und Abschnitte zu 1Password passen. **Passkeys:** Laut 1Password-Doku überschreibt `op item edit`
+  mit JSON-Vorlage einen vorhandenen Passkey; `op` zeigt Passkeys nicht an. Logins mit Passkey daher in der
+  1Password-App bearbeiten (der Editor weist darauf hin).
+- Anhänge schreibt das Programm in einen frisch angelegten privaten Ordner (Rechte 0700) unter einem festen
+  Dateinamen; der Host liest die Datei, löscht den Ordner und gibt höchstens 30 MB weiter. Große Dateien gehen in
+  mehreren Nachrichten an den Browser. Befehle: `op read --out-file <Datei> op://<Tresor-ID>/<Eintrags-ID>/<Datei-ID>`,
+  `op document get <ID> --vault <Tresor-ID> --out-file <Datei>`, `lpass show --attach=att-<ID> --quiet <ID>` (über
+  stdout, mit Größengrenze) und `pass-cli item attachment download … --output <Datei>`.
 - **Ausnahme Proton Pass:** `pass-cli item update` nimmt neue Werte nur als Argument `--field name=wert` an. Während
   des kurzen Aufrufs kann ein anderes Programm **desselben Benutzers** das geänderte Feld in der Prozessliste sehen.
   Andere Benutzer sehen es auf üblichen Systemen nicht. Beim Anlegen gehen Passwort, TOTP und Notiz über stdin.
@@ -149,10 +161,16 @@ Titel, Benutzernamen oder Passwörter, und lässt sich daher weitergeben:
 
 ```bash
 python3 selftest.py pass                       # nur lesen
-python3 selftest.py onepassword --write        # zusätzlich anlegen, ändern, löschen (Wegwerf-Eintrag)
+python3 selftest.py onepassword --write        # zusätzlich anlegen, ändern, löschen (Login, Karte, Identität)
 python3 selftest.py lastpass --write
 python3 selftest.py proton --write --vault OmniVault-Test   # Proton: vorher einen LEEREN Tresor anlegen
+python3 selftest.py lastpass --limit 200       # mehr Einträge nach Anhängen durchsuchen (Standard 25)
 ```
+
+Der Selbsttest zählt in den ersten Einträgen Anhänge, Passwortverläufe und Passkeys und lädt einen gefundenen Anhang
+einmal herunter (ausgegeben wird nur die Größe). Bei 1Password legt `--write` zusätzlich eine Wegwerf-Karte und eine
+Wegwerf-Identität aus der `op`-Vorlage an, liest sie zurück, ändert und löscht sie; gemeldet wird nur, ob die Felder
+übereinstimmen. Beides zeigt, ob das echte Programm die Formate liefert, die die Tests simulieren.
 
 ## Geprüft
 

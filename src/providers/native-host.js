@@ -24,10 +24,16 @@ const HOST_MESSAGES = new Set([
   mark('Die pass-cli-Sitzung ist mit einem Sperrcode gesperrt. Bitte im Terminal `pass-cli session unlock` ausführen.'),
   mark('Proton Pass: nicht angemeldet. Bitte im Terminal `pass-cli login` ausführen.'),
   mark('Der Eintrag wurde inzwischen geändert. Bitte synchronisieren und erneut bearbeiten.'),
+  mark('Anhang nicht gefunden'), mark('Das Programm hat keine Datei geschrieben'), mark('Ungültiges Ablaufdatum'),
+  mark('1Password CLI lieferte keine Vorlage'), mark('Nur Logins, Notizen, Karten und Identitäten können angelegt werden'),
+  mark('Die Adresse lässt sich über op nicht ändern – bitte in der 1Password-App ändern'),
 ]);
 const HOST_PATTERNS = [
   [/^Ungültige (.+)$/, (m) => t('Ungültige {name}', { name: m[1] })],
   [/^Feld (.+) kann nicht geändert werden$/, (m) => t('Feld {name} kann nicht geändert werden', { name: m[1] })],
+  [/^Anhang zu groß \(höchstens (\d+) MB\)$/, (m) => t('Anhang zu groß (höchstens {n} MB)', { n: m[1] })],
+  [/^Feld (.+) fehlt in der 1Password-Vorlage$/, (m) => t('Feld {name} fehlt in der 1Password-Vorlage', { name: m[1] })],
+  [/^Programm konnte nicht gestartet werden: (.+)$/, (m) => t('Programm konnte nicht gestartet werden: {error}', { error: m[1] })],
   [/^Exit-Code (\d+)$/, (m) => t('Exit-Code {code}', { code: m[1] })],
   [/^Unbekannter Befehl (.*)$/, (m) => t('Unbekannter Befehl {command}', { command: m[1] })],
   [/^Unbekanntes Backend (.*)$/, (m) => t('Unbekanntes Backend {backend}', { backend: m[1] })],
@@ -37,6 +43,19 @@ export function hostMessage(text) {
   if (HOST_MESSAGES.has(text)) return t(text);
   for (const [re, fn] of HOST_PATTERNS) { const m = re.exec(text); if (m) return fn(m); }
   return text;
+}
+
+/** Parts of a long answer: item lists ("items") or a file split into base64 pieces ("dataPart"). */
+export function collectPart(pending, result) {
+  if (result.dataPart !== undefined) (pending.data ??= []).push(result.dataPart);
+  else (pending.items ??= []).push(...(result.items ?? []));
+}
+export function joinParts(pending, result) {
+  if (result.dataPart !== undefined) {
+    const { dataPart, ...rest } = result;
+    return { ...rest, data: [...(pending.data ?? []), dataPart].join('') };
+  }
+  return pending.items ? { ...result, items: [...pending.items, ...(result.items ?? [])] } : result;
 }
 
 /** Request/response multiplexer over a native messaging port (reconnects lazily, closes when idle). */
@@ -57,9 +76,9 @@ export class NativeTransport {
       const p = this.pending.get(msg.id);
       if (!p) return;
       if (!msg.ok) { this.pending.delete(msg.id); p.reject(new ProviderError(hostMessage(msg.error), msg.code ?? 'host')); return; }
-      if (msg.more) { (p.items ??= []).push(...(msg.result.items ?? [])); return; }
+      if (msg.more) { collectPart(p, msg.result); return; }
       this.pending.delete(msg.id);
-      p.resolve(p.items ? { ...msg.result, items: [...p.items, ...(msg.result.items ?? [])] } : msg.result);
+      p.resolve(joinParts(p, msg.result));
     });
     port.onDisconnect.addListener(() => {
       const err = ext.runtime.lastError?.message ?? t('Verbindung zum Host getrennt');
@@ -114,6 +133,12 @@ export class CliProvider extends Provider {
 
   static async setFavorite() {
     throw new ProviderError(t('{provider}: Favoriten werden nicht unterstützt', { provider: this.label }), 'unsupported');
+  }
+
+  /** Downloads an attachment through the host (backends that list `attachments` on their items). */
+  static async downloadAttachment(config, session, item, attachmentId) {
+    const r = await this.call('attachment', { ...this.ref(item), fileId: attachmentId });
+    return { fileName: r.fileName || t('Anhang'), data: r.data ?? '' };
   }
 
   static async deleteItem(config, session, existing) {

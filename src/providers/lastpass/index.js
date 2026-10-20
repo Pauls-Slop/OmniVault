@@ -12,7 +12,7 @@ class LastPassProvider extends CliProvider {
   static id = 'lastpass';
   static label = 'LastPass';
   static note = mark('Über das offizielle LastPass-CLI (lpass) und den OmniVault-Host (native/README.md). Voraussetzung: lpass installiert und mit „lpass login“ angemeldet.');
-  static capabilities = { write: true, types: ['login', 'note'], favorites: false, folderLabel: 'Gruppe', moveFolder: true, createFolder: true };
+  static capabilities = { write: true, types: ['login', 'note'], favorites: false, folderLabel: 'Gruppe', moveFolder: true, createFolder: true, attachments: true };
   static async login() {
     const st = await this.call('status');
     if (!st.cli) throw new ProviderError(t('lpass (LastPass CLI) wurde nicht gefunden.'), 'config');
@@ -48,6 +48,7 @@ class LastPassProvider extends CliProvider {
     if (r.username) out.username = r.username;
     if (r.uris) out.uris = r.uris;
     out.type = r.type === 'note' ? 'note' : 'login';
+    if (r.attachments?.length) out.attachments = r.attachments;
     return out;
   }
 

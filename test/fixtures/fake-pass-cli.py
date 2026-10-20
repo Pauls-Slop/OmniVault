@@ -7,6 +7,7 @@ Test double for the Proton Pass CLI. Emits the JSON shapes of pass-cli 2.x (serd
 proton-pass-types 2.1.1: externally tagged enums, snake_case fields). State lives in $FAKE_PASS_STATE,
 every invocation is appended to $FAKE_PASS_LOG. $FAKE_PASS_LOGGED_OUT=1 simulates a missing session.
 """
+import base64
 import json
 import os
 import sys
@@ -40,7 +41,10 @@ def seed():
                  "first_name": "Ada", "middle_name": "", "last_name": "Lovelace", "passport_number": "C99", "city": "Berlin"}}),
             item("s1", "i4", "Deploy-Key", {"SshKey": {"private_key": "-----BEGIN OPENSSH PRIVATE KEY-----\nxx\n-----END OPENSSH PRIVATE KEY-----",
                  "public_key": "ssh-ed25519 AAAA ada", "sections": []}}),
-            item("s1", "i5", "Gedanken", {"Note": None}, note="streng geheim"),
+            {**item("s1", "i5", "Gedanken", {"Note": None}, note="streng geheim"), "attachments": [
+                {"id": "att_A1", "size": 10, "encryption_version": 1, "content": {"name": "skizze.txt", "mime_type": "text/plain"},
+                 "chunks": [{"chunk_id": "c1", "index": 0, "size": 10}], "encrypted_file_key": [1, 2, 3]}],
+             "_files": {"att_A1": "aGFsbG8gd2VsdA=="}},
             item("s1", "i6", "Alt", {"Login": {"email": "", "username": "old", "password": "x", "urls": [], "totp_uri": "", "passkeys": [], "autofill_urls": []}}, state="Trashed"),
             item("s2", "i7", "Wiki Arbeit", {"Login": {"email": "", "username": "ada", "password": "wiki-pw",
                  "urls": ["https://wiki.example.com"], "totp_uri": "", "passkeys": [], "autofill_urls": []}}),
@@ -112,9 +116,23 @@ def main():
         share, iid = opt(a, "--share-id"), opt(a, "--item-id")
         for d in s["items"]:
             if d["item"]["share_id"] == share and d["item"]["id"] == iid:
-                print(json.dumps(d))
+                print(json.dumps({k: v for k, v in d.items() if not k.startswith("_")}))
                 return
         fail("Error: Item not found")
+    if a[:3] == ["item", "attachment", "download"]:
+        share, iid, att, out = opt(a, "--share-id"), opt(a, "--item-id"), opt(a, "--attachment-id"), opt(a, "--output")
+        if not out:
+            fail("error: the following required arguments were not provided:\n  --output <OUTPUT>", 2)
+        d = next((d for d in s["items"] if d["item"]["share_id"] == share and d["item"]["id"] == iid), None)
+        if not d:
+            fail("Error: Error retrieving item")
+        if att not in d.get("_files", {}):
+            fail("Error: Attachment not found")
+        print("Downloading attachment...")
+        with open(out, "wb") as f:
+            f.write(base64.b64decode(d["_files"][att]))
+        print(f"Successfully downloaded attachment to: {out}")
+        return
     if a[:2] == ["item", "create"]:
         share = opt(a, "--share-id")
         tpl = json.load(sys.stdin)

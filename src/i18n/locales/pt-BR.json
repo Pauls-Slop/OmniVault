@@ -830,5 +830,15 @@
  "Dieser Eintrag kann nicht bearbeitet werden.": "Este item não pode ser editado.",
  "Der Anhang braucht einen Dateinamen.": "O anexo precisa de um nome de arquivo.",
  "Der Server hat keinen Platz für den Anhang angelegt.": "O servidor não reservou espaço para o anexo.",
- "Unbekannte Upload-Art des Servers ({type}).": "Tipo de envio desconhecido informado pelo servidor ({type})."
+ "Unbekannte Upload-Art des Servers ({type}).": "Tipo de envio desconhecido informado pelo servidor ({type}).",
+ "Das Programm hat keine Datei geschrieben": "O programa não gravou nenhum arquivo",
+ "Ungültiges Ablaufdatum": "Data de validade inválida",
+ "1Password CLI lieferte keine Vorlage": "O 1Password CLI não retornou nenhum modelo",
+ "Nur Logins, Notizen, Karten und Identitäten können angelegt werden": "Só é possível criar logins, notas, cartões e identidades",
+ "Die Adresse lässt sich über op nicht ändern – bitte in der 1Password-App ändern": "O endereço não pode ser alterado pelo op – altere-o no app do 1Password",
+ "Anhang zu groß (höchstens {n} MB)": "Anexo muito grande (máximo de {n} MB)",
+ "Feld {name} fehlt in der 1Password-Vorlage": "O campo {name} não está no modelo do 1Password",
+ "Programm konnte nicht gestartet werden: {error}": "Não foi possível iniciar o programa: {error}",
+ "1Password: Eine neue Adresse steht in den Notizen; ändern lässt sie sich nur in der 1Password-App.": "1Password: um novo endereço fica salvo nas notas; ele só pode ser alterado no app do 1Password.",
+ "1Password: Hat dieser Login einen Passkey, geht er beim Speichern über op verloren. Logins mit Passkey bitte in der 1Password-App bearbeiten.": "1Password: se este login tiver uma chave de acesso, ela será perdida ao salvar pelo op. Edite logins com chave de acesso no app do 1Password."
 }

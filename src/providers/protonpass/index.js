@@ -18,7 +18,7 @@ class ProtonPassProvider extends CliProvider {
   static id = 'protonpass';
   static label = 'Proton Pass';
   static note = mark('Über das offizielle Proton Pass CLI (pass-cli). Voraussetzung: pass-cli installiert, im Terminal mit „pass-cli login“ angemeldet und der OmniVault-Host eingerichtet (native/README.md). Proton gibt pass-cli derzeit nur für kostenpflichtige Tarife frei.');
-  static capabilities = { write: true, types: ['login', 'note'], favorites: false, editTotp: false, folderLabel: 'Tresor', trash: true, moveFolder: true };
+  static capabilities = { write: true, types: ['login', 'note'], favorites: false, editTotp: false, folderLabel: 'Tresor', trash: true, moveFolder: true, attachments: true };
 
   /** Proton items are addressed by vault (share) and item id. */
   static ref(item) { return splitId(item.id); }
@@ -54,6 +54,7 @@ class ProtonPassProvider extends CliProvider {
     if (r.card) out.card = r.card;
     if (r.identity) out.identity = r.identity;
     if (r.ssh) out.ssh = r.ssh;
+    if (r.attachments?.length) out.attachments = r.attachments;
     return out;
   }
 

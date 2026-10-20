@@ -14,8 +14,18 @@ class OnePasswordProvider extends CliProvider {
   static label = '1Password';
   static note = mark('Über das offizielle 1Password-CLI (op) und den OmniVault-Host (native/README.md). Voraussetzung: op installiert und angemeldet.');
   static capabilities = {
-    write: true, types: ['login', 'note'], editTotp: true, fields: true, trash: true,
-    folderLabel: 'Tresor', moveFolder: true, createFolder: true,
+    write: true, types: ['login', 'note', 'card', 'identity'], editTotp: true, fields: true, trash: true,
+    folderLabel: 'Tresor', moveFolder: true, createFolder: true, attachments: true,
+    // what `op` stores of a card / an identity (1Password derives the card type from the number)
+    typeFields: {
+      card: ['cardholderName', 'number', 'code', 'expMonth', 'expYear'],
+      identity: ['firstName', 'middleName', 'lastName', 'company', 'username', 'email', 'phone', 'address1', 'postalCode', 'city', 'state', 'country'],
+    },
+    typeHints: {
+      identity: mark('1Password: Eine neue Adresse steht in den Notizen; ändern lässt sie sich nur in der 1Password-App.'),
+      // op cannot show passkeys, and an edit through its JSON template overwrites them (1Password CLI docs)
+      login: mark('1Password: Hat dieser Login einen Passkey, geht er beim Speichern über op verloren. Logins mit Passkey bitte in der 1Password-App bearbeiten.'),
+    },
   };
 
   static async login() {
@@ -32,7 +42,7 @@ class OnePasswordProvider extends CliProvider {
         id: e.id, accountId: config.id, provider: 'onepassword', type: e.type,
         name: e.name || '', username: e.username || undefined, uris: e.uris ?? [],
         folderId: e.vaultId ?? null, folder: e.vault || undefined, favorite: !!e.favorite,
-        canEdit: ['login', 'note'].includes(e.type), canDelete: true, lazy: true, hasPassword: e.type === 'login', hasTotp: !!e.hasTotp,
+        canEdit: ['login', 'note', 'card', 'identity'].includes(e.type), canDelete: true, lazy: true, hasPassword: e.type === 'login', hasTotp: !!e.hasTotp,
         _revision: e.revision ?? undefined,
       })),
       folders: vaults.map((v) => ({ id: v.id, name: v.name })).sort((a, b) => a.name.localeCompare(b.name, 'de')),
@@ -51,7 +61,12 @@ class OnePasswordProvider extends CliProvider {
       out.card = r.card;
       out.subtitle = [r.card.brand, r.card.number ? `*${String(r.card.number).slice(-4)}` : ''].filter(Boolean).join(' ');
     }
-    if (r.identity) out.identity = r.identity;
+    if (r.identity) {
+      out.identity = r.identity;
+      out.subtitle = [r.identity.firstName, r.identity.lastName].filter(Boolean).join(' ') || r.identity.email || undefined;
+    }
+    if (r.passwordHistory?.length) out.passwordHistory = r.passwordHistory;
+    if (r.attachments?.length) out.attachments = r.attachments;
     return out;
   }
 
@@ -60,6 +75,7 @@ class OnePasswordProvider extends CliProvider {
       type: data.type, name: data.name, username: data.username, password: data.password,
       totp: data.totp, uris: data.uris ?? [], notes: data.notes, fields: data.fields,
       vaultId: data.folderId || undefined, favorite: data.favorite,
+      ...(data.type === 'card' ? { card: data.card ?? {} } : {}), ...(data.type === 'identity' ? { identity: data.identity ?? {} } : {}),
     };
     if (!existing) {
       const { id, revision } = await this.call('create', payload);
@@ -89,7 +105,10 @@ class OnePasswordProvider extends CliProvider {
       username: data.type === 'login' ? data.username || undefined : undefined,
       uris: data.type === 'login' ? data.uris ?? [] : [], notes: data.notes || undefined,
       password: data.type === 'login' ? data.password : undefined, totp: data.totp || undefined,
-      folderId: data.folderId ?? null, favorite: !!data.favorite, canEdit: true, canDelete: true, lazy: true, revealed: true,
+      ...(data.type === 'card' ? { card: data.card ?? {} } : {}), ...(data.type === 'identity' ? { identity: data.identity ?? {} } : {}),
+      // cards and identities are read back from 1Password (it derives the card type, keeps the address)
+      folderId: data.folderId ?? null, favorite: !!data.favorite, canEdit: true, canDelete: true, lazy: true,
+      revealed: !['card', 'identity'].includes(data.type),
       hasPassword: data.type === 'login' && !!data.password, hasTotp: !!data.totp, fields: data.fields ?? [],
     };
   }

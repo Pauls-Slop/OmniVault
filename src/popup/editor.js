@@ -71,8 +71,12 @@ export async function openEditor({ accountId, item = null, preset = {} } = {}) {
   const group = (key, defs) => {
     const src = v(key, {}) ?? {};
     const inputs = Object.fromEntries(defs.map(([n, , attrs = {}]) => [n, el('input', { name: `${key}.${n}`, value: src[n] ?? '', autocomplete: 'off', spellcheck: 'false', ...attrs })]));
-    const box = el('div', { className: 'group-fields' }, defs.map(([n, lbl, , wide]) => el('label', { className: wide ? 'wide' : '' }, t(lbl), inputs[n])));
-    return { box, read: () => Object.fromEntries(Object.entries(inputs).map(([n, i]) => [n, i.value.trim()])) };
+    const labels = Object.fromEntries(defs.map(([n, lbl, , wide]) => [n, el('label', { className: wide ? 'wide' : '' }, t(lbl), inputs[n])]));
+    const box = el('div', { className: 'group-fields' }, Object.values(labels));
+    // a provider may store only some of the fields (capabilities.typeFields); the others are hidden, not sent
+    const only = (list) => { for (const [n, l] of Object.entries(labels)) l.hidden = !!list && !list.includes(n); };
+    const read = () => Object.fromEntries(Object.entries(inputs).filter(([n]) => !labels[n].hidden).map(([n, i]) => [n, i.value.trim()]));
+    return { box, read, only };
   };
   const card = group('card', [
     ['cardholderName', mark('Karteninhaber'), {}, true], ['number', mark('Kartennummer'), { inputmode: 'numeric', type: 'password' }, true],
@@ -140,6 +144,7 @@ export async function openEditor({ accountId, item = null, preset = {} } = {}) {
 
   const save = el('button', { type: 'submit' }, t('Speichern'));
   const folderLabel = picker.label;
+  const typeHint = el('p', { className: 'hint', 'data-hint': 'type-fields', hidden: true });
   const otherHint = el('p', { className: 'hint' }, t('Bei diesem Typ werden Name, Ordner, Favorit und Notizen bearbeitet; die übrigen Felder bleiben unverändert.'));
   // some providers keep only part of a login (KeePassXC: no name, notes or TOTP secret through its interface)
   const nameLabel = el('label', {}, t('Name'), name);
@@ -151,6 +156,10 @@ export async function openEditor({ accountId, item = null, preset = {} } = {}) {
     loginOnly.hidden = type !== 'login';
     card.box.hidden = type !== 'card' || !editable(type);
     identity.box.hidden = type !== 'identity' || !editable(type);
+    card.only(caps().typeFields?.card);
+    identity.only(caps().typeFields?.identity);
+    typeHint.textContent = caps().typeHints?.[type] ? t(caps().typeHints[type]) : '';
+    typeHint.hidden = !typeHint.textContent || !editable(type);
     fieldsSection.hidden = !caps().fields;
     totpIn.closest('label').hidden = caps().totp === false || (editing && caps().editTotp === false);
     nameLabel.hidden = caps().name === false;
@@ -181,7 +190,7 @@ export async function openEditor({ accountId, item = null, preset = {} } = {}) {
     el('div', { className: 'two', style: { gridTemplateColumns: '1fr 1fr' } },
       el('label', {}, t('Konto'), accountSel), el('label', {}, t('Typ'), typeSel)),
     nameLabel, nameHint,
-    loginOnly, card.box, identity.box, otherHint,
+    loginOnly, card.box, identity.box, typeHint, otherHint,
     folderLabel,
     transferBox,
     notesLabel,
