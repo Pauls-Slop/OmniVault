@@ -85,7 +85,17 @@ async function checkAutoLock() {
   const { lastActivity = Date.now() } = await ext.storage.session.get('lastActivity');
   if (Date.now() - lastActivity >= autoLockMinutes * 60_000) await lockAll();
 }
-ext.alarms?.create(AUTOLOCK, { periodInMinutes: 1 });
+/**
+ * Creates a repeating alarm unless one with the same period exists. The worker runs this code on every start; an
+ * alarm created anew would start its period over each time, and a worker that wakes up more often than the period
+ * (other alarms, messages) would push it back for ever.
+ */
+async function ensureAlarm(name, periodInMinutes) {
+  const existing = await ext.alarms?.get(name);
+  if (existing?.periodInMinutes === periodInMinutes) return;
+  await ext.alarms?.create(name, { periodInMinutes });
+}
+ensureAlarm(AUTOLOCK, 1).catch(() => {});
 ext.alarms?.onAlarm.addListener((alarm) => {
   if (alarm.name === AUTOLOCK) checkAutoLock();
   else if (alarm.name === 'autosync') autoSync().catch((e) => console.warn('OmniVault: Abgleich fehlgeschlagen', e));
@@ -369,8 +379,8 @@ function runMirrors(ruleIds) {
 const AUTOSYNC = 'autosync';
 async function scheduleAutoSync() {
   const { autoSyncMinutes } = await getSettings();
-  await ext.alarms?.clear(AUTOSYNC);
-  if (autoSyncMinutes > 0) ext.alarms?.create(AUTOSYNC, { periodInMinutes: autoSyncMinutes });
+  if (autoSyncMinutes > 0) await ensureAlarm(AUTOSYNC, autoSyncMinutes);
+  else await ext.alarms?.clear(AUTOSYNC);
 }
 async function autoSync() {
   for (const a of await store.listAccounts()) {
