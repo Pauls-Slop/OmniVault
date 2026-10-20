@@ -7,6 +7,7 @@
   "scripts": {
     "build": "node build.mjs",
     "watch": "node build.mjs --watch",
+    "package": "node tools/package.mjs",
     "test": "node --test test/*.test.js",
     "lint:firefox": "web-ext lint --source-dir dist/firefox",
     "test:e2e": "node test/e2e-chrome.mjs",
@@ -25,7 +26,7 @@
     "i18n:keys": "node tools/i18n-extract.mjs"
   },
   "devDependencies": {
-    "esbuild": "^0.28.0",
+    "esbuild": "0.28.2",
     "playwright": "^1.56.0"
   },
   "license": "MPL-2.0",

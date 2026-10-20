@@ -173,6 +173,22 @@ Found a security issue? Please report it privately via
 [GitHub's security advisories](https://github.com/omni-vault/OmniVault/security/advisories/new) instead of a public
 issue.
 
+## Reproducing the release build
+
+The packages uploaded to the browser stores are built from this repository without any changes. To reproduce them
+(e.g. for an add-on review):
+
+- Node.js 22 (tested with 22.22.0), npm, and esbuild 0.28.2 (pinned in `package.json`) on Linux, macOS or Windows.
+- `npm install`, then `npm run package`. This builds `dist/chrome` and `dist/firefox` and writes
+  `omnivault-<version>-chrome.zip`, `omnivault-<version>-firefox.zip` and `omnivault-<version>-source.zip` together
+  with `SHA256SUMS` to `dist/packages/`. The archives are reproducible: the same sources give byte-identical files.
+- The only build step for OmniVault's own code is esbuild, which combines OmniVault's own files from `src/` into one file per entry point;
+  nothing is minified, and source maps are included. The third-party libraries in `vendor/` (OpenPGP.js, argon2id,
+  @noble/ciphers, TweetNaCl.js) are shipped as separate files, built from unmodified upstream sources. How they are built
+  from those sources at pinned commits is described in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)
+  (`npm run vendor:fetch`, `npm run vendor:build`); `vendor/sources.json` pins every upstream commit, and the
+  source archives of OpenPGP.js and argon2id are in `vendor/sources/`.
+
 ## Feedback and contributing
 
 Bug reports and feature requests are welcome in the

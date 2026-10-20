@@ -30,6 +30,7 @@ OmniVault ist ein unabhängiges Projekt und nicht mit Bitwarden Inc., Passbolt S
 ```bash
 npm install
 npm run build        # → dist/chrome, dist/firefox
+npm run package      # baut und packt dist/packages/: Chrome-, Firefox- und Quellpaket (reproduzierbar) + SHA256SUMS
 npm test             # Unit-Tests: Krypto-Testvektoren, simulierte Server und CLIs, Import, Werkzeuge
 npm run test:cli     # pass (echtes pass + gpg), 1Password und LastPass (simulierte CLIs) über den Host
 npm run test:e2e     # Erweiterung in Chromium: Popup als Tab, eigenes Fenster (Playwright)
