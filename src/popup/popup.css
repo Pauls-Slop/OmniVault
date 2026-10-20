@@ -288,9 +288,10 @@ details.history summary { cursor: pointer; color: var(--muted); font-size: 12px;
 .danger-text, button.secondary.danger-text { color: var(--danger); }
 
 /* ---------- tools ---------- */
-.tabs { display: flex; gap: 2px; border-bottom: 1px solid var(--border); margin: 0 0 10px; }
-.tabs button { flex: 1 1 auto; background: transparent; color: var(--muted); border: 0; border-bottom: 2px solid transparent; border-radius: 0; padding: 6px 2px; font-weight: 600; font-size: 12px;
-  white-space: normal; overflow-wrap: anywhere; line-height: 1.25; } /* long labels (other languages) wrap instead of being cut */
+.tabs { display: flex; flex-wrap: wrap; gap: 2px; border-bottom: 1px solid var(--border); margin: 0 0 10px; }
+.tabs button { flex: 1 1 0; background: transparent; color: var(--muted); border: 0; border-bottom: 2px solid transparent; border-radius: 0; padding: 6px 2px; font-weight: 600; font-size: 12px;
+  white-space: normal; overflow-wrap: break-word; line-height: 1.25;
+  min-width: min-content; } /* labels wrap between words, never inside one ("Revisa|r"); the row wraps only if the words alone are too wide */
 .tabs button:hover { background: var(--accent-soft); color: var(--text); }
 .tabs button.active { color: var(--text); border-bottom-color: var(--accent); }
 .tool-body { display: flex; flex-direction: column; flex: 1 1 auto; }

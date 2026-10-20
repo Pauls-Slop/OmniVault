@@ -41,6 +41,20 @@ const audit = (pseudo) => {
     .filter(visible)
     .filter((el) => el.scrollWidth > el.clientWidth + 1 && getComputedStyle(el).textOverflow !== 'ellipsis' && !el.closest('.chip .label'))
     .map(describe);
+  // a word of a button or tab broken across two lines ("Revisa|r"): each word must sit on one line
+  const splitWord = (el) => {
+    const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+    for (let n = walker.nextNode(); n; n = walker.nextNode()) {
+      for (const m of n.data.matchAll(/[\p{Script=Latin}\p{Script=Cyrillic}\p{Script=Greek}]{2,}/gu)) {
+        const r = document.createRange();
+        r.setStart(n, m.index); r.setEnd(n, m.index + m[0].length);
+        const tops = new Set([...r.getClientRects()].filter((x) => x.width > 0).map((x) => Math.round(x.top)));
+        if (tops.size > 1) return true;
+      }
+    }
+    return false;
+  };
+  clipped.push(...[...document.querySelectorAll('button, [role=tab], h2, h3, label')].filter(visible).filter(splitWord).map((el) => `${describe(el)} (word split across lines)`));
   const c = document.querySelector('#content');
   const boxes = [...document.querySelectorAll('input[type=checkbox]')].filter(visible).map((b) => { const r = b.getBoundingClientRect(); return `${Math.round(r.width)}×${Math.round(r.height)}`; });
   const out = { boxes: [...new Set(boxes)], hscroll: c.scrollWidth > c.clientWidth || document.documentElement.scrollWidth > document.documentElement.clientWidth, clipped, leaks: [] };
