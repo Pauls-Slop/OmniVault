@@ -43,6 +43,7 @@ npm run test:inline       # Knopf im Anmeldefeld, „Login speichern?“, Karten
 npm run test:i18n         # Sprachen: Browsersprache, Sprachwahl, alle Ansichten in allen Sprachen + Pseudosprache
 npm run test:passkeys     # Passkeys: Testseite mit Prüfung auf dem Server, OmniVault-Dialog, Rückfall auf den Browser
 npm run test:shortcuts    # Tastenkürzel und Kontextmenü mit echten X11-Eingaben (sichtbarer Browser unter Xvfb)
+npm run test:firefox      # dieselben Funktionen in Firefox (WebDriver BiDi, siehe unten)
 ```
 
 Die e2e-Skripte nehmen den Pfad zu Playwright als erstes Argument, falls es nicht im Projekt installiert ist.
@@ -52,6 +53,15 @@ Die e2e-Skripte nehmen den Pfad zu Playwright als erstes Argument, falls es nich
 in `npm test` brauchen ein installiertes `gpg`, sonst werden sie übersprungen; die pass-Tests laufen mit
 `OMNIVAULT_PASS_BIN=/pfad/zu/pass`. `test:passbolt` braucht PHP ≥ 8.2 mit der gnupg-Erweiterung, Composer, git und
 die PostgreSQL-Programme (Details in `test/passbolt-server.sh`).
+
+**Firefox-Test** (`test/e2e-firefox.mjs`): Playwrights Firefox kann keine Erweiterungen laden, deshalb startet der
+Test ein gewöhnliches Firefox ≥ 128 und steuert es über WebDriver BiDi (`test/firefox-bidi.mjs`, ohne Zusatzpakete,
+Node ≥ 22). Die Erweiterung wird temporär installiert (`webExtension.install`, keine Signatur nötig). Mit
+`-remote-allow-system-access` erreicht der Test auch das Browserfenster selbst: Toolbar-Popup, Seitenleiste,
+Tastenkürzel, Kontextmenü, Browserkonsole. `npm run test:firefox` lädt beim ersten Lauf ein Firefox 158 (Fremd-Build
+als AppImage, das Mozillas offizielles Release-Archiv unverändert enthält; Hash geprüft, siehe `test/firefox.sh`);
+mit `FIREFOX_BIN=/pfad/zu/firefox` nutzt es ein eigenes. Headless reicht; unter `xvfb-run -a` läuft Firefox sichtbar,
+und Strg+Umschalt+L wird als echte X11-Taste gedrückt.
 
 Kryptografie kommt aus etablierten Open-Source-Bibliotheken – OpenPGP.js (LGPL), argon2id (MIT) und für
 XChaCha20-Poly1305 @noble/ciphers (MIT), alle als separate Dateien in `vendor/` – und aus WebCrypto. Sonst gibt es keine Laufzeitabhängigkeiten. Bibliotheken neu bauen

@@ -70,8 +70,13 @@ function retarget() {
  * sidePanel.open() must run synchronously inside the click.
  */
 let browserWindowId = null;
-const rememberWindow = () => (mode === 'window' ? ext.windows?.getLastFocused({ windowTypes: ['normal'] }) : ext.windows?.getCurrent())
-  ?.then((w) => { browserWindowId = w?.id ?? null; }).catch(() => {});
+const rememberWindow = () => {
+  // Firefox throws synchronously (InvalidStateError) when the page is already being closed
+  try {
+    return (mode === 'window' ? ext.windows?.getLastFocused({ windowTypes: ['normal'] }) : ext.windows?.getCurrent())
+      ?.then((w) => { browserWindowId = w?.id ?? null; }).catch(() => {});
+  } catch { return undefined; }
+};
 rememberWindow();
 
 /** Closes this surface after switching to another one (popup, pop-out window or sidebar). */

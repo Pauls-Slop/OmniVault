@@ -231,17 +231,17 @@ Einstellungen → Darstellung → Sprache wechselt sofort.
 
 | Funktion | Chrome / Chromium | Firefox |
 |---|---|---|
-| Toolbar-Popup | ✅ R (echtes Popup getestet) | ❓ |
-| Eigenes Fenster, Seitenleiste; Wechsel Fenster ↔ Seitenleiste in beide Richtungen | ✅ R | ❓ Fenster → Seitenleiste über Klick auf das Symbol (Übergabe in Chromium simuliert, in Firefox ungetestet) |
-| Ausfüllen per Klick, Tastenkürzel, Kontextmenü (auch „Sicheres Passwort einfügen“) | ✅ R (Kürzel und Kontextmenü mit echten Tastatur- und Mauseingaben) | ❓ |
-| Karten und Identitäten in Zahlungs- und Adressformulare ausfüllen | ✅ S | ❓ |
-| OmniVault-Knopf in Anmeldefeldern mit passenden Logins (Opt-in) | ✅ S | ❓ |
-| „Login speichern?“ / „Passwort aktualisieren?“ nach dem Anmelden (Opt-in) | ✅ S | ❓ |
-| Auto-Sperre (Zeit, Bildschirmsperre), Zwischenablage leeren | ✅ | ❓ |
-| Native-Host für CLI-Anbieter | ✅ R | ❓ (Manifest wird installiert, nicht getestet) |
-| Passkeys: Seite fragt → OmniVault-Dialog (anlegen in neuem oder vorhandenem Login, anmelden, „anderes Gerät oder Browser“), Opt-in | ✅ R (Prüfseite mit unabhängiger Signaturprüfung, Passkeys gegen echtes Vaultwarden); manuell auf webauthn.io bestätigt | ✅ (manuell auf webauthn.io: anlegen und anmelden, 19.10.2026) |
-| Passkeys in der Liste eines `username webauthn`-Felds (bedingte Anfrage, „conditional mediation“) | ✅ S | ❓ |
-| Gesperrtes Konto: Dialog bietet Entsperren an, wenn dort ein Passkey für die Seite liegen kann | ✅ S | ❓ |
+| Toolbar-Popup | ✅ R (echtes Popup getestet) | ✅ R (echtes Popup über das Browserfenster geöffnet, feste Größe 380 × 560; Firefox 158) |
+| Eigenes Fenster, Seitenleiste; Wechsel Fenster ↔ Seitenleiste in beide Richtungen | ✅ R | ✅ R (echte Seitenleiste per Symbol öffnen und schließen; Übergabe Fenster → Seitenleiste: Symbol öffnet sie, das Fenster schließt sich) |
+| Ausfüllen per Klick, Tastenkürzel, Kontextmenü (auch „Sicheres Passwort einfügen“) | ✅ R (Kürzel und Kontextmenü mit echten Tastatur- und Mauseingaben) | ✅ R (Kontextmenü per Rechtsklick geöffnet, Eintrag über das Browserfenster gewählt; Kürzel unter Xvfb als echte Taste, headless über den registrierten Befehl) |
+| Karten und Identitäten in Zahlungs- und Adressformulare ausfüllen | ✅ S | ✅ S |
+| OmniVault-Knopf in Anmeldefeldern mit passenden Logins (Opt-in) | ✅ S | ✅ S |
+| „Login speichern?“ / „Passwort aktualisieren?“ nach dem Anmelden (Opt-in) | ✅ S | ✅ S |
+| Auto-Sperre (Zeit, Bildschirmsperre), Zwischenablage leeren | ✅ | ✅ (Sperre nach Inaktivität über den Alarm der Event-Page und Leeren der Zwischenablage automatisch geprüft; Bildschirmsperre nicht) |
+| Native-Host für CLI-Anbieter | ✅ R | ✅ S (Manifest in `~/.mozilla/native-messaging-hosts` mit `allowed_extensions`; Firefox startet den Host, Proton Pass über simuliertes `pass-cli`) |
+| Passkeys: Seite fragt → OmniVault-Dialog (anlegen in neuem oder vorhandenem Login, anmelden, „anderes Gerät oder Browser“), Opt-in | ✅ R (Prüfseite mit unabhängiger Signaturprüfung, Passkeys gegen echtes Vaultwarden); manuell auf webauthn.io bestätigt | ✅ S (Prüfseite mit unabhängiger Signaturprüfung: anlegen, anmelden, abbrechen; simulierter Server); manuell auf webauthn.io bestätigt (19.10.2026) |
+| Passkeys in der Liste eines `username webauthn`-Felds (bedingte Anfrage, „conditional mediation“) | ✅ S | ✅ S |
+| Gesperrtes Konto: Dialog bietet Entsperren an, wenn dort ein Passkey für die Seite liegen kann | ✅ S | ✅ S |
 
 ## Was gegenüber den offiziellen Apps noch fehlt
 
