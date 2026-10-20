@@ -33,7 +33,7 @@
   const style = document.createElement('style');
   style.textContent = `
     button { all: initial; position: absolute; width: 22px; height: 22px; border-radius: 6px; cursor: pointer; display: none;
-      background: #ff4d9a url("${ext.runtime.getURL('icons/icon32.png')}") center / 16px no-repeat; box-shadow: 0 1px 3px #0003; }
+      background: #2b0a17 url("${ext.runtime.getURL('icons/icon32.png')}") center / 16px no-repeat; box-shadow: 0 1px 3px #0003; }
     iframe { position: absolute; border: 0; border-radius: 10px; box-shadow: 0 8px 28px #0004; display: none; background: transparent; color-scheme: normal; }
     iframe.bar { position: fixed; top: 12px; right: 12px; width: 360px; height: 128px; }`;
   const button = document.createElement('button');

@@ -1,9 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-  <!-- OmniVault icon: dial with eight handles every 45°, the first 22.5° clockwise from north. Primary color oklch(0.6903 0.2218 358.3255) = #ff4d9a, glyph white -->
-  <rect width="20" height="20" rx="5" fill="#ff4d9a"/>
-  <g fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round">
+  <!-- OmniVault icon: dial with eight handles every 45°, the first 22.5° clockwise from north. Glyph in the primary color oklch(0.6903 0.2218 358.3255) = #ff4d9a on plum #2b0a17 -->
+  <rect width="20" height="20" rx="5" fill="#2b0a17"/>
+  <g fill="none" stroke="#ff4d9a" stroke-width="1.8" stroke-linecap="round">
     <circle cx="10" cy="10" r="5.2"/>
     <path d="M11.99 5.2L12.53 3.9M14.8 8.01L16.1 7.47M14.8 11.99L16.1 12.53M11.99 14.8L12.53 16.1M8.01 14.8L7.47 16.1M5.2 11.99L3.9 12.53M5.2 8.01L3.9 7.47M8.01 5.2L7.47 3.9"/>
   </g>
-  <circle cx="10" cy="10" r="1.6" fill="#fff"/>
+  <circle cx="10" cy="10" r="1.6" fill="#ff4d9a"/>
 </svg>

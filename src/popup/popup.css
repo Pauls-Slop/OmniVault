@@ -74,10 +74,10 @@ header:has(.nav:not([hidden])) h1 { margin-right: auto; }
 header:has(.nav:not([hidden])) h1 .name { display: none; }
 h1 { font-size: 15px; margin: 0; display: flex; align-items: center; gap: 8px; letter-spacing: .01em; }
 .logo { width: 20px; height: 20px; flex-shrink: 0; }
-.logo rect { fill: var(--accent); }
-/* the logo is the one exception to dark text on the primary: a white glyph, as in src/icons/icon.svg */
-.logo path, .logo circle { fill: none; stroke: #fff; stroke-width: 1.8; stroke-linecap: round; }
-.logo circle.hub { fill: #fff; stroke: none; }
+.logo rect { fill: #2b0a17; }
+/* the logo: primary-colored dial on plum (#2b0a17), as in src/icons/icon.svg */
+.logo path, .logo circle { fill: none; stroke: var(--primary); stroke-width: 1.8; stroke-linecap: round; }
+.logo circle.hub { fill: var(--primary); stroke: none; }
 h2 { font-size: 14px; margin: 0 0 12px; }
 h3 { font-size: 12px; font-weight: 600; margin: 16px 0 6px; color: var(--muted); }
 #view-about p { margin: 0 0 8px; overflow-wrap: anywhere; }
