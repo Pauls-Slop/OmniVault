@@ -840,5 +840,39 @@
  "Feld {name} fehlt in der 1Password-Vorlage": "O campo {name} não está no modelo do 1Password",
  "Programm konnte nicht gestartet werden: {error}": "Não foi possível iniciar o programa: {error}",
  "1Password: Eine neue Adresse steht in den Notizen; ändern lässt sie sich nur in der 1Password-App.": "1Password: um novo endereço fica salvo nas notas; ele só pode ser alterado no app do 1Password.",
- "1Password: Hat dieser Login einen Passkey, geht er beim Speichern über op verloren. Logins mit Passkey bitte in der 1Password-App bearbeiten.": "1Password: se este login tiver uma chave de acesso, ela será perdida ao salvar pelo op. Edite logins com chave de acesso no app do 1Password."
+ "1Password: Hat dieser Login einen Passkey, geht er beim Speichern über op verloren. Logins mit Passkey bitte in der 1Password-App bearbeiten.": "1Password: se este login tiver uma chave de acesso, ela será perdida ao salvar pelo op. Edite logins com chave de acesso no app do 1Password.",
+ "KeePass-Datenbank": "Banco de dados do KeePass",
+ "KeePass-Datenbank (.kdbx)": "Banco de dados do KeePass (.kdbx)",
+ "Die Datei ist beschädigt oder unvollständig.": "O arquivo está danificado ou incompleto.",
+ "Falsches Master-Passwort oder falsche Schlüsseldatei.": "Senha mestra ou arquivo de chave incorretos.",
+ "Die Schlüsseldatei ist beschädigt.": "O arquivo de chave está danificado.",
+ "Die Schlüsselableitung dieser Datenbank ist zu aufwendig.": "A derivação de chave deste banco de dados é custosa demais.",
+ "Diese Einstellungen der Schlüsselableitung werden nicht unterstützt.": "Essas configurações de derivação de chave não são compatíveis.",
+ "Die Schlüsselableitung braucht {size} Arbeitsspeicher; unterstützt werden bis zu {max}.": "A derivação de chave precisa de {size} de memória; são compatíveis até {max}.",
+ "Nicht genug Arbeitsspeicher für die Schlüsselableitung dieser Datenbank.": "Memória insuficiente para a derivação de chave deste banco de dados.",
+ "Der Schutz der Feldwerte dieser Datenbank (Verfahren {id}) wird nicht unterstützt.": "A proteção de campos deste banco de dados (método {id}) não é compatível.",
+ "Die Datenbank ist zu groß.": "O banco de dados é grande demais.",
+ "Diese KDBX-Version wird nicht unterstützt.": "Esta versão de KDBX não é compatível.",
+ "Keine KeePass-Datenbank (.kdbx).": "Não é um banco de dados do KeePass (.kdbx).",
+ "KeePass-1-Datenbanken (.kdb) werden nicht unterstützt. Bitte in KeePass 2 oder KeePassXC öffnen und als .kdbx speichern.": "Bancos de dados do KeePass 1 (.kdb) não são compatíveis. Abra-o no KeePass 2 ou no KeePassXC e salve como .kdbx.",
+ "KDBX-Version {version} wird nicht unterstützt.": "A versão {version} de KDBX não é compatível.",
+ "Twofish-Verschlüsselung wird nicht unterstützt. Bitte die Datenbank in KeePass oder KeePassXC auf AES-256 oder ChaCha20 umstellen.": "A criptografia Twofish não é compatível. Mude o banco de dados para AES-256 ou ChaCha20 no KeePass ou no KeePassXC.",
+ "Das Verschlüsselungsverfahren dieser Datenbank wird nicht unterstützt.": "O método de criptografia deste banco de dados não é compatível.",
+ "Die Schlüsselableitung dieser Datenbank wird nicht unterstützt.": "A derivação de chave deste banco de dados não é compatível.",
+ "Die Datei ist zu groß (höchstens {size}).": "O arquivo é grande demais (máximo de {size}).",
+ "Master-Passwort der Datenbank": "Senha mestra do banco de dados",
+ "Schlüsseldatei": "Arquivo de chave",
+ "Schlüsseldatei (optional)": "Arquivo de chave (opcional)",
+ "Gruppen als Ordner übernehmen": "Transformar grupos em pastas",
+ "KeePass-Datenbank: Master-Passwort eingeben und, falls verwendet, die Schlüsseldatei wählen. Entschlüsselt wird nur hier im Browser; nichts davon wird gespeichert.": "Banco de dados do KeePass: digite a senha mestra e, se você usar um, escolha o arquivo de chave. A descriptografia acontece só aqui no navegador; nada disso é salvo.",
+ "Entschlüssele …": "Descriptografando…",
+ "Die Schlüsseldatei ist zu groß.": "O arquivo de chave é grande demais.",
+ "Papierkorb: {n} Einträge werden nicht übernommen.": {
+  "one": "Lixeira: {n} item não será importado.",
+  "other": "Lixeira: {n} itens não serão importados."
+ },
+ "Anhänge werden nicht übernommen ({n} Einträge: {names}).": {
+  "one": "Os anexos não são importados ({n} item: {names}).",
+  "other": "Os anexos não são importados ({n} itens: {names})."
+ }
 }

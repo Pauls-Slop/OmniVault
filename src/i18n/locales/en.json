@@ -840,5 +840,39 @@
  "Feld {name} fehlt in der 1Password-Vorlage": "Field {name} is missing from the 1Password template",
  "Programm konnte nicht gestartet werden: {error}": "Could not start the program: {error}",
  "1Password: Eine neue Adresse steht in den Notizen; ändern lässt sie sich nur in der 1Password-App.": "1Password: a new address is saved in the notes; it can only be changed in the 1Password app.",
- "1Password: Hat dieser Login einen Passkey, geht er beim Speichern über op verloren. Logins mit Passkey bitte in der 1Password-App bearbeiten.": "1Password: if this login has a passkey, saving through op removes it. Please edit logins with a passkey in the 1Password app."
+ "1Password: Hat dieser Login einen Passkey, geht er beim Speichern über op verloren. Logins mit Passkey bitte in der 1Password-App bearbeiten.": "1Password: if this login has a passkey, saving through op removes it. Please edit logins with a passkey in the 1Password app.",
+ "KeePass-Datenbank": "KeePass database",
+ "KeePass-Datenbank (.kdbx)": "KeePass database (.kdbx)",
+ "Die Datei ist beschädigt oder unvollständig.": "The file is damaged or incomplete.",
+ "Falsches Master-Passwort oder falsche Schlüsseldatei.": "Wrong master password or key file.",
+ "Die Schlüsseldatei ist beschädigt.": "The key file is damaged.",
+ "Die Schlüsselableitung dieser Datenbank ist zu aufwendig.": "This database's key derivation is too expensive.",
+ "Diese Einstellungen der Schlüsselableitung werden nicht unterstützt.": "These key derivation settings aren't supported.",
+ "Die Schlüsselableitung braucht {size} Arbeitsspeicher; unterstützt werden bis zu {max}.": "Key derivation needs {size} of memory; up to {max} is supported.",
+ "Nicht genug Arbeitsspeicher für die Schlüsselableitung dieser Datenbank.": "Not enough memory for this database's key derivation.",
+ "Der Schutz der Feldwerte dieser Datenbank (Verfahren {id}) wird nicht unterstützt.": "This database's field protection (method {id}) isn't supported.",
+ "Die Datenbank ist zu groß.": "The database is too large.",
+ "Diese KDBX-Version wird nicht unterstützt.": "This KDBX version isn't supported.",
+ "Keine KeePass-Datenbank (.kdbx).": "Not a KeePass database (.kdbx).",
+ "KeePass-1-Datenbanken (.kdb) werden nicht unterstützt. Bitte in KeePass 2 oder KeePassXC öffnen und als .kdbx speichern.": "KeePass 1 databases (.kdb) aren't supported. Open it in KeePass 2 or KeePassXC and save it as .kdbx.",
+ "KDBX-Version {version} wird nicht unterstützt.": "KDBX version {version} isn't supported.",
+ "Twofish-Verschlüsselung wird nicht unterstützt. Bitte die Datenbank in KeePass oder KeePassXC auf AES-256 oder ChaCha20 umstellen.": "Twofish encryption isn't supported. Switch the database to AES-256 or ChaCha20 in KeePass or KeePassXC.",
+ "Das Verschlüsselungsverfahren dieser Datenbank wird nicht unterstützt.": "This database's encryption method isn't supported.",
+ "Die Schlüsselableitung dieser Datenbank wird nicht unterstützt.": "This database's key derivation isn't supported.",
+ "Die Datei ist zu groß (höchstens {size}).": "The file is too large (maximum {size}).",
+ "Master-Passwort der Datenbank": "Database master password",
+ "Schlüsseldatei": "Key file",
+ "Schlüsseldatei (optional)": "Key file (optional)",
+ "Gruppen als Ordner übernehmen": "Turn groups into folders",
+ "KeePass-Datenbank: Master-Passwort eingeben und, falls verwendet, die Schlüsseldatei wählen. Entschlüsselt wird nur hier im Browser; nichts davon wird gespeichert.": "KeePass database: enter the master password and, if you use one, choose the key file. Decryption happens only here in your browser; none of it is stored.",
+ "Entschlüssele …": "Decrypting…",
+ "Die Schlüsseldatei ist zu groß.": "The key file is too large.",
+ "Papierkorb: {n} Einträge werden nicht übernommen.": {
+  "one": "Trash: {n} item won't be imported.",
+  "other": "Trash: {n} items won't be imported."
+ },
+ "Anhänge werden nicht übernommen ({n} Einträge: {names}).": {
+  "one": "Attachments won't be imported ({n} item: {names}).",
+  "other": "Attachments won't be imported ({n} items: {names})."
+ }
 }

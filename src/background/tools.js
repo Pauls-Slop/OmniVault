@@ -231,14 +231,28 @@ export function mirrorTargetSet(rules, states) {
 /**
  * Writes normalized items (parsed from an export file in the popup, see lib/import.js) into an account.
  * Items of a type the provider cannot store become notes; a login stored as a note keeps its secrets in the text.
+ * With `fileFolders` and no target folder, each item goes into the folder named in the file (KeePass group path,
+ * CSV folder column): an existing folder of that name, otherwise a new one where the provider can create folders.
  * Returns one result per item: {name, ok, error?}.
  */
-export async function importItems(deps, { accountId, items, folderId = null }) {
+export async function importItems(deps, { accountId, items, folderId = null, fileFolders = false }) {
   const { provider } = await canWrite(deps, accountId);
   const types = provider.capabilities.types ?? [];
   const results = [];
+  const byName = new Map();
+  if (fileFolders && !folderId && items.some((i) => i.folder)) {
+    for (const f of (await deps.items(accountId))?.folders ?? []) if (!byName.has(f.name)) byName.set(f.name, f.id);
+  }
+  const folderFor = async (name) => {
+    if (!fileFolders || folderId || !name) return folderId;
+    if (byName.has(name)) return byName.get(name);
+    if (!provider.capabilities.createFolder) { byName.set(name, null); return null; }
+    const res = await deps.write(accountId, (p, a, s) => p.createFolder({ ...a.config, id: a.id }, s, { name }));
+    byName.set(name, res.folder?.id ?? null);
+    return res.folder?.id ?? null;
+  };
   for (const raw of items) {
-    const data = transferData({ ...raw, name: raw.name || t('Ohne Namen') }, folderId, provider.capabilities);
+    const data = transferData({ ...raw, name: raw.name || t('Ohne Namen') }, null, provider.capabilities);
     if (!types.includes(data.type)) data.type = types.includes('note') ? 'note' : 'login';
     if (data.type === 'note') {
       if (raw.type === 'login') {
@@ -249,6 +263,7 @@ export async function importItems(deps, { accountId, items, folderId = null }) {
       Object.assign(data, { username: '', password: '', totp: '', uris: [] });
     }
     try {
+      data.folderId = await folderFor(raw.folder);
       await deps.write(accountId, (p, a, s) => p.saveItem({ ...a.config, id: a.id }, s, null, data));
       results.push({ name: data.name, ok: true });
     } catch (e) {

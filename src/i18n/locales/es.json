@@ -840,5 +840,39 @@
  "Feld {name} fehlt in der 1Password-Vorlage": "Falta el campo {name} en la plantilla de 1Password",
  "Programm konnte nicht gestartet werden: {error}": "No se pudo iniciar el programa: {error}",
  "1Password: Eine neue Adresse steht in den Notizen; ändern lässt sie sich nur in der 1Password-App.": "1Password: una dirección nueva se guarda en las notas; solo se puede cambiar en la app de 1Password.",
- "1Password: Hat dieser Login einen Passkey, geht er beim Speichern über op verloren. Logins mit Passkey bitte in der 1Password-App bearbeiten.": "1Password: si este inicio de sesión tiene una llave de acceso, se perderá al guardar mediante op. Edita los inicios de sesión con llave de acceso en la app de 1Password."
+ "1Password: Hat dieser Login einen Passkey, geht er beim Speichern über op verloren. Logins mit Passkey bitte in der 1Password-App bearbeiten.": "1Password: si este inicio de sesión tiene una llave de acceso, se perderá al guardar mediante op. Edita los inicios de sesión con llave de acceso en la app de 1Password.",
+ "KeePass-Datenbank": "Base de datos de KeePass",
+ "KeePass-Datenbank (.kdbx)": "Base de datos de KeePass (.kdbx)",
+ "Die Datei ist beschädigt oder unvollständig.": "El archivo está dañado o incompleto.",
+ "Falsches Master-Passwort oder falsche Schlüsseldatei.": "Contraseña maestra o archivo de clave incorrectos.",
+ "Die Schlüsseldatei ist beschädigt.": "El archivo de clave está dañado.",
+ "Die Schlüsselableitung dieser Datenbank ist zu aufwendig.": "La derivación de clave de esta base de datos es demasiado costosa.",
+ "Diese Einstellungen der Schlüsselableitung werden nicht unterstützt.": "Esta configuración de derivación de clave no es compatible.",
+ "Die Schlüsselableitung braucht {size} Arbeitsspeicher; unterstützt werden bis zu {max}.": "La derivación de clave necesita {size} de memoria; se admiten hasta {max}.",
+ "Nicht genug Arbeitsspeicher für die Schlüsselableitung dieser Datenbank.": "No hay suficiente memoria para la derivación de clave de esta base de datos.",
+ "Der Schutz der Feldwerte dieser Datenbank (Verfahren {id}) wird nicht unterstützt.": "La protección de campos de esta base de datos (método {id}) no es compatible.",
+ "Die Datenbank ist zu groß.": "La base de datos es demasiado grande.",
+ "Diese KDBX-Version wird nicht unterstützt.": "Esta versión de KDBX no es compatible.",
+ "Keine KeePass-Datenbank (.kdbx).": "No es una base de datos de KeePass (.kdbx).",
+ "KeePass-1-Datenbanken (.kdb) werden nicht unterstützt. Bitte in KeePass 2 oder KeePassXC öffnen und als .kdbx speichern.": "Las bases de datos de KeePass 1 (.kdb) no son compatibles. Ábrela en KeePass 2 o KeePassXC y guárdala como .kdbx.",
+ "KDBX-Version {version} wird nicht unterstützt.": "La versión {version} de KDBX no es compatible.",
+ "Twofish-Verschlüsselung wird nicht unterstützt. Bitte die Datenbank in KeePass oder KeePassXC auf AES-256 oder ChaCha20 umstellen.": "El cifrado Twofish no es compatible. Cambia la base de datos a AES-256 o ChaCha20 en KeePass o KeePassXC.",
+ "Das Verschlüsselungsverfahren dieser Datenbank wird nicht unterstützt.": "El método de cifrado de esta base de datos no es compatible.",
+ "Die Schlüsselableitung dieser Datenbank wird nicht unterstützt.": "La derivación de clave de esta base de datos no es compatible.",
+ "Die Datei ist zu groß (höchstens {size}).": "El archivo es demasiado grande (máximo {size}).",
+ "Master-Passwort der Datenbank": "Contraseña maestra de la base de datos",
+ "Schlüsseldatei": "Archivo de clave",
+ "Schlüsseldatei (optional)": "Archivo de clave (opcional)",
+ "Gruppen als Ordner übernehmen": "Convertir los grupos en carpetas",
+ "KeePass-Datenbank: Master-Passwort eingeben und, falls verwendet, die Schlüsseldatei wählen. Entschlüsselt wird nur hier im Browser; nichts davon wird gespeichert.": "Base de datos de KeePass: introduce la contraseña maestra y, si usas uno, elige el archivo de clave. El descifrado se hace solo aquí, en el navegador; no se guarda nada.",
+ "Entschlüssele …": "Descifrando…",
+ "Die Schlüsseldatei ist zu groß.": "El archivo de clave es demasiado grande.",
+ "Papierkorb: {n} Einträge werden nicht übernommen.": {
+  "one": "Papelera: {n} elemento no se importará.",
+  "other": "Papelera: {n} elementos no se importarán."
+ },
+ "Anhänge werden nicht übernommen ({n} Einträge: {names}).": {
+  "one": "Los archivos adjuntos no se importan ({n} elemento: {names}).",
+  "other": "Los archivos adjuntos no se importan ({n} elementos: {names})."
+ }
 }

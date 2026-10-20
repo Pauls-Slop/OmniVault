@@ -1,7 +1,8 @@
 // This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 // Copyright (c) 2026 Die OmniVault-Mitwirkenden
-// Builds vendor/openpgp.mjs (LGPL-3.0-or-later), vendor/argon2id.mjs (MIT) and vendor/noble-ciphers.mjs (MIT) from the sources pinned in
+// Builds vendor/openpgp.mjs (LGPL-3.0-or-later), vendor/argon2id.mjs (MIT), vendor/argon2.mjs (CC0/Apache-2.0) and
+// vendor/noble-ciphers.mjs (MIT) from the sources pinned in
 // vendor/sources.json (fetch them with vendor/fetch-sources.sh). Needs clang with the wasm32 target.
 // The OpenPGP.js sources are bundled unmodified; only the module substitutions below are applied.
 import * as esbuild from 'esbuild';
@@ -24,6 +25,15 @@ execFileSync('clang', ['--target=wasm32', '-O3', '-nostdlib', '-fno-builtin',
   ...['G', 'G2', 'xor', 'getLZ'].map((f) => `-Wl,--export=${f}`),
   '-o', wasmFile, join(src, 'argon2id/lib/wasm.c')], { stdio: 'inherit' });
 
+// 2. Argon2 reference implementation (all types and versions; KeePass uses Argon2d) without threads and libc
+const refDir = join(src, 'argon2-ref');
+const refWasm = join(out, 'argon2-ref.wasm');
+execFileSync('clang', ['--target=wasm32', '-O3', '-nostdlib', '-fno-builtin', '-DARGON2_NO_THREADS',
+  '-I', join(here, 'shims/argon2-ref/include'), '-I', join(refDir, 'include'), '-I', join(refDir, 'src'),
+  '-Wl,--no-entry', '-Wl,--strip-all', ...['argon2_hash', 'malloc', 'heap_reset'].map((f) => `-Wl,--export=${f}`),
+  '-o', refWasm, ...['argon2.c', 'core.c', 'ref.c', 'encoding.c', 'blake2/blake2b.c'].map((f) => join(refDir, 'src', f)),
+  join(here, 'shims/argon2-ref/libc.c')], { stdio: 'inherit' });
+
 const alias = {
   '@noble/ciphers': join(src, 'noble-ciphers/src'),
   '@noble/curves': join(src, 'noble-curves/src'),
@@ -36,6 +46,7 @@ const alias = {
   argon2id: join(here, 'shims/argon2id.js'),
   'argon2id-src': join(src, 'argon2id'),
   'argon2id-wasm': wasmFile,
+  'argon2-ref-wasm': refWasm,
   module: join(here, 'shims/module.js'),
 };
 
@@ -89,6 +100,13 @@ await esbuild.build({
   outfile: join(here, 'argon2id.mjs'),
   banner: { js: `/*! argon2id ${sources.argon2id.ref} – MIT, see LICENSES/argon2id-MIT.txt. Built from ${commits(['argon2id'])}. */` },
 });
-console.log('vendor/openpgp.mjs and vendor/argon2id.mjs written');
+await esbuild.build({
+  ...common,
+  entryPoints: [join(here, 'shims/argon2-ref/index.js')],
+  outfile: join(here, 'argon2.mjs'),
+  banner: { js: `/*! Argon2 reference implementation ${sources['argon2-ref'].ref} – CC0-1.0 or Apache-2.0, see LICENSES/argon2-ref-CC0-1.0.txt. ` +
+    `Unmodified C sources compiled to WebAssembly (no threads, minimal libc: vendor/shims/argon2-ref) from ${commits(['argon2-ref'])}. */` },
+});
+console.log('vendor/openpgp.mjs, vendor/argon2id.mjs and vendor/argon2.mjs written');
 await import('./build-noble.mjs');
 await import('./build-tweetnacl.mjs');

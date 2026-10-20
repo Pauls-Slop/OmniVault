@@ -1,4 +1,4 @@
-/*! @noble/ciphers 1.3.0 – MIT, see LICENSES/noble-ciphers-MIT.txt. Unmodified sources (only xchacha20poly1305 exported), built from https://github.com/paulmillr/noble-ciphers 953f9aabb4dd. */
+/*! @noble/ciphers 1.3.0 – MIT, see LICENSES/noble-ciphers-MIT.txt. Unmodified sources (only xchacha20poly1305, chacha20 and salsa20 exported), built from https://github.com/paulmillr/noble-ciphers 953f9aabb4dd. */
 
 // vendor/src/noble-ciphers/src/utils.ts
 /*! noble-ciphers - MIT License (c) 2023 Paul Miller (paulmillr.com) */
@@ -720,6 +720,69 @@ var xchacha20poly1305 = /* @__PURE__ */ wrapCipher(
   { blockSize: 64, nonceLength: 24, tagLength: 16 },
   _poly1305_aead(xchacha20)
 );
+
+// vendor/src/noble-ciphers/src/salsa.ts
+function salsaCore(s, k, n, out, cnt, rounds = 20) {
+  let y00 = s[0], y01 = k[0], y02 = k[1], y03 = k[2], y04 = k[3], y05 = s[1], y06 = n[0], y07 = n[1], y08 = cnt, y09 = 0, y10 = s[2], y11 = k[4], y12 = k[5], y13 = k[6], y14 = k[7], y15 = s[3];
+  let x00 = y00, x01 = y01, x02 = y02, x03 = y03, x04 = y04, x05 = y05, x06 = y06, x07 = y07, x08 = y08, x09 = y09, x10 = y10, x11 = y11, x12 = y12, x13 = y13, x14 = y14, x15 = y15;
+  for (let r = 0; r < rounds; r += 2) {
+    x04 ^= rotl(x00 + x12 | 0, 7);
+    x08 ^= rotl(x04 + x00 | 0, 9);
+    x12 ^= rotl(x08 + x04 | 0, 13);
+    x00 ^= rotl(x12 + x08 | 0, 18);
+    x09 ^= rotl(x05 + x01 | 0, 7);
+    x13 ^= rotl(x09 + x05 | 0, 9);
+    x01 ^= rotl(x13 + x09 | 0, 13);
+    x05 ^= rotl(x01 + x13 | 0, 18);
+    x14 ^= rotl(x10 + x06 | 0, 7);
+    x02 ^= rotl(x14 + x10 | 0, 9);
+    x06 ^= rotl(x02 + x14 | 0, 13);
+    x10 ^= rotl(x06 + x02 | 0, 18);
+    x03 ^= rotl(x15 + x11 | 0, 7);
+    x07 ^= rotl(x03 + x15 | 0, 9);
+    x11 ^= rotl(x07 + x03 | 0, 13);
+    x15 ^= rotl(x11 + x07 | 0, 18);
+    x01 ^= rotl(x00 + x03 | 0, 7);
+    x02 ^= rotl(x01 + x00 | 0, 9);
+    x03 ^= rotl(x02 + x01 | 0, 13);
+    x00 ^= rotl(x03 + x02 | 0, 18);
+    x06 ^= rotl(x05 + x04 | 0, 7);
+    x07 ^= rotl(x06 + x05 | 0, 9);
+    x04 ^= rotl(x07 + x06 | 0, 13);
+    x05 ^= rotl(x04 + x07 | 0, 18);
+    x11 ^= rotl(x10 + x09 | 0, 7);
+    x08 ^= rotl(x11 + x10 | 0, 9);
+    x09 ^= rotl(x08 + x11 | 0, 13);
+    x10 ^= rotl(x09 + x08 | 0, 18);
+    x12 ^= rotl(x15 + x14 | 0, 7);
+    x13 ^= rotl(x12 + x15 | 0, 9);
+    x14 ^= rotl(x13 + x12 | 0, 13);
+    x15 ^= rotl(x14 + x13 | 0, 18);
+  }
+  let oi = 0;
+  out[oi++] = y00 + x00 | 0;
+  out[oi++] = y01 + x01 | 0;
+  out[oi++] = y02 + x02 | 0;
+  out[oi++] = y03 + x03 | 0;
+  out[oi++] = y04 + x04 | 0;
+  out[oi++] = y05 + x05 | 0;
+  out[oi++] = y06 + x06 | 0;
+  out[oi++] = y07 + x07 | 0;
+  out[oi++] = y08 + x08 | 0;
+  out[oi++] = y09 + x09 | 0;
+  out[oi++] = y10 + x10 | 0;
+  out[oi++] = y11 + x11 | 0;
+  out[oi++] = y12 + x12 | 0;
+  out[oi++] = y13 + x13 | 0;
+  out[oi++] = y14 + x14 | 0;
+  out[oi++] = y15 + x15 | 0;
+}
+var salsa20 = /* @__PURE__ */ createCipher(salsaCore, {
+  allowShortKeys: true,
+  counterRight: true
+});
 export {
+  chacha20,
+  salsa20,
   xchacha20poly1305
 };

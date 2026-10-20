@@ -19,6 +19,7 @@ await mkdir(join(out, 'vendor'), { recursive: true });
 for (const dir of ['background', 'popup', 'lib', 'i18n', 'icons']) await cp(join('src', dir), join(out, 'src', dir), { recursive: true });
 for (const f of ['provider.js', 'hosts.js', 'bitwarden/api.js']) await cp(join('src/providers', f), join(out, 'src/providers', f));
 await cp('vendor/argon2id.mjs', join(out, 'vendor/argon2id.mjs')); // PIN unlock
+for (const f of ['argon2.mjs', 'noble-ciphers.mjs']) await cp(join('vendor', f), join(out, 'vendor', f)); // .kdbx import
 for (const f of ['LICENSE', 'THIRD_PARTY_NOTICES.md']) await cp(f, join(out, f));
 
 // metadata of the real providers (name, account form, capabilities), read from their classes

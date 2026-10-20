@@ -16,7 +16,7 @@ Passwörter finden, Exporte anderer Manager importieren und alles wieder exporti
 | LastPass | lokaler Host → offizielles `lpass` | lesen und schreiben, gegen simuliertes CLI getestet |
 | KeePassXC | KeePassXCs Browser-Schnittstelle über `keepassxc-proxy` | Logins lesen, anlegen, ändern, löschen; gegen simulierten KeePassXC getestet |
 | Proton Pass | lokaler Host → offizielles `pass-cli` | zurückgestellt: Proton gibt das CLI nur für kostenpflichtige Tarife frei |
-| KeePass-Dateien, Browser und andere | Dateiimport (CSV, JSON, KeePass-XML) | in ein beliebiges beschreibbares Konto |
+| KeePass-Dateien, Browser und andere | Dateiimport (KeePass-Datenbank `.kdbx`, CSV, JSON, KeePass-XML) | in ein beliebiges beschreibbares Konto |
 
 - **Stand je Funktion und Anbieter:** [FEATURES.md](FEATURES.md)
 - **Lokaler Host für pass, 1Password, LastPass, Proton:** [native/README.md](native/README.md)
@@ -63,13 +63,14 @@ als AppImage, das Mozillas offizielles Release-Archiv unverändert enthält; Has
 mit `FIREFOX_BIN=/pfad/zu/firefox` nutzt es ein eigenes. Headless reicht; unter `xvfb-run -a` läuft Firefox sichtbar,
 und Strg+Umschalt+L wird als echte X11-Taste gedrückt.
 
-Kryptografie kommt aus etablierten Open-Source-Bibliotheken – OpenPGP.js (LGPL), argon2id (MIT) und für
-XChaCha20-Poly1305 @noble/ciphers (MIT), alle als separate Dateien in `vendor/` – und aus WebCrypto. Sonst gibt es keine Laufzeitabhängigkeiten. Bibliotheken neu bauen
+Kryptografie kommt aus etablierten Open-Source-Bibliotheken – OpenPGP.js (LGPL), argon2id (MIT), die
+Argon2-Referenzimplementierung (CC0/Apache-2.0, für Argon2d in KeePass-Dateien) und für XChaCha20-Poly1305, ChaCha20 und
+Salsa20 @noble/ciphers (MIT), alle als separate Dateien in `vendor/` – und aus WebCrypto. Sonst gibt es keine Laufzeitabhängigkeiten. Bibliotheken neu bauen
 (normalerweise nicht nötig, die Ergebnisse liegen im Repository):
 
 ```bash
 npm run vendor:fetch   # klont die Quellen an den Commits aus vendor/sources.json und prüft die Hashes
-npm run vendor:build   # baut vendor/openpgp.mjs und vendor/argon2id.mjs (braucht clang mit wasm32-Ziel)
+npm run vendor:build   # baut alle Dateien in vendor/ (braucht clang mit wasm32-Ziel)
 ```
 
 ## Sprachen
@@ -120,13 +121,13 @@ src/
     pass/ onepassword/ lastpass/ protonpass/   dünne Provider über den Host
   content/inline.js  Inhaltsskript (Opt-in): Knopf im Anmeldefeld, „Login speichern?“
   inline/            Liste und Speichern-Leiste als Erweiterungsseiten in iframes
-  lib/               TOTP, URL-Abgleich, Generator, Duplikate, Import, Export, Passwortprüfung, PIN-Sperre
+  lib/               TOTP, URL-Abgleich, Generator, Duplikate, Import (inkl. KeePass-Datenbanken), Export, Passwortprüfung, PIN-Sperre
   i18n/              Sprachwahl, t()/tn()/tx(), Übersetzungen (locales/*.json)
 tools/i18n-extract.mjs  sammelt alle Texte für die Übersetzung
 tools/store-screenshots.mjs  Bildschirmfotos (1280 × 800) aus der Web-Demo: `npm run build:demo`, dann
                      `node tools/store-screenshots.mjs <Zielordner> [Playwright-Pfad] [en,de]`
 native/              ein Host für alle CLI-Anbieter (Python 3, nur Standardbibliothek), Installer, Selbsttest
-vendor/              OpenPGP.js und argon2id (separate Dateien), Quellen-Manifest, Build-Skripte
+vendor/              OpenPGP.js, argon2id, Argon2-Referenz, @noble/ciphers, TweetNaCl (separate Dateien), Quellen-Manifest, Build-Skripte
 ```
 
 ## Sicherheit in Kürze

@@ -8,6 +8,7 @@
 // Only login and note are produced; richer types (cards, identities) are flattened into a note so nothing is lost.
 
 import { mark, t } from '../i18n/index.js';
+import { keepassItems, parseXml } from './kdbx.js';
 /** RFC 4180 CSV parser: handles quoted fields, embedded commas, quotes ("") and CR/LF inside quotes. */
 export function parseCsv(text) {
   const rows = [];
@@ -167,28 +168,14 @@ export function importProtonJson(data) {
   return out;
 }
 
-/** KeePass 2 XML export (<KeePassFile><Root><Group><Entry><String><Key>Title</Key><Value>…). */
+/**
+ * KeePass 2 XML export (KeePass, KeePassXC). Same mapping as an opened .kdbx file (lib/kdbx.js): custom fields stay
+ * fields, groups become folders, the recycle bin is left out.
+ */
 export function importKeePassXml(text) {
-  const doc = new DOMParser().parseFromString(text, 'application/xml');
-  if (doc.querySelector('parsererror') || !doc.querySelector('KeePassFile')) throw new Error(t('Kein KeePass-XML'));
-  const entries = [...doc.querySelectorAll('Entry')].filter((e) => !e.closest('History'));
-  return entries.map((e) => {
-    const f = {};
-    for (const str of e.querySelectorAll(':scope > String')) {
-      f[str.querySelector('Key')?.textContent ?? ''] = str.querySelector('Value')?.textContent ?? '';
-    }
-    const known = ['Title', 'UserName', 'Password', 'URL', 'Notes', 'otp', 'TOTP'];
-    const extra = Object.entries(f).filter(([k, v]) => !known.includes(k) && nonEmpty(v)).map(([k, v]) => `${k}: ${v}`);
-    return {
-      type: 'login',
-      name: f.Title || f.UserName || t('Ohne Namen'),
-      username: f.UserName ?? '', password: f.Password ?? '',
-      totp: f.otp || f.TOTP || '',
-      uris: f.URL ? [f.URL] : [],
-      notes: [f.Notes, ...extra].filter(nonEmpty).join('\n'),
-      favorite: false,
-    };
-  });
+  const doc = parseXml(text.replace(/^\uFEFF/, ''), { lenient: true });
+  if (!doc?.child('KeePassFile')) throw new Error(t('Kein KeePass-XML'));
+  return keepassItems(doc).items;
 }
 
 /* ---------- dispatch ---------- */
@@ -199,6 +186,7 @@ export const FORMATS = [
   { id: 'bitwarden', name: mark('Bitwarden-JSON'), label: mark('Bitwarden / Vaultwarden (.json, unverschlüsselt)') },
   { id: 'proton', name: mark('Proton-Pass-JSON'), label: mark('Proton Pass (data.json aus dem Export)') },
   { id: 'keepassxml', name: mark('KeePass-XML'), label: mark('KeePass 2 (.xml)') },
+  { id: 'kdbx', name: mark('KeePass-Datenbank'), label: mark('KeePass-Datenbank (.kdbx)'), binary: true },
 ];
 
 /** Detects the format of a text file and returns {format, items}. Throws with a clear message on failure. */

@@ -3,10 +3,11 @@
 // Copyright (c) 2026 Die OmniVault-Mitwirkenden
 // Tools view: duplicates, bulk selection (copy / move / delete), mirror rules between accounts, import, trash.
 import { FORMATS, parseImport } from '../lib/import.js';
+import { MAX_FILE_BYTES as MAX_KDBX_BYTES, isKdbx, openKdbx } from '../lib/kdbx.js';
 import { openItem } from './detail.js';
 import { S, accountOf, folderPicker, providerOf, refresh, writableAccounts } from './state.js';
 import { formatDateTime, markn } from '../i18n/index.js';
-import { $, ask, back, badge, call, el, show, t, tn, toast, typeIcon, uiLanguage } from './ui.js';
+import { $, ask, back, badge, call, el, icon, iconButton, show, t, tn, toast, typeIcon, uiLanguage } from './ui.js';
 
 let tab = 'dupes';
 let scope = 'all';
@@ -351,9 +352,9 @@ async function renderImport(body) {
     body.append(el('p', { className: 'hint' }, t('Zum Importieren muss ein Konto entsperrt sein, in das OmniVault schreiben kann.')), exportSection(), footer([]));
     return;
   }
-  let parsed = null; // { format, items }
+  let parsed = null; // { format, items, skipped?: [text] }
 
-  const fileInput = el('input', { type: 'file', accept: '.csv,.json,.xml,.txt', 'aria-label': t('Exportdatei') });
+  const fileInput = el('input', { type: 'file', accept: '.csv,.json,.xml,.txt,.kdbx', 'aria-label': t('Exportdatei') });
   const formatSel = el('select', { 'aria-label': t('Format') }, FORMATS.map((f) => el('option', { value: f.id }, t(f.label))));
   const accSel = el('select', { 'aria-label': t('Ziel-Konto') }, writable.map((a) => el('option', { value: a.id }, a.label)));
   const { select: folderSel, label: folderLabel, load } = folderPicker({ 'aria-label': t('Ordner') });
@@ -361,23 +362,39 @@ async function renderImport(body) {
   const preview = el('div', {});
   const runBtn = el('button', { type: 'button', disabled: true }, t('Importieren'));
 
-  const loadFolders = () => load(accSel.value);
+  // KeePass database: master password and optional key file, only in this view's memory
+  const kdbxPw = el('input', { type: 'password', autocomplete: 'off', spellcheck: 'false', 'aria-label': t('Master-Passwort der Datenbank') });
+  const keyInput = el('input', { type: 'file', 'aria-label': t('Schlüsseldatei') });
+  const openBtn = el('button', { type: 'submit' }, t('Öffnen'));
+  const kdbxError = el('p', { className: 'hint error', hidden: true, role: 'alert' });
+  const kdbxBox = el('form', { className: 'kdbx-unlock', hidden: true },
+    el('label', {}, t('Master-Passwort'), el('div', { className: 'pw-row' }, kdbxPw,
+      iconButton('eye', t('Anzeigen'), { 'aria-label': t('Passwort anzeigen'), onclick: (e) => {
+        kdbxPw.type = kdbxPw.type === 'password' ? 'text' : 'password';
+        e.currentTarget.replaceChildren(icon(kdbxPw.type === 'password' ? 'eye' : 'eyeOff'));
+      } }))),
+    el('label', {}, t('Schlüsseldatei (optional)'), keyInput),
+    kdbxError,
+    el('div', { className: 'row' }, openBtn));
+  const fileFolders = el('input', { type: 'checkbox', checked: true });
+  const fileFoldersLabel = el('label', { className: 'inline-check', hidden: true }, fileFolders, t('Gruppen als Ordner übernehmen'));
 
-  const doParse = async () => {
+  const loadFolders = async () => {
+    await load(accSel.value);
+    fileFoldersLabel.hidden = !parsed?.items.some((i) => i.folder) || folderSel.value !== '' || folderLabel.hidden;
+  };
+  folderSel.addEventListener('change', () => { fileFoldersLabel.hidden = !parsed?.items.some((i) => i.folder) || folderSel.value !== ''; });
+
+  const reset = () => {
     preview.replaceChildren();
     runBtn.disabled = true;
     parsed = null;
-    const file = fileInput.files?.[0];
-    if (!file) return;
-    let text;
-    try { text = await file.text(); } catch { info.textContent = t('Datei konnte nicht gelesen werden.'); return; }
-    try {
-      parsed = parseImport(text, formatSel.value);
-    } catch (e) {
-      info.className = 'hint error';
-      info.textContent = t('Nicht erkannt: {error}', { error: e.message });
-      return;
-    }
+    fileFoldersLabel.hidden = true;
+  };
+  const isKdbxFile = async (file) => formatSel.value === 'kdbx'
+    || (formatSel.value === 'auto' && (/\.kdbx$/i.test(file.name) || isKdbx(new Uint8Array(await file.slice(0, 8).arrayBuffer()))));
+
+  const showParsed = () => {
     info.className = 'hint';
     const n = parsed.items.length;
     const logins = parsed.items.filter((i) => i.type === 'login').length;
@@ -390,10 +407,70 @@ async function renderImport(body) {
       ...parsed.items.slice(0, 8).map((i) => el('div', { className: 'pick', vars: { '--acc-h': 210 } },
         el('span', { className: 'type-ico' }, typeIcon(i.type, { size: 14 })),
         el('span', { className: 'pick-name' }, i.name),
-        el('span', { className: 'pick-sub' }, [i.username, i.uris?.[0]].filter(Boolean).join(' · ')))),
-      n > 8 ? el('p', { className: 'hint' }, t('… und {n} weitere', { n: n - 8 })) : null));
+        el('span', { className: 'pick-sub' }, [i.folder, i.username, i.uris?.[0]].filter(Boolean).join(' · ')))),
+      n > 8 ? el('p', { className: 'hint' }, t('… und {n} weitere', { n: n - 8 })) : null),
+    ...(parsed.skipped ?? []).map((text) => el('p', { className: 'hint warn' }, text)));
+    fileFoldersLabel.hidden = !parsed.items.some((i) => i.folder) || folderSel.value !== '' || folderLabel.hidden;
     runBtn.disabled = !n;
   };
+
+  const doParse = async () => {
+    reset();
+    kdbxError.hidden = true;
+    const file = fileInput.files?.[0];
+    kdbxBox.hidden = true;
+    if (!file) return;
+    if (await isKdbxFile(file)) {
+      kdbxBox.hidden = false;
+      info.className = 'hint';
+      info.textContent = t('KeePass-Datenbank: Master-Passwort eingeben und, falls verwendet, die Schlüsseldatei wählen. Entschlüsselt wird nur hier im Browser; nichts davon wird gespeichert.');
+      kdbxPw.focus();
+      return;
+    }
+    let text;
+    try { text = await file.text(); } catch { info.textContent = t('Datei konnte nicht gelesen werden.'); return; }
+    try {
+      parsed = parseImport(text, formatSel.value);
+    } catch (e) {
+      info.className = 'hint error';
+      info.textContent = t('Nicht erkannt: {error}', { error: e.message });
+      return;
+    }
+    showParsed();
+  };
+
+  kdbxBox.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const file = fileInput.files?.[0];
+    if (!file) return;
+    reset();
+    kdbxError.hidden = true;
+    openBtn.disabled = true;
+    openBtn.textContent = t('Entschlüssele …');
+    try {
+      if (file.size > MAX_KDBX_BYTES) throw new Error(t('Die Datei ist zu groß (höchstens {size}).', { size: `${MAX_KDBX_BYTES / 1024 / 1024} MiB` }));
+      const keyFile = keyInput.files?.[0];
+      if (keyFile && keyFile.size > 1024 * 1024) throw new Error(t('Die Schlüsseldatei ist zu groß.'));
+      const db = await openKdbx(await file.arrayBuffer(), { password: kdbxPw.value, keyFile: keyFile ? await keyFile.arrayBuffer() : null });
+      kdbxPw.value = '';
+      const skipped = [];
+      if (db.recycled) skipped.push(tn(db.recycled, 'Papierkorb: {n} Eintrag wird nicht übernommen.', 'Papierkorb: {n} Einträge werden nicht übernommen.'));
+      if (db.attachments.length) {
+        skipped.push(tn(db.attachments.length, 'Anhänge werden nicht übernommen ({n} Eintrag: {names}).', 'Anhänge werden nicht übernommen ({n} Einträge: {names}).',
+          { names: db.attachments.slice(0, 5).join(', ') + (db.attachments.length > 5 ? ' …' : '') }));
+      }
+      parsed = { format: 'kdbx', items: db.items, skipped };
+      kdbxBox.hidden = true;
+      showParsed();
+    } catch (x) {
+      kdbxError.textContent = x.message;
+      kdbxError.hidden = false;
+      if (x.code === 'credentials') kdbxPw.select();
+    } finally {
+      openBtn.disabled = false;
+      openBtn.textContent = t('Öffnen');
+    }
+  });
 
   fileInput.addEventListener('change', doParse);
   formatSel.addEventListener('change', () => { if (fileInput.files?.[0]) doParse(); });
@@ -404,16 +481,22 @@ async function renderImport(body) {
     if (!await ask(tn(parsed.items.length, '{n} Eintrag nach „{account}“ importieren?', '{n} Einträge nach „{account}“ importieren?', { account: a.label }), { ok: t('Importieren') })) return;
     runBtn.disabled = true;
     toast(t('Importiere …'), 120_000);
-    const results = await call('importItems', { accountId: a.id, items: parsed.items, folderId: folderSel.value || null }).catch((e) => { toast(e.message); return null; });
+    const results = await call('importItems', { accountId: a.id, items: parsed.items, folderId: folderSel.value || null, fileFolders: !fileFoldersLabel.hidden && fileFolders.checked })
+      .catch((e) => { toast(e.message); return null; });
     if (!results) { runBtn.disabled = false; return; }
     await refresh();
     const failed = results.filter((r) => !r.ok);
     const okN = results.length - failed.length;
-    if (!failed.length) toast(tn(okN, '{n} Eintrag importiert', '{n} Einträge importiert'));
+    const notes = parsed.skipped ?? [];
+    if (!failed.length && !notes.length) toast(tn(okN, '{n} Eintrag importiert', '{n} Einträge importiert'));
     else {
-      const names = failed.slice(0, 5).map((r) => `• ${r.name}: ${r.error}`).join('\n');
-      await ask(`${t('{done}, {failed} fehlgeschlagen:', { done: tn(okN, '{n} Eintrag importiert', '{n} Einträge importiert'), failed: failed.length })}\n${names}${failed.length > 5 ? '\n…' : ''}`, { ok: t('OK') });
+      const lines = [failed.length ? t('{done}, {failed} fehlgeschlagen:', { done: tn(okN, '{n} Eintrag importiert', '{n} Einträge importiert'), failed: failed.length })
+        : tn(okN, '{n} Eintrag importiert', '{n} Einträge importiert'),
+      ...failed.slice(0, 5).map((r) => `• ${r.name}: ${r.error}`), ...(failed.length > 5 ? ['…'] : []), ...notes.map((n) => `• ${n}`)];
+      toast(tn(okN, '{n} Eintrag importiert', '{n} Einträge importiert'));
+      await ask(lines.join('\n'), { ok: t('OK'), cancel: false });
     }
+    parsed = null;
     tab = 'bulk';
     render();
   });
@@ -423,7 +506,9 @@ async function renderImport(body) {
     info,
     el('label', {}, t('Datei'), fileInput),
     el('label', {}, t('Format'), formatSel),
+    kdbxBox,
     el('div', { className: 'two' }, el('label', {}, t('Ziel-Konto'), accSel), folderLabel),
+    fileFoldersLabel,
     preview,
     el('p', { className: 'hint' }, t('Zusatzfelder, Karten und Identitäten bleiben erhalten, wenn das Ziel-Konto sie speichern kann, sonst stehen sie in den Notizen. Nicht zugeordnete CSV-Spalten landen in den Notizen. Verschlüsselte Exporte bitte vorher entschlüsselt exportieren.')),
     exportSection(),

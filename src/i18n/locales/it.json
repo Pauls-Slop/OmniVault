@@ -840,5 +840,39 @@
  "Feld {name} fehlt in der 1Password-Vorlage": "Il campo {name} manca nel modello di 1Password",
  "Programm konnte nicht gestartet werden: {error}": "Impossibile avviare il programma: {error}",
  "1Password: Eine neue Adresse steht in den Notizen; ändern lässt sie sich nur in der 1Password-App.": "1Password: un nuovo indirizzo viene salvato nelle note; si può modificare solo nell’app 1Password.",
- "1Password: Hat dieser Login einen Passkey, geht er beim Speichern über op verloren. Logins mit Passkey bitte in der 1Password-App bearbeiten.": "1Password: se questo login ha una passkey, salvando tramite op andrà persa. Modifica i login con passkey nell’app 1Password."
+ "1Password: Hat dieser Login einen Passkey, geht er beim Speichern über op verloren. Logins mit Passkey bitte in der 1Password-App bearbeiten.": "1Password: se questo login ha una passkey, salvando tramite op andrà persa. Modifica i login con passkey nell’app 1Password.",
+ "KeePass-Datenbank": "Database KeePass",
+ "KeePass-Datenbank (.kdbx)": "Database KeePass (.kdbx)",
+ "Die Datei ist beschädigt oder unvollständig.": "Il file è danneggiato o incompleto.",
+ "Falsches Master-Passwort oder falsche Schlüsseldatei.": "Password principale o file chiave errati.",
+ "Die Schlüsseldatei ist beschädigt.": "Il file chiave è danneggiato.",
+ "Die Schlüsselableitung dieser Datenbank ist zu aufwendig.": "La derivazione della chiave di questo database è troppo onerosa.",
+ "Diese Einstellungen der Schlüsselableitung werden nicht unterstützt.": "Queste impostazioni di derivazione della chiave non sono supportate.",
+ "Die Schlüsselableitung braucht {size} Arbeitsspeicher; unterstützt werden bis zu {max}.": "La derivazione della chiave richiede {size} di memoria; sono supportati al massimo {max}.",
+ "Nicht genug Arbeitsspeicher für die Schlüsselableitung dieser Datenbank.": "Memoria insufficiente per la derivazione della chiave di questo database.",
+ "Der Schutz der Feldwerte dieser Datenbank (Verfahren {id}) wird nicht unterstützt.": "La protezione dei campi di questo database (metodo {id}) non è supportata.",
+ "Die Datenbank ist zu groß.": "Il database è troppo grande.",
+ "Diese KDBX-Version wird nicht unterstützt.": "Questa versione di KDBX non è supportata.",
+ "Keine KeePass-Datenbank (.kdbx).": "Non è un database KeePass (.kdbx).",
+ "KeePass-1-Datenbanken (.kdb) werden nicht unterstützt. Bitte in KeePass 2 oder KeePassXC öffnen und als .kdbx speichern.": "I database KeePass 1 (.kdb) non sono supportati. Aprilo in KeePass 2 o KeePassXC e salvalo come .kdbx.",
+ "KDBX-Version {version} wird nicht unterstützt.": "La versione {version} di KDBX non è supportata.",
+ "Twofish-Verschlüsselung wird nicht unterstützt. Bitte die Datenbank in KeePass oder KeePassXC auf AES-256 oder ChaCha20 umstellen.": "La cifratura Twofish non è supportata. Passa il database ad AES-256 o ChaCha20 in KeePass o KeePassXC.",
+ "Das Verschlüsselungsverfahren dieser Datenbank wird nicht unterstützt.": "Il metodo di cifratura di questo database non è supportato.",
+ "Die Schlüsselableitung dieser Datenbank wird nicht unterstützt.": "La derivazione della chiave di questo database non è supportata.",
+ "Die Datei ist zu groß (höchstens {size}).": "Il file è troppo grande (massimo {size}).",
+ "Master-Passwort der Datenbank": "Password principale del database",
+ "Schlüsseldatei": "File chiave",
+ "Schlüsseldatei (optional)": "File chiave (facoltativo)",
+ "Gruppen als Ordner übernehmen": "Trasforma i gruppi in cartelle",
+ "KeePass-Datenbank: Master-Passwort eingeben und, falls verwendet, die Schlüsseldatei wählen. Entschlüsselt wird nur hier im Browser; nichts davon wird gespeichert.": "Database KeePass: inserisci la password principale e, se lo usi, scegli il file chiave. La decifratura avviene solo qui nel browser; non viene salvato nulla.",
+ "Entschlüssele …": "Decifratura…",
+ "Die Schlüsseldatei ist zu groß.": "Il file chiave è troppo grande.",
+ "Papierkorb: {n} Einträge werden nicht übernommen.": {
+  "one": "Cestino: {n} elemento non verrà importato.",
+  "other": "Cestino: {n} elementi non verranno importati."
+ },
+ "Anhänge werden nicht übernommen ({n} Einträge: {names}).": {
+  "one": "Gli allegati non vengono importati ({n} elemento: {names}).",
+  "other": "Gli allegati non vengono importati ({n} elementi: {names})."
+ }
 }

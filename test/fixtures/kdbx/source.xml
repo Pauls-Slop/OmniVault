@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<KeePassFile>
+	<Meta>
+		<Generator>OmniVault test</Generator>
+		<DatabaseName>Testdatenbank</DatabaseName>
+		<RecycleBinEnabled>True</RecycleBinEnabled>
+		<RecycleBinUUID>Ae6KzW5mT0SfZ0sdL3Ji8A==</RecycleBinUUID>
+		<Binaries>
+			<Binary ID="0" Compressed="False">SGFsbG8gQW5oYW5n</Binary>
+		</Binaries>
+	</Meta>
+	<Root>
+		<Group>
+			<UUID>AAAAAAAAAAAAAAAAAAAAAQ==</UUID>
+			<Name>Testdatenbank</Name>
+			<Entry>
+				<UUID>EAAAAAAAAAAAAAAAAAAAAQ==</UUID>
+				<String><Key>Title</Key><Value>GitHub</Value></String>
+				<String><Key>UserName</Key><Value>ada</Value></String>
+				<String><Key>Password</Key><Value ProtectInMemory="True">gh-geheim &amp; &lt;sicher&gt;</Value></String>
+				<String><Key>URL</Key><Value>https://github.com/login</Value></String>
+				<String><Key>Notes</Key><Value>Zeile 1
+Zeile 2 – äöü</Value></String>
+				<String><Key>otp</Key><Value ProtectInMemory="True">otpauth://totp/GitHub:ada?secret=JBSWY3DPEHPK3PXP&amp;period=30&amp;digits=6&amp;issuer=GitHub</Value></String>
+				<String><Key>Kundennummer</Key><Value>K-4711</Value></String>
+				<String><Key>PIN</Key><Value ProtectInMemory="True">9876</Value></String>
+				<Binary><Key>anhang.txt</Key><Value Ref="0"/></Binary>
+				<History>
+					<Entry>
+						<UUID>EAAAAAAAAAAAAAAAAAAAAQ==</UUID>
+						<String><Key>Title</Key><Value>GitHub</Value></String>
+						<String><Key>Password</Key><Value ProtectInMemory="True">gh-alt</Value></String>
+					</Entry>
+				</History>
+			</Entry>
+			<Group>
+				<UUID>AAAAAAAAAAAAAAAAAAAAAg==</UUID>
+				<Name>Arbeit</Name>
+				<Entry>
+					<UUID>EAAAAAAAAAAAAAAAAAAAAg==</UUID>
+					<String><Key>Title</Key><Value>Mailserver</Value></String>
+					<String><Key>UserName</Key><Value>admin@example.org</Value></String>
+					<String><Key>Password</Key><Value ProtectInMemory="True">mail-pw-1</Value></String>
+					<String><Key>URL</Key><Value>https://mail.example.org</Value></String>
+					<String><Key>TOTP Seed</Key><Value ProtectInMemory="True">GEZDGNBVGY3TQOJQ</Value></String>
+					<String><Key>TOTP Settings</Key><Value>60;8</Value></String>
+				</Entry>
+				<Group>
+					<UUID>AAAAAAAAAAAAAAAAAAAAAw==</UUID>
+					<Name>Server</Name>
+					<Entry>
+						<UUID>EAAAAAAAAAAAAAAAAAAAAw==</UUID>
+						<String><Key>Title</Key><Value>Router</Value></String>
+						<String><Key>UserName</Key><Value>root</Value></String>
+						<String><Key>Password</Key><Value ProtectInMemory="True">r0uter!</Value></String>
+						<String><Key>URL</Key><Value>http://192.168.1.1</Value></String>
+					</Entry>
+				</Group>
+			</Group>
+			<Group>
+				<UUID>AAAAAAAAAAAAAAAAAAAABA==</UUID>
+				<Name>Notizen</Name>
+				<Entry>
+					<UUID>EAAAAAAAAAAAAAAAAAAABA==</UUID>
+					<String><Key>Title</Key><Value>Tresorcode</Value></String>
+					<String><Key>Notes</Key><Value>12-34-56</Value></String>
+				</Entry>
+			</Group>
+			<Group>
+				<UUID>Ae6KzW5mT0SfZ0sdL3Ji8A==</UUID>
+				<Name>Papierkorb</Name>
+				<Entry>
+					<UUID>EAAAAAAAAAAAAAAAAAAABQ==</UUID>
+					<String><Key>Title</Key><Value>Gelöscht</Value></String>
+					<String><Key>Password</Key><Value ProtectInMemory="True">weg</Value></String>
+				</Entry>
+			</Group>
+		</Group>
+	</Root>
+</KeePassFile>

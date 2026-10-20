@@ -840,5 +840,39 @@
  "Feld {name} fehlt in der 1Password-Vorlage": "Le champ {name} manque dans le modèle 1Password",
  "Programm konnte nicht gestartet werden: {error}": "Impossible de lancer le programme : {error}",
  "1Password: Eine neue Adresse steht in den Notizen; ändern lässt sie sich nur in der 1Password-App.": "1Password : une nouvelle adresse est enregistrée dans les notes ; elle ne peut être modifiée que dans l’app 1Password.",
- "1Password: Hat dieser Login einen Passkey, geht er beim Speichern über op verloren. Logins mit Passkey bitte in der 1Password-App bearbeiten.": "1Password : si cet identifiant possède une clé d’accès, elle est perdue lors de l’enregistrement via op. Modifiez les identifiants avec clé d’accès dans l’app 1Password."
+ "1Password: Hat dieser Login einen Passkey, geht er beim Speichern über op verloren. Logins mit Passkey bitte in der 1Password-App bearbeiten.": "1Password : si cet identifiant possède une clé d’accès, elle est perdue lors de l’enregistrement via op. Modifiez les identifiants avec clé d’accès dans l’app 1Password.",
+ "KeePass-Datenbank": "Base de données KeePass",
+ "KeePass-Datenbank (.kdbx)": "Base de données KeePass (.kdbx)",
+ "Die Datei ist beschädigt oder unvollständig.": "Le fichier est endommagé ou incomplet.",
+ "Falsches Master-Passwort oder falsche Schlüsseldatei.": "Mot de passe principal ou fichier clé incorrect.",
+ "Die Schlüsseldatei ist beschädigt.": "Le fichier clé est endommagé.",
+ "Die Schlüsselableitung dieser Datenbank ist zu aufwendig.": "La dérivation de clé de cette base de données est trop coûteuse.",
+ "Diese Einstellungen der Schlüsselableitung werden nicht unterstützt.": "Ces paramètres de dérivation de clé ne sont pas pris en charge.",
+ "Die Schlüsselableitung braucht {size} Arbeitsspeicher; unterstützt werden bis zu {max}.": "La dérivation de clé nécessite {size} de mémoire ; {max} au maximum sont pris en charge.",
+ "Nicht genug Arbeitsspeicher für die Schlüsselableitung dieser Datenbank.": "Mémoire insuffisante pour la dérivation de clé de cette base de données.",
+ "Der Schutz der Feldwerte dieser Datenbank (Verfahren {id}) wird nicht unterstützt.": "La protection des champs de cette base de données (méthode {id}) n'est pas prise en charge.",
+ "Die Datenbank ist zu groß.": "La base de données est trop volumineuse.",
+ "Diese KDBX-Version wird nicht unterstützt.": "Cette version de KDBX n'est pas prise en charge.",
+ "Keine KeePass-Datenbank (.kdbx).": "Ce n'est pas une base de données KeePass (.kdbx).",
+ "KeePass-1-Datenbanken (.kdb) werden nicht unterstützt. Bitte in KeePass 2 oder KeePassXC öffnen und als .kdbx speichern.": "Les bases de données KeePass 1 (.kdb) ne sont pas prises en charge. Ouvrez-la dans KeePass 2 ou KeePassXC et enregistrez-la au format .kdbx.",
+ "KDBX-Version {version} wird nicht unterstützt.": "La version {version} de KDBX n'est pas prise en charge.",
+ "Twofish-Verschlüsselung wird nicht unterstützt. Bitte die Datenbank in KeePass oder KeePassXC auf AES-256 oder ChaCha20 umstellen.": "Le chiffrement Twofish n'est pas pris en charge. Passez la base de données en AES-256 ou ChaCha20 dans KeePass ou KeePassXC.",
+ "Das Verschlüsselungsverfahren dieser Datenbank wird nicht unterstützt.": "La méthode de chiffrement de cette base de données n'est pas prise en charge.",
+ "Die Schlüsselableitung dieser Datenbank wird nicht unterstützt.": "La dérivation de clé de cette base de données n'est pas prise en charge.",
+ "Die Datei ist zu groß (höchstens {size}).": "Le fichier est trop volumineux ({size} au maximum).",
+ "Master-Passwort der Datenbank": "Mot de passe principal de la base de données",
+ "Schlüsseldatei": "Fichier clé",
+ "Schlüsseldatei (optional)": "Fichier clé (facultatif)",
+ "Gruppen als Ordner übernehmen": "Reprendre les groupes comme dossiers",
+ "KeePass-Datenbank: Master-Passwort eingeben und, falls verwendet, die Schlüsseldatei wählen. Entschlüsselt wird nur hier im Browser; nichts davon wird gespeichert.": "Base de données KeePass : saisissez le mot de passe principal et, le cas échéant, choisissez le fichier clé. Le déchiffrement a lieu uniquement ici, dans le navigateur ; rien n'est enregistré.",
+ "Entschlüssele …": "Déchiffrement…",
+ "Die Schlüsseldatei ist zu groß.": "Le fichier clé est trop volumineux.",
+ "Papierkorb: {n} Einträge werden nicht übernommen.": {
+  "one": "Corbeille : {n} élément ne sera pas importé.",
+  "other": "Corbeille : {n} éléments ne seront pas importés."
+ },
+ "Anhänge werden nicht übernommen ({n} Einträge: {names}).": {
+  "one": "Les pièces jointes ne sont pas importées ({n} élément : {names}).",
+  "other": "Les pièces jointes ne sont pas importées ({n} éléments : {names})."
+ }
 }

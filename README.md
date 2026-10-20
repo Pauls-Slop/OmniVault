@@ -21,7 +21,7 @@ move entries between managers – without giving up the manager you already use.
 | **LastPass** | Local helper → official `lpass` CLI | ✅ | ✅ |
 | **Proton Pass** | Local helper → official `pass-cli` | ✅ | ✅ |
 | **KeePassXC** | KeePassXC's own browser integration (`keepassxc-proxy`) | ✅ | ✅ (logins) |
-| **KeePass files, browser exports and others** | Import a CSV, JSON or KeePass XML export into any account above | – | – |
+| **KeePass files, browser exports and others** | Import a KeePass database (`.kdbx`), a CSV, JSON or KeePass XML export into any account above | – | – |
 
 Proton Pass support is on hold: Proton currently only offers its CLI on paid plans. It works once the CLI is enabled
 for your account.

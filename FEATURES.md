@@ -29,7 +29,7 @@ umsetzt und womit das geprüft ist. Wer einen Provider ändert, passt die Zeile 
 | LastPass | Native-Host → offizielles `lpass` | S |
 | KeePassXC | Browser-Schnittstelle von KeePassXC über `keepassxc-proxy` (kein OmniVault-Host) | S ¹⁶ |
 | Proton Pass | Native-Host → offizielles `pass-cli` | S, **zurückgestellt** ¹ |
-| alle anderen (KeePass-Dateien, Chrome, Firefox …) | Dateiimport in ein beschreibbares Konto | siehe Import |
+| alle anderen (KeePass-Dateien `.kdbx`, Chrome, Firefox …) | Dateiimport in ein beschreibbares Konto | siehe Import |
 
 ¹ Proton gibt `pass-cli` derzeit nur für kostenpflichtige Tarife frei („Your account is not yet allowed to use our
 CLI“). Der Provider bleibt im Code und in den Tests, wird aber nicht weiterentwickelt, bis das CLI für alle Konten
@@ -180,11 +180,16 @@ stehen sie in den Notizen. Nicht zugeordnete CSV-Spalten landen in den Notizen.
 | CSV mit Kopfzeile (Bitwarden, LastPass, Chrome, Firefox, NordPass, Dashlane, 1Password, KeePass, Safari …) | ✅ R + U |
 | Bitwarden / Vaultwarden JSON (unverschlüsselt), auch OmniVaults eigener Export; Passkeys gehen in Bitwarden-Konten mit | ✅ R + U |
 | Proton Pass JSON (`data.json` aus dem Export) | ✅ U |
-| KeePass 2 XML (KeePass, KeePassXC) | ✅ R |
+| KeePass 2 XML (KeePass, KeePassXC); eigene Felder bleiben Felder, Gruppen werden Ordner | ✅ R |
 | Format automatisch erkennen | ✅ U |
 | Ziel: Konto und Ordner wählbar | ✅ R |
 | Verschlüsselte Exporte, ZIP-Archive (1PUX, Proton-ZIP) | ⛔ (vorher unverschlüsselt bzw. entpackt exportieren) |
-| KeePass-Datenbank `.kdbx` direkt öffnen | ❌ zurückgestellt (Kryptografie hier nicht gegen echte Dateien prüfbar) |
+| KeePass-Datenbank `.kdbx` direkt öffnen (KDBX 3.1, 4.0, 4.1; AES-KDF, Argon2d, Argon2id; AES-256, ChaCha20; Master-Passwort und/oder Schlüsseldatei – XML v1/v2, 32/64 Byte, beliebige Datei); Papierkorb und Anhänge werden nicht übernommen und im Bericht genannt | ✅ R + U ²³ |
+| `.kdbx` mit Twofish, KeePass 1 (`.kdb`), Schreiben zurück in die Datei | ⛔ bzw. ❌ (Twofish und `.kdb` mit Hinweis abgelehnt) |
+
+²³ `.kdbx`: geprüft gegen Dateien, die das echte KeePassXC (keepassxc-cli 2.7) geschrieben hat, gegen einen unabhängigen
+Python-Schreiber (`test/fixtures/kdbx/generate.py`) und gegen die Beispieldateien aus kdbxweb (MIT); im Browser gegen
+echtes Vaultwarden importiert (`test/e2e-tools.mjs`).
 
 ## Oberfläche
 

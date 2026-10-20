@@ -4,6 +4,7 @@
 // Browser test for the tools (duplicates, bulk copy/delete, move in the editor, mirror rules), the sidebar
 // page and the toolbar settings – against two accounts on a REAL Vaultwarden server.
 // Usage: VAULTWARDEN_URL=http://localhost:8800 node test/e2e-tools.mjs [path-to-playwright] [screenshot-dir]
+import { readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { extensionCopy, launch } from './servers.mjs';
@@ -192,7 +193,34 @@ try {
   bItems = await itemsOf(accB);
   const kp = bItems.find((i) => i.name === 'KP-Eintrag');
   check(!!kp && kp.username === 'kpuser', 'KeePass XML entry imported');
-  check((await msg('item', { accountId: accB, itemId: kp.id })).notes.includes('Geheimfeld: xyz'), 'KeePass custom field kept in notes');
+  check((await msg('item', { accountId: accB, itemId: kp.id })).fields?.some((f) => f.name === 'Geheimfeld' && f.value === 'xyz'), 'KeePass custom field kept as field');
+
+  // --- KeePass database (.kdbx 4.1, Argon2d, ChaCha20): decrypted in the popup, wrong password first
+  await popup.click('#btn-tools');
+  await popup.click('#view-tools .tabs button:has-text("Import")');
+  await popup.selectOption('#view-tools select[aria-label=Ziel-Konto]', accB);
+  const kdbxFile = new URL('./fixtures/kdbx/py-4.1-argon2d-chacha20.kdbx', import.meta.url);
+  await popup.setInputFiles('#view-tools input[type=file][aria-label=Exportdatei]', { name: 'test.kdbx', mimeType: 'application/octet-stream', buffer: readFileSync(kdbxFile) });
+  await popup.waitForSelector('#view-tools form.kdbx-unlock:not([hidden])');
+  await popup.fill('#view-tools input[aria-label="Master-Passwort der Datenbank"]', 'falsch');
+  await popup.click('#view-tools form.kdbx-unlock button[type=submit]');
+  await popup.waitForSelector('#view-tools form.kdbx-unlock .error:not([hidden])', { timeout: 30000 });
+  check(/Falsches Master-Passwort/.test(await popup.textContent('#view-tools form.kdbx-unlock .error')), 'kdbx: wrong password reported');
+  await popup.fill('#view-tools input[aria-label="Master-Passwort der Datenbank"]', 'omnivault-test');
+  await popup.click('#view-tools form.kdbx-unlock button[type=submit]');
+  await popup.waitForFunction(() => /Erkannt: .*4 Einträge/.test(document.querySelector('#view-tools .hint')?.textContent || ''), null, { timeout: 30000 });
+  check(/Papierkorb: 1 Eintrag/.test(await popup.textContent('#view-tools')), 'kdbx: recycle bin entry reported as skipped');
+  await popup.evaluate(() => { const t = document.querySelector('#toast'); if (t) t.textContent = ''; });
+  await popup.click('#view-tools button:has-text("Importieren")');
+  await popup.click('#dialog-ok');
+  await popup.waitForFunction(() => /importiert/.test(document.querySelector('#toast')?.textContent || ''), null, { timeout: 30000 });
+  bItems = await itemsOf(accB);
+  const router = bItems.find((i) => i.name === 'Router');
+  check(!!router && /Server/.test(router.folder ?? ''), `kdbx entry imported with its group as folder (${router?.folder})`);
+  check(await msg('secret', { accountId: accB, itemId: router.id, field: 'password' }) === 'r0uter!', 'kdbx: protected password imported');
+  await popup.screenshot({ path: join(shots, 'tools-kdbx-imported.png') });
+  check(/Papierkorb/.test(await popup.textContent('#dialog')), 'kdbx: import report lists what was left out');
+  await popup.click('#dialog-ok');
 
   // --- password report: weak and reused passwords (account A has "gh-pass" twice and short seed passwords)
   await popup.click('#btn-tools');

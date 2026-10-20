@@ -811,5 +811,37 @@
  "Feld {name} fehlt in der 1Password-Vorlage": "1Password のテンプレートにフィールド {name} がありません",
  "Programm konnte nicht gestartet werden: {error}": "プログラムを起動できませんでした: {error}",
  "1Password: Eine neue Adresse steht in den Notizen; ändern lässt sie sich nur in der 1Password-App.": "1Password：新しい住所はメモに保存されます。変更は 1Password アプリでのみ可能です。",
- "1Password: Hat dieser Login einen Passkey, geht er beim Speichern über op verloren. Logins mit Passkey bitte in der 1Password-App bearbeiten.": "1Password：このログインにパスキーがある場合、op 経由で保存するとパスキーが失われます。パスキー付きのログインは 1Password アプリで編集してください。"
+ "1Password: Hat dieser Login einen Passkey, geht er beim Speichern über op verloren. Logins mit Passkey bitte in der 1Password-App bearbeiten.": "1Password：このログインにパスキーがある場合、op 経由で保存するとパスキーが失われます。パスキー付きのログインは 1Password アプリで編集してください。",
+ "KeePass-Datenbank": "KeePass データベース",
+ "KeePass-Datenbank (.kdbx)": "KeePass データベース（.kdbx）",
+ "Die Datei ist beschädigt oder unvollständig.": "ファイルが破損しているか、不完全です。",
+ "Falsches Master-Passwort oder falsche Schlüsseldatei.": "マスターパスワードまたはキーファイルが正しくありません。",
+ "Die Schlüsseldatei ist beschädigt.": "キーファイルが破損しています。",
+ "Die Schlüsselableitung dieser Datenbank ist zu aufwendig.": "このデータベースの鍵導出は負荷が大きすぎます。",
+ "Diese Einstellungen der Schlüsselableitung werden nicht unterstützt.": "この鍵導出の設定には対応していません。",
+ "Die Schlüsselableitung braucht {size} Arbeitsspeicher; unterstützt werden bis zu {max}.": "鍵導出に {size} のメモリーが必要です。対応しているのは {max} までです。",
+ "Nicht genug Arbeitsspeicher für die Schlüsselableitung dieser Datenbank.": "このデータベースの鍵導出に必要なメモリーが足りません。",
+ "Der Schutz der Feldwerte dieser Datenbank (Verfahren {id}) wird nicht unterstützt.": "このデータベースのフィールド保護方式（方式 {id}）には対応していません。",
+ "Die Datenbank ist zu groß.": "データベースが大きすぎます。",
+ "Diese KDBX-Version wird nicht unterstützt.": "この KDBX バージョンには対応していません。",
+ "Keine KeePass-Datenbank (.kdbx).": "KeePass データベース（.kdbx）ではありません。",
+ "KeePass-1-Datenbanken (.kdb) werden nicht unterstützt. Bitte in KeePass 2 oder KeePassXC öffnen und als .kdbx speichern.": "KeePass 1 のデータベース（.kdb）には対応していません。KeePass 2 または KeePassXC で開き、.kdbx として保存してください。",
+ "KDBX-Version {version} wird nicht unterstützt.": "KDBX バージョン {version} には対応していません。",
+ "Twofish-Verschlüsselung wird nicht unterstützt. Bitte die Datenbank in KeePass oder KeePassXC auf AES-256 oder ChaCha20 umstellen.": "Twofish 暗号化には対応していません。KeePass または KeePassXC でデータベースを AES-256 か ChaCha20 に切り替えてください。",
+ "Das Verschlüsselungsverfahren dieser Datenbank wird nicht unterstützt.": "このデータベースの暗号化方式には対応していません。",
+ "Die Schlüsselableitung dieser Datenbank wird nicht unterstützt.": "このデータベースの鍵導出方式には対応していません。",
+ "Die Datei ist zu groß (höchstens {size}).": "ファイルが大きすぎます（最大 {size}）。",
+ "Master-Passwort der Datenbank": "データベースのマスターパスワード",
+ "Schlüsseldatei": "キーファイル",
+ "Schlüsseldatei (optional)": "キーファイル（任意）",
+ "Gruppen als Ordner übernehmen": "グループをフォルダーとして取り込む",
+ "KeePass-Datenbank: Master-Passwort eingeben und, falls verwendet, die Schlüsseldatei wählen. Entschlüsselt wird nur hier im Browser; nichts davon wird gespeichert.": "KeePass データベース：マスターパスワードを入力し、使っている場合はキーファイルを選んでください。復号はこのブラウザー内だけで行われ、何も保存されません。",
+ "Entschlüssele …": "復号しています…",
+ "Die Schlüsseldatei ist zu groß.": "キーファイルが大きすぎます。",
+ "Papierkorb: {n} Einträge werden nicht übernommen.": {
+  "other": "ごみ箱：{n} 件のアイテムはインポートされません。"
+ },
+ "Anhänge werden nicht übernommen ({n} Einträge: {names}).": {
+  "other": "添付ファイルはインポートされません（{n} 件：{names}）。"
+ }
 }

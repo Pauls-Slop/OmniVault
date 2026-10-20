@@ -811,5 +811,37 @@
  "Feld {name} fehlt in der 1Password-Vorlage": "1Password 模板中缺少字段 {name}",
  "Programm konnte nicht gestartet werden: {error}": "无法启动程序：{error}",
  "1Password: Eine neue Adresse steht in den Notizen; ändern lässt sie sich nur in der 1Password-App.": "1Password：新地址会保存在备注中；只能在 1Password 应用中更改。",
- "1Password: Hat dieser Login einen Passkey, geht er beim Speichern über op verloren. Logins mit Passkey bitte in der 1Password-App bearbeiten.": "1Password：如果此登录信息有通行密钥，通过 op 保存会将其删除。请在 1Password 应用中编辑带有通行密钥的登录信息。"
+ "1Password: Hat dieser Login einen Passkey, geht er beim Speichern über op verloren. Logins mit Passkey bitte in der 1Password-App bearbeiten.": "1Password：如果此登录信息有通行密钥，通过 op 保存会将其删除。请在 1Password 应用中编辑带有通行密钥的登录信息。",
+ "KeePass-Datenbank": "KeePass 数据库",
+ "KeePass-Datenbank (.kdbx)": "KeePass 数据库（.kdbx）",
+ "Die Datei ist beschädigt oder unvollständig.": "文件已损坏或不完整。",
+ "Falsches Master-Passwort oder falsche Schlüsseldatei.": "主密码或密钥文件错误。",
+ "Die Schlüsseldatei ist beschädigt.": "密钥文件已损坏。",
+ "Die Schlüsselableitung dieser Datenbank ist zu aufwendig.": "此数据库的密钥派生开销过大。",
+ "Diese Einstellungen der Schlüsselableitung werden nicht unterstützt.": "不支持这些密钥派生设置。",
+ "Die Schlüsselableitung braucht {size} Arbeitsspeicher; unterstützt werden bis zu {max}.": "密钥派生需要 {size} 内存；最多支持 {max}。",
+ "Nicht genug Arbeitsspeicher für die Schlüsselableitung dieser Datenbank.": "内存不足，无法完成此数据库的密钥派生。",
+ "Der Schutz der Feldwerte dieser Datenbank (Verfahren {id}) wird nicht unterstützt.": "不支持此数据库的字段保护方式（方法 {id}）。",
+ "Die Datenbank ist zu groß.": "数据库过大。",
+ "Diese KDBX-Version wird nicht unterstützt.": "不支持此 KDBX 版本。",
+ "Keine KeePass-Datenbank (.kdbx).": "不是 KeePass 数据库（.kdbx）。",
+ "KeePass-1-Datenbanken (.kdb) werden nicht unterstützt. Bitte in KeePass 2 oder KeePassXC öffnen und als .kdbx speichern.": "不支持 KeePass 1 数据库（.kdb）。请在 KeePass 2 或 KeePassXC 中打开并另存为 .kdbx。",
+ "KDBX-Version {version} wird nicht unterstützt.": "不支持 KDBX 版本 {version}。",
+ "Twofish-Verschlüsselung wird nicht unterstützt. Bitte die Datenbank in KeePass oder KeePassXC auf AES-256 oder ChaCha20 umstellen.": "不支持 Twofish 加密。请在 KeePass 或 KeePassXC 中将数据库改为 AES-256 或 ChaCha20。",
+ "Das Verschlüsselungsverfahren dieser Datenbank wird nicht unterstützt.": "不支持此数据库的加密方式。",
+ "Die Schlüsselableitung dieser Datenbank wird nicht unterstützt.": "不支持此数据库的密钥派生方式。",
+ "Die Datei ist zu groß (höchstens {size}).": "文件过大（最大 {size}）。",
+ "Master-Passwort der Datenbank": "数据库主密码",
+ "Schlüsseldatei": "密钥文件",
+ "Schlüsseldatei (optional)": "密钥文件（可选）",
+ "Gruppen als Ordner übernehmen": "将群组转为文件夹",
+ "KeePass-Datenbank: Master-Passwort eingeben und, falls verwendet, die Schlüsseldatei wählen. Entschlüsselt wird nur hier im Browser; nichts davon wird gespeichert.": "KeePass 数据库：请输入主密码，如有密钥文件也请选择。解密只在此浏览器中进行，任何内容都不会被保存。",
+ "Entschlüssele …": "正在解密…",
+ "Die Schlüsseldatei ist zu groß.": "密钥文件过大。",
+ "Papierkorb: {n} Einträge werden nicht übernommen.": {
+  "other": "回收站：{n} 个项目不会被导入。"
+ },
+ "Anhänge werden nicht übernommen ({n} Einträge: {names}).": {
+  "other": "附件不会被导入（{n} 个项目：{names}）。"
+ }
 }
