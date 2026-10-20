@@ -5,7 +5,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { findDuplicates, hostOf } from '../src/lib/dupes.js';
-import { deleteItems, importItems, mirrorTargetSet, runMirrorRule, transferItems, validateRule } from '../src/background/tools.js';
+import { deleteItems, importItems, mirrorTargetSet, runMirrorRule, transferData, transferItems, validateRule } from '../src/background/tools.js';
 
 test('hostOf normalizes URLs', () => {
   assert.equal(hostOf('https://www.GitHub.com/login'), 'github.com');
@@ -152,6 +152,29 @@ test('mirror rule: create, unchanged, update on source change, delete missing, n
   const targets = mirrorTargetSet([rule, back], { [rule.id]: state });
   const r2 = await runMirrorRule(w.deps, back, {}, { mirrorTargets: targets });
   assert.equal(r2.report.created, 0);
+});
+
+test('mirror rule: without revision dates the stored state holds a hash, never the secrets', async () => {
+  const w = world({ A: { provider: memProvider({ label: 'A' }), items: [{ ...gh, revisionDate: undefined }] }, B: { provider: memProvider({ label: 'B' }) } });
+  const rule = validateRule({ sourceAccountId: 'A', targetAccountId: 'B' });
+  let { state, report } = await runMirrorRule(w.deps, rule, {});
+  assert.equal(report.created, 1);
+  assert.match(state.g.rev, /^sha256:[0-9a-f]{64}$/);
+  assert.ok(!JSON.stringify(state).includes('pw'), 'no password in the mirror state');
+
+  ({ state, report } = await runMirrorRule(w.deps, rule, state));
+  assert.deepEqual([report.updated, report.unchanged], [0, 1]);
+
+  // a state from before revisions were hashed (the content itself) counts as unchanged and is replaced
+  const legacy = { g: { ...state.g, rev: JSON.stringify(transferData(w.list('A')[0])) } };
+  ({ state, report } = await runMirrorRule(w.deps, rule, legacy));
+  assert.deepEqual([report.updated, report.unchanged], [0, 1]);
+  assert.match(state.g.rev, /^sha256:/);
+
+  Object.assign(w.accounts.A.store.items.get('g'), { password: 'neu' });
+  ({ state, report } = await runMirrorRule(w.deps, rule, state));
+  assert.equal(report.updated, 1);
+  assert.equal(w.list('B')[0].password, 'neu');
 });
 
 test('mirror rule: locked account and invalid rules', async () => {

@@ -10,6 +10,7 @@
 //   deps.write(accountId, fn)      → runs fn(provider, account, session), returns its result
 
 import { mark, t } from '../i18n/index.js';
+import { hex, utf8 } from '../lib/bytes.js';
 
 export const TRANSFERABLE = ['login', 'note', 'card', 'identity'];
 
@@ -146,7 +147,19 @@ export function validateRule(rule) {
   };
 }
 
-const revOf = (i) => i.revisionDate ?? JSON.stringify(transferData(i));
+const sha256Hex = async (s) => hex(new Uint8Array(await globalThis.crypto.subtle.digest('SHA-256', utf8(s))));
+
+/**
+ * Revision of a source item, kept in storage.local. Without a revision date it is a hash of the item's content –
+ * never the content itself, which can hold passwords (e.g. pass lists them).
+ */
+const revOf = async (i) => i.revisionDate ?? `sha256:${await sha256Hex(JSON.stringify(transferData(i)))}`;
+
+/** Compares a stored revision; states written before revisions were hashed hold the content itself. */
+async function sameRev(stored, rev) {
+  if (stored === rev) return true;
+  return typeof stored === 'string' && stored.startsWith('{') && rev.startsWith('sha256:') && `sha256:${await sha256Hex(stored)}` === rev;
+}
 
 export async function runMirrorRule(deps, rule, state = {}, { mirrorTargets = new Set() } = {}) {
   const report = { created: 0, updated: 0, deleted: 0, unchanged: 0, skipped: 0, errors: [] };
@@ -166,14 +179,14 @@ export async function runMirrorRule(deps, rule, state = {}, { mirrorTargets = ne
     if (!TRANSFERABLE.includes(s.type) || !types.includes(s.type)) { report.skipped++; continue; }
     const m = next[s.id];
     const target = m && dstById.get(m.targetId);
-    const rev = revOf(s);
+    const rev = await revOf(s);
     try {
       if (!target) {
         const full = await deps.reveal(rule.sourceAccountId, s.id);
         const res = await deps.write(rule.targetAccountId, (p, a, ss) => p.saveItem({ ...a.config, id: a.id }, ss, null, transferData(full, rule.targetFolderId, tp.capabilities)));
         next[s.id] = { targetId: res.item.id, rev };
         report.created++;
-      } else if (m.rev !== rev) {
+      } else if (!(await sameRev(m.rev, rev))) {
         const full = await deps.reveal(rule.sourceAccountId, s.id);
         const existing = await deps.reveal(rule.targetAccountId, target.id);
         const res = await deps.write(rule.targetAccountId, (p, a, ss) => p.saveItem({ ...a.config, id: a.id }, ss, existing,
@@ -181,6 +194,7 @@ export async function runMirrorRule(deps, rule, state = {}, { mirrorTargets = ne
         next[s.id] = { targetId: res.item?.id ?? target.id, rev };
         report.updated++;
       } else {
+        next[s.id] = { ...m, rev }; // replaces an old plain-content revision
         report.unchanged++;
       }
     } catch (e) {
