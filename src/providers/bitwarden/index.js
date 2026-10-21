@@ -56,7 +56,61 @@ const TWO_FACTOR_LABELS = {
   6: mark('Duo (Organisation)'),
   7: mark('FIDO2 / WebAuthn'),
 };
-const SUPPORTED_2FA = [0, 1, 3];
+const SUPPORTED_2FA = [0, 1, 2, 3, 6];
+/** Duo (personal and organization): confirmed in Duo's own page in a tab, no code to type. */
+const DUO = [2, 6];
+const DUO_CONNECTOR = 'duo-redirect-connector.html';
+
+const randomB64url = (n) => b64(crypto.getRandomValues(new Uint8Array(n))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+
+/** PKCE (RFC 7636): verifier and its S256 challenge. */
+async function pkce() {
+  const verifier = randomB64url(32);
+  const digest = new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier)));
+  return { verifier, challenge: b64(digest).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '') };
+}
+
+/** Claims of the request JWT in the Duo address (signed by the server, not encrypted): state, redirect_uri, … */
+function duoRequest(authUrl) {
+  try {
+    const jwt = new URL(authUrl).searchParams.get('request');
+    const part = jwt.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+    return JSON.parse(new TextDecoder().decode(fromB64(part + '='.repeat((4 - (part.length % 4)) % 4))));
+  } catch { return {}; }
+}
+const duoState = (authUrl) => duoRequest(authUrl).state ?? null;
+
+/**
+ * Where Duo sends the browser back: the server fixes it ({vault}/duo-redirect-connector.html?client=…) and names it
+ * in the request; the configured server address is the fallback.
+ */
+function duoReturnUrl(authUrl, ep) {
+  const r = duoRequest(authUrl).redirect_uri;
+  try { if (r && new URL(r).pathname.endsWith(`/${DUO_CONNECTOR}`)) return r; } catch { /* below */ }
+  return `${ep.vault}/${DUO_CONNECTOR}`;
+}
+
+/**
+ * Accounts without a master password (trusted devices, Key Connector) get their user key some other way, which
+ * OmniVault does not implement: say so instead of failing with a puzzling decryption error.
+ */
+function assertMasterPassword(tok) {
+  const o = tok?.userDecryptionOptions;
+  if (!o || o.hasMasterPassword !== false) return;
+  if (o.keyConnectorOption) throw new ProviderError(t('Dieses Konto entsperrt mit Key Connector statt mit einem Master-Passwort. Das unterstützt OmniVault nicht.'), 'unsupported');
+  if (o.trustedDeviceOption) throw new ProviderError(t('Dieses Konto entsperrt über vertrauenswürdige Geräte statt mit einem Master-Passwort. Das unterstützt OmniVault nicht.'), 'unsupported');
+  throw new ProviderError(t('Dieses Konto hat kein Master-Passwort. OmniVault kann den Tresor ohne Master-Passwort nicht entschlüsseln.'), 'unsupported');
+}
+
+/** KDF settings from a token response (current servers send them) – null if absent. */
+function tokenKdf(tok) {
+  const k = tok?.userDecryptionOptions?.masterPasswordUnlock?.kdf;
+  if (k?.kdfType != null) return { kdf: k.kdfType, kdfIterations: k.iterations, kdfMemory: k.memory, kdfParallelism: k.parallelism };
+  if (tok?.kdf != null && tok.kdfIterations) return { kdf: tok.kdf, kdfIterations: tok.kdfIterations, kdfMemory: tok.kdfMemory, kdfParallelism: tok.kdfParallelism };
+  return null;
+}
+
+const protectedKeyOf = (tok) => tok.key ?? tok.userDecryptionOptions?.masterPasswordUnlock?.masterKeyEncryptedUserKey;
 
 const CIPHER_TYPES = { 1: 'login', 2: 'note', 3: 'card', 4: 'identity', 5: 'ssh' };
 const TYPE_IDS = { login: 1, note: 2, card: 3, identity: 4, ssh: 5 };
@@ -139,6 +193,18 @@ class BitwardenProvider extends Provider {
       custom: { label: mark('Selbst gehostet / Vaultwarden …'), placeholder: 'https://vault.example.org' },
     },
     { name: 'email', label: mark('E-Mail'), type: 'email', required: true },
+    {
+      // SSO: sign-in through the organization's identity provider; the master password still decrypts the vault.
+      name: 'login', label: mark('Anmeldung'), type: 'select', default: 'password',
+      options: [
+        { value: 'password', label: mark('Mit Master-Passwort') },
+        { value: 'sso', label: mark('Mit SSO anmelden (Single Sign-On der Organisation)') },
+      ],
+    },
+    {
+      name: 'ssoIdentifier', label: mark('Organisations-Kennung'), type: 'text', required: true, showWhen: { field: 'login', value: 'sso' },
+      hint: mark('Die SSO-Kennung, die deine Organisation für „Enterprise Single Sign-On“ vergeben hat.'),
+    },
   ];
 
   /** Host-permission pattern the extension must hold for this account. */
@@ -150,6 +216,8 @@ class BitwardenProvider extends Provider {
   /* ---------- login ---------- */
 
   static async login(config, creds) {
+    if (creds.pending) return this.#continueLogin(config, creds);
+    if (config.login === 'sso' && !creds.clientId) return this.#startSso(config);
     const ep = api.endpoints(config.server);
     const email = config.email.trim();
     const deviceId = config.deviceId || crypto.randomUUID();
@@ -161,7 +229,8 @@ class BitwardenProvider extends Provider {
     if (creds.clientId) {
       // Personal API key: the server authenticates the key, the master password only decrypts the vault.
       const tok = await api.apiKeyGrant(ep, { clientId: creds.clientId, clientSecret: creds.clientSecret, deviceId, deviceName: deviceName() });
-      const protectedKey = tok.key ?? tok.userDecryptionOptions?.masterPasswordUnlock?.masterKeyEncryptedUserKey;
+      assertMasterPassword(tok);
+      const protectedKey = protectedKeyOf(tok);
       if (!protectedKey) throw new ProviderError(t('Server lieferte keinen verschlüsselten Benutzerschlüssel'), 'server');
       const userKey = await decryptUserKey(protectedKey, masterKey);
       return {
@@ -181,42 +250,144 @@ class BitwardenProvider extends Provider {
       return { status: 'needs_2fa', configPatch, twoFactorProviders: [{ id: '1', label: t(TWO_FACTOR_LABELS[1]) }] };
     }
 
+    const provider = Number(creds.twoFactorProvider ?? 0);
+    const code = creds.twoFactorCode?.replace(/\s/g, '');
     const res = await api.passwordGrant(ep, {
       email, hash, deviceId, deviceName: deviceName(),
-      twoFactor: creds.twoFactorCode
-        ? { code: creds.twoFactorCode.replace(/\s/g, ''), provider: Number(creds.twoFactorProvider ?? 0) }
-        : null,
+      twoFactor: code && !DUO.includes(provider) ? { code, provider } : null,
       newDeviceOtp: creds.deviceOtp?.trim(),
     });
+    const grant = { type: 'password', email, hash, deviceId };
+    const next = this.#afterGrant(ep, res, grant, DUO.includes(provider) ? provider : null);
+    if (next.status !== 'token') return { ...next, configPatch, pending: next.pending && { ...next.pending, masterKey: b64(masterKey) } };
+    return { status: 'ok', configPatch, session: await this.#newSession(next.token, masterKey) };
+  }
 
-    if (res.status === 'needs_2fa') {
-      const usable = res.providers.filter((p) => SUPPORTED_2FA.includes(p));
-      if (!usable.length) {
-        throw new ProviderError(
-          t('Nur nicht unterstützte 2FA-Methoden aktiv ({methods}). Anmeldung mit API-Schlüssel ist möglich.', { methods: res.providers.map((p) => (TWO_FACTOR_LABELS[p] ? t(TWO_FACTOR_LABELS[p]) : p)).join(', ') }),
-          'unsupported');
+  /**
+   * Login steps that leave the popup: Duo and the organization's sign-in (SSO) run in a browser tab. The background
+   * keeps `pending` (memory only, a few minutes) while the tab is open and passes it back with the address the tab
+   * reached (`creds.browserUrl`), or with what the user types afterwards (master password, 2FA code).
+   */
+  static async #continueLogin(config, creds) {
+    const ep = api.endpoints(config.server);
+    const p = creds.pending;
+    const deviceId = p.grant?.deviceId ?? config.deviceId;
+    if (p.kind === 'browser') {
+      const url = new URL(creds.browserUrl);
+      const error = url.searchParams.get('error');
+      if (error) throw new ProviderError(t('Anmeldung abgebrochen: {msg}', { msg: url.searchParams.get('error_description') || error }), 'server');
+      const code = url.searchParams.get('code') ?? url.searchParams.get('duo_code');
+      const state = url.searchParams.get('state');
+      if (!code || (p.state && state !== p.state)) throw new ProviderError(t('Die Rückmeldung im Tab passt nicht zu dieser Anmeldung. Bitte erneut versuchen.'), 'server');
+      if (p.step === 'sso') {
+        // the organization confirmed the user: exchange the code (PKCE) for tokens
+        const grant = { type: 'code', code, verifier: p.verifier, redirectUri: p.redirectUri, deviceId };
+        return this.#afterSso(ep, await api.codeGrant(ep, { ...grant, deviceName: deviceName() }), grant);
       }
+      // Duo: the server checks "<code>|<state>" with Duo
+      const res = await this.#grant(ep, p.grant, { code: `${code}|${state}`, provider: p.provider });
+      return p.grant.type === 'code' ? this.#afterSso(ep, res, p.grant) : this.#finishPassword(ep, res, p);
+    }
+    if (p.kind === 'code') {
+      // second factor after the organization's sign-in: the same code once more, with the factor
+      const provider = Number(creds.twoFactorProvider ?? 0);
+      const code = creds.twoFactorCode?.replace(/\s/g, '');
+      if (!DUO.includes(provider) && !code) throw new ProviderError(t('Bitte den Code eingeben.'), 'bad_password');
+      const res = await this.#grant(ep, p.grant, DUO.includes(provider) ? null : { code, provider });
+      return this.#afterSso(ep, res, p.grant, DUO.includes(provider) ? provider : null);
+    }
+    if (p.kind === 'token') {
+      // signed in through the organization; the master password decrypts the vault
+      const kdf = p.kdf ?? await api.prelogin(ep, config.email.trim());
+      const masterKey = await deriveMasterKey(creds.password, p.salt || config.email.trim(), kdf);
+      return { status: 'ok', session: await this.#newSession(p.token, masterKey) };
+    }
+    throw new ProviderError(t('Anmeldung abgelaufen – bitte erneut beginnen.'), 'session_expired');
+  }
+
+  static #grant(ep, grant, twoFactor) {
+    return grant.type === 'code'
+      ? api.codeGrant(ep, { ...grant, deviceName: deviceName(), twoFactor })
+      : api.passwordGrant(ep, { ...grant, deviceName: deviceName(), twoFactor });
+  }
+
+  /** Password login after Duo: the master key kept in `pending` decrypts the vault. */
+  static async #finishPassword(ep, res, p) {
+    const next = this.#afterGrant(ep, res, p.grant, null);
+    if (next.status !== 'token') return { ...next, pending: next.pending && { ...next.pending, masterKey: p.masterKey } };
+    return { status: 'ok', session: await this.#newSession(next.token, fromB64(p.masterKey)) };
+  }
+
+  /** After the code grant of an SSO login: second factor, or ask for the master password. */
+  static #afterSso(ep, res, grant, duo = null) {
+    const next = this.#afterGrant(ep, res, grant, duo);
+    if (next.status === 'needs_2fa') return { ...next, pending: { kind: 'code', grant } };
+    if (next.status !== 'token') return next;
+    const tok = next.token;
+    assertMasterPassword(tok);
+    if (!protectedKeyOf(tok)) throw new ProviderError(t('Server lieferte keinen verschlüsselten Benutzerschlüssel'), 'server');
+    const token = { access_token: tok.access_token, refresh_token: tok.refresh_token, expires_in: tok.expires_in, key: protectedKeyOf(tok) };
+    // the salt is the account's e-mail address; the server names it, in case it differs from the one typed
+    const salt = tok.userDecryptionOptions?.masterPasswordUnlock?.salt;
+    return { status: 'needs_password', pending: { kind: 'token', token, kdf: tokenKdf(tok), salt } };
+  }
+
+  /**
+   * Common handling of a token response: a second factor (Duo → browser tab with the address the server named),
+   * a new-device code, or the token.
+   */
+  static #afterGrant(ep, res, grant, duo) {
+    if (res.status === 'needs_device_otp') return { status: 'needs_device_otp' };
+    if (res.status === 'ok') return { status: 'token', token: res.token };
+    const usable = res.providers.filter((p) => SUPPORTED_2FA.includes(p));
+    if (!usable.length) {
+      throw new ProviderError(
+        t('Nur nicht unterstützte 2FA-Methoden aktiv ({methods}). Anmeldung mit API-Schlüssel ist möglich.', { methods: res.providers.map((p) => (TWO_FACTOR_LABELS[p] ? t(TWO_FACTOR_LABELS[p]) : p)).join(', ') }),
+        'unsupported');
+    }
+    // only Duo set up: straight to Duo, nothing to choose
+    if (duo == null && usable.length === 1 && DUO.includes(usable[0])) duo = usable[0];
+    if (duo != null && usable.includes(duo)) {
+      const authUrl = res.providerData?.[String(duo)]?.authUrl;
+      if (!authUrl || !/^(https:\/\/|http:\/\/(localhost|127\.0\.0\.1)[:/])/.test(authUrl)) throw new ProviderError(t('Der Server hat keine Duo-Adresse geliefert. Ist Duo für dieses Konto richtig eingerichtet?'), 'server');
       return {
-        status: 'needs_2fa', configPatch,
-        twoFactorProviders: usable.map((p) => ({ id: String(p), label: t(TWO_FACTOR_LABELS[p]) })),
+        status: 'needs_browser',
+        browser: { url: authUrl, returnUrl: duoReturnUrl(authUrl, ep), kind: 'duo' },
+        pending: { kind: 'browser', step: 'duo', provider: duo, state: duoState(authUrl), grant },
       };
     }
-    if (res.status === 'needs_device_otp') return { status: 'needs_device_otp', configPatch };
+    return { status: 'needs_2fa', twoFactorProviders: usable.map((p) => ({ id: String(p), label: t(TWO_FACTOR_LABELS[p]) })) };
+  }
 
-    const tok = res.token;
-    const protectedKey = tok.key ?? tok.userDecryptionOptions?.masterPasswordUnlock?.masterKeyEncryptedUserKey;
+  /** Starts the organization's sign-in (SSO): PKCE, then the authorize address in a tab. */
+  static async #startSso(config) {
+    const ep = api.endpoints(config.server);
+    const identifier = (config.ssoIdentifier ?? '').trim();
+    if (!identifier) throw new ProviderError(t('Bitte die SSO-Kennung der Organisation im Konto eintragen.'), 'config');
+    const deviceId = config.deviceId || crypto.randomUUID();
+    const ssoToken = await api.ssoPrevalidate(ep, identifier);
+    const { verifier, challenge } = await pkce();
+    const state = randomB64url(24);
+    const redirectUri = api.ssoRedirectUri(ep);
+    return {
+      status: 'needs_browser',
+      configPatch: config.deviceId ? undefined : { deviceId },
+      browser: { url: api.ssoAuthorizeUrl(ep, { identifier, state, challenge, ssoToken }), returnUrl: redirectUri, kind: 'sso' },
+      pending: { kind: 'browser', step: 'sso', state, verifier, redirectUri, grant: { deviceId } },
+    };
+  }
+
+  /** Token response + master key → stored session. */
+  static async #newSession(tok, masterKey) {
+    assertMasterPassword(tok);
+    const protectedKey = protectedKeyOf(tok);
     if (!protectedKey) throw new ProviderError(t('Server lieferte keinen verschlüsselten Benutzerschlüssel'), 'server');
     const userKey = await decryptUserKey(protectedKey, masterKey);
-
     return {
-      status: 'ok',
-      configPatch,
-      session: {
-        accessToken: tok.access_token,
-        refreshToken: tok.refresh_token,
-        expiresAt: Date.now() + (tok.expires_in ?? 3600) * 1000,
-        userKey: b64(userKey),
-      },
+      accessToken: tok.access_token,
+      refreshToken: tok.refresh_token,
+      expiresAt: Date.now() + (tok.expires_in ?? 3600) * 1000,
+      userKey: b64(userKey),
     };
   }
 

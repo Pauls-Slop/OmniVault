@@ -3,7 +3,7 @@
 // Copyright (c) 2026 Die OmniVault-Mitwirkenden
 // Popup entry point: header actions, target tab, wiring of all views.
 import { ext } from '../lib/browser.js';
-import { initAccounts, openAccountForm, renderAccounts, resumeAccountStep } from './accounts.js';
+import { initAccounts, openAccountForm, renderAccounts, resumeAccountStep, resumeLoginFlow } from './accounts.js';
 import { openItem } from './detail.js';
 import { openEditor } from './editor.js';
 import { openGenerator } from './generator.js';
@@ -222,6 +222,8 @@ if (windowed) {
     await openTools('dupes', { reportScope: r.scope });
     if (!r.granted) toast(t('Ohne Zugriff auf api.pwnedpasswords.com lässt sich nicht gegen Datenlecks prüfen.'));
   } else if (r) await resumeAccountStep(r);
+  // a login that continued in a tab (Duo, the organization's sign-in) while the popup was closed
+  else if (await resumeLoginFlow()) { /* shown */ }
   else if (location.hash === '#settings') { // reloaded after a language change
     history.replaceState(null, '', location.pathname + location.search);
     await openSettings();

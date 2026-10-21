@@ -20,6 +20,7 @@ import { weakness } from '../lib/strength.js';
 import { HIBP_ORIGIN, breachCounts } from '../lib/hibp.js';
 import { deleteItems, importItems, mirrorTargetSet, passkeysWithKeys, runMirrorRule, transferItems, transferLoss, validateRule } from './tools.js';
 import { createPasskeyService } from './passkeys.js';
+import { createLoginFlows } from './login-flow.js';
 
 /** Decrypted items per account – memory only, rebuilt from the session after a worker restart. */
 const cache = new Map(); // accountId -> { items, folders, syncedAt, error, warning }
@@ -55,8 +56,30 @@ async function ensureSynced(account, force = false) {
   }
 }
 
+/**
+ * One step of a login: the provider's answer, with the session stored and the account synced when it is done.
+ * Returns what the popup may see plus `pending` (kept here) and `browser` (a tab to open).
+ */
+async function loginStep(id, creds) {
+  const account = await store.getAccount(id);
+  const provider = getProvider(account.provider);
+  const res = await provider.login(cfg(account), creds);
+  await store.patchAccountConfig(id, res.configPatch);
+  if (res.status !== 'ok') {
+    return { status: res.status, twoFactorProviders: res.twoFactorProviders, hint: res.hint, pending: res.pending, browser: res.browser };
+  }
+  await store.setSession(id, res.session);
+  const entry = await ensureSynced(await store.getAccount(id), true);
+  return { status: 'ok', itemCount: entry?.items.length ?? 0, error: entry?.error };
+}
+
+const loginFlows = createLoginFlows({
+  finish: (id, pending, browserUrl) => loginStep(id, { pending, browserUrl }),
+});
+
 async function lock(id) {
   cache.delete(id);
+  await loginFlows.clear(id); // a login half done (master key after Duo, tokens after SSO) goes as well
   await store.clearSession(id);
 }
 
@@ -599,17 +622,44 @@ const handlers = {
   },
 
   async login({ id, credentials }) {
-    const account = await store.getAccount(id);
-    const provider = getProvider(account.provider);
-    const res = await provider.login(cfg(account), credentials);
-    await store.patchAccountConfig(id, res.configPatch);
-    if (res.status !== 'ok') return { status: res.status, twoFactorProviders: res.twoFactorProviders, hint: res.hint };
-    await store.setSession(id, res.session);
-    const entry = await ensureSynced(await store.getAccount(id), true);
-    return { status: 'ok', itemCount: entry?.items.length ?? 0, error: entry?.error };
+    // `continue`: the next step of a login begun earlier (after Duo or the organization's sign-in); the state for
+    // it never left the background
+    const { continue: cont, ...creds } = credentials ?? {};
+    if (cont) {
+      const pending = await loginFlows.take(id);
+      if (!pending) throw new Error(t('Anmeldung abgelaufen – bitte erneut beginnen.'));
+      creds.pending = pending;
+    } else await loginFlows.clear(id);
+    let res;
+    try {
+      res = await loginStep(id, creds);
+    } catch (e) {
+      // a mistyped master password after the organization's sign-in: keep the sign-in for another try
+      if (cont && e.code === 'bad_password' && creds.pending?.kind === 'token') await loginFlows.settle(id, { status: 'needs_password', pending: creds.pending });
+      throw e;
+    }
+    if (res.status === 'needs_browser') {
+      await loginFlows.start(id, res);
+      return { status: 'needs_browser', kind: res.browser.kind };
+    }
+    if (res.pending) await loginFlows.settle(id, res);
+    const { pending, ...visible } = res;
+    return { ...visible, continues: !!pending };
   },
 
   progress: ({ id }) => syncProgress.get(id) ?? null,
+
+  /** Where a login running in a browser tab stands (for the popup, also after it was closed). */
+  async loginFlow({ id }) {
+    if (id) return loginFlows.status(id);
+    for (const a of await store.listAccounts()) {
+      const s = await loginFlows.status(a.id);
+      if (s) return { ...s, id: a.id };
+    }
+    return null;
+  },
+  loginFlowClear: ({ id }) => loginFlows.clear(id),
+  loginFlowFocus: ({ id }) => loginFlows.focus(id),
 
   lock: ({ id }) => lock(id),
   lockAll: () => lockAll(),

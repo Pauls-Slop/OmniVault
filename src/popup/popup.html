@@ -93,7 +93,7 @@
       <h2 id="unlock-title">Entsperren</h2>
       <form id="form-unlock">
         <div id="unlock-apikey" hidden>
-          <p class="hint">Anmeldung mit persönlichem API-Schlüssel (Bitwarden: Kontoeinstellungen → Sicherheit → Schlüssel → API-Schlüssel). Nötig z. B. bei FIDO2-, Duo- oder SSO-Konten.</p>
+          <p class="hint">Anmeldung mit persönlichem API-Schlüssel (Bitwarden: Kontoeinstellungen → Sicherheit → Schlüssel → API-Schlüssel). Nötig z. B., wenn als zweiter Faktor nur FIDO2 / WebAuthn eingerichtet ist.</p>
           <label translate="no">client_id <input name="clientId" autocomplete="off" spellcheck="false" placeholder="user.…"></label>
           <label translate="no">client_secret <input name="clientSecret" type="password" autocomplete="off"></label>
         </div>
@@ -102,12 +102,17 @@
         <button type="button" class="link" id="btn-apikey" hidden>Mit API-Schlüssel anmelden …</button>
         <div id="unlock-2fa" hidden>
           <label>Zweiter Faktor <select name="twoFactorProvider"></select></label>
-          <label>Code <input name="twoFactorCode" inputmode="numeric" autocomplete="one-time-code"></label>
+          <label id="unlock-code">Code <input name="twoFactorCode" inputmode="numeric" autocomplete="one-time-code"></label>
+          <p class="hint" id="unlock-duo-hint" hidden>Duo öffnet sich in einem neuen Tab. Nach der Bestätigung dort schließt OmniVault den Tab und meldet dich an.</p>
           <button type="button" class="link" id="btn-email-code" hidden>Code per E-Mail senden</button>
         </div>
         <div id="unlock-device" hidden>
           <p class="hint">Neues Gerät: Bitwarden hat einen Bestätigungscode an deine E-Mail-Adresse geschickt.</p>
           <label>Gerätecode <input name="deviceOtp" inputmode="numeric" autocomplete="one-time-code"></label>
+        </div>
+        <div id="unlock-browser" hidden>
+          <p class="hint" id="unlock-browser-text"></p>
+          <button type="button" class="link" id="btn-login-tab">Zum Tab wechseln</button>
         </div>
         <p id="unlock-error" class="error" hidden></p>
         <div class="row actions">

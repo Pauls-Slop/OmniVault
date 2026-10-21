@@ -14,18 +14,24 @@ const BROWSER = typeof __BROWSER__ !== 'undefined' ? __BROWSER__ : 'chrome';
 // Bitwarden DeviceType enum: 2 = ChromeExtension, 3 = FirefoxExtension
 export const DEVICE_TYPE = BROWSER === 'firefox' ? 3 : 2;
 
-/** Resolve api/identity base URLs from the configured server. */
+/**
+ * Resolve api/identity base URLs from the configured server, plus the web vault: after Duo and SSO the servers send
+ * the browser back only to fixed pages there (duo-redirect-connector.html, sso-connector.html).
+ */
 export function endpoints(server) {
   const s = (server || 'bitwarden.com').trim().replace(/\/+$/, '');
   if (s === 'bitwarden.com' || s === 'https://vault.bitwarden.com') {
-    return { api: 'https://api.bitwarden.com', identity: 'https://identity.bitwarden.com' };
+    return { api: 'https://api.bitwarden.com', identity: 'https://identity.bitwarden.com', vault: 'https://vault.bitwarden.com' };
   }
   if (s === 'bitwarden.eu' || s === 'https://vault.bitwarden.eu') {
-    return { api: 'https://api.bitwarden.eu', identity: 'https://identity.bitwarden.eu' };
+    return { api: 'https://api.bitwarden.eu', identity: 'https://identity.bitwarden.eu', vault: 'https://vault.bitwarden.eu' };
   }
   const base = /^https?:\/\//.test(s) ? s : `https://${s}`;
-  return { api: `${base}/api`, identity: `${base}/identity` };
+  return { api: `${base}/api`, identity: `${base}/identity`, vault: base };
 }
+
+/** Where the server sends the browser after the organization's sign-in (fixed for client_id "browser"). */
+export const ssoRedirectUri = (ep) => `${ep.vault}/sso-connector.html`;
 
 /** Recursively lower-case the first letter of every key (server mixes PascalCase/camelCase). */
 export function normalizeKeys(v) {
@@ -91,20 +97,38 @@ export async function passwordGrant(ep, { email, hash, deviceId, deviceName, two
     deviceIdentifier: deviceId,
     deviceName,
   });
+  if (newDeviceOtp) form.set('newDeviceOtp', newDeviceOtp);
+  return tokenGrant(ep, form, twoFactor, { 'Auth-Email': b64url(utf8(email)) });
+}
+
+/**
+ * Authorization-code grant after the organization's sign-in (SSO, OIDC with PKCE). While a second factor is
+ * outstanding the servers accept the same code again, so the 2FA step repeats this grant.
+ */
+export async function codeGrant(ep, { code, verifier, redirectUri, deviceId, deviceName, twoFactor }) {
+  const form = new URLSearchParams({
+    grant_type: 'authorization_code',
+    code,
+    code_verifier: verifier,
+    redirect_uri: redirectUri,
+    scope: 'api offline_access',
+    client_id: CLIENT_ID,
+    deviceType: String(DEVICE_TYPE),
+    deviceIdentifier: deviceId,
+    deviceName,
+  });
+  return tokenGrant(ep, form, twoFactor);
+}
+
+async function tokenGrant(ep, form, twoFactor, headers = {}) {
   if (twoFactor) {
     form.set('twoFactorToken', twoFactor.code);
     form.set('twoFactorProvider', String(twoFactor.provider));
     form.set('twoFactorRemember', '0');
   }
-  if (newDeviceOtp) form.set('newDeviceOtp', newDeviceOtp);
-
   const r = await request(`${ep.identity}/connect/token`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded; charset=utf-8',
-      'Auth-Email': b64url(utf8(email)),
-      ...clientHeaders(),
-    },
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=utf-8', ...headers, ...clientHeaders() },
     body: form,
   });
   if (r.ok) return { status: 'ok', token: r.body };
@@ -113,7 +137,9 @@ export async function passwordGrant(ep, { email, hash, deviceId, deviceName, two
   const tfp = b.twoFactorProviders2 || b.twoFactorProviders;
   if (tfp) {
     const ids = Array.isArray(tfp) ? tfp.map(String) : Object.keys(tfp);
-    return { status: 'needs_2fa', providers: ids.map(Number) };
+    // what each method needs on the client side, e.g. Duo: { authUrl, host }
+    const data = b.twoFactorProviders2 && !Array.isArray(b.twoFactorProviders2) ? b.twoFactorProviders2 : {};
+    return { status: 'needs_2fa', providers: ids.map(Number), providerData: data };
   }
   const msg = b.errorModel?.message || b.error_description || b.message || r.text || `HTTP ${r.status}`;
   if (/new device verification/i.test(msg) || /device.*verif/i.test(msg)) {
@@ -138,6 +164,37 @@ export async function refreshGrant(ep, refreshToken) {
   return r.body;
 }
 
+/**
+ * Bitwarden checks the organization identifier before the sign-in and hands out a short-lived token for the
+ * authorize request; Vaultwarden answers with a token of its own. null when the server has no such endpoint.
+ */
+export async function ssoPrevalidate(ep, identifier) {
+  const r = await request(`${ep.identity}/sso/prevalidate?domainHint=${encodeURIComponent(identifier)}`, { headers: clientHeaders() });
+  if (r.status === 404) return null;
+  if (!r.ok) {
+    const msg = r.body?.message || r.body?.errorModel?.message || r.body?.error_description || `HTTP ${r.status}`;
+    throw new ProviderError(t('Anmeldung mit SSO nicht möglich: {msg}', { msg }), 'sso');
+  }
+  return r.body?.token ?? null;
+}
+
+/** Address of the organization's sign-in (opened in a tab); the server redirects to the SSO connector with code and state. */
+export function ssoAuthorizeUrl(ep, { identifier, state, challenge, ssoToken }) {
+  const q = new URLSearchParams({
+    client_id: CLIENT_ID,
+    redirect_uri: ssoRedirectUri(ep),
+    response_type: 'code',
+    scope: 'api offline_access',
+    state,
+    code_challenge: challenge,
+    code_challenge_method: 'S256',
+    response_mode: 'query',
+    domain_hint: identifier,
+  });
+  if (ssoToken) q.set('ssoToken', ssoToken);
+  return `${ep.identity}/connect/authorize?${q}`;
+}
+
 /** Ask the server to e-mail a 2FA code (provider 1). */
 export async function sendEmailCode(ep, { email, hash, deviceId }) {
   const r = await request(`${ep.api}/two-factor/send-email-login`, {
@@ -159,7 +216,7 @@ export async function sync(ep, accessToken) {
 
 /**
  * Personal API key login (client_credentials). Works for accounts whose second factor OmniVault cannot
- * handle (FIDO2, Duo) and for SSO users. There is no refresh token: the grant is simply repeated.
+ * handle (FIDO2 / WebAuthn) and for SSO users who prefer it. There is no refresh token: the grant is simply repeated.
  */
 export async function apiKeyGrant(ep, { clientId, clientSecret, deviceId, deviceName }) {
   const r = await request(`${ep.identity}/connect/token`, {

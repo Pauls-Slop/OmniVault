@@ -8,7 +8,7 @@ import { hostPatterns } from '../providers/hosts.js';
 import { openMenu } from './menu.js';
 import { requestPermissions } from './resume.js';
 import { S, accountOf, providerOf, refresh } from './state.js';
-import { $, ask, badge, call, el, icon, show, t, tn, toast } from './ui.js';
+import { $, ask, badge, call, currentView, el, icon, show, t, tn, toast } from './ui.js';
 
 const CUSTOM = '__custom';
 let formMode = { mode: 'add' };
@@ -274,9 +274,81 @@ export function openUnlock(a) {
   $('#unlock-apikey').hidden = true;
   $('#unlock-2fa').hidden = true;
   $('#unlock-device').hidden = true;
+  $('#unlock-browser').hidden = true;
   $('#unlock-error').hidden = true;
+  continuing = false;
+  // SSO: the password is asked for only after the organization's sign-in
+  ssoStart = p?.id === 'bitwarden' && cfgOf.login === 'sso';
+  setPasswordShown(!noPassword && !ssoStart);
+  $('#unlock-submit').textContent = ssoStart ? t('Mit SSO anmelden') : $('#unlock-submit').textContent;
   show('unlock', { restore: () => openUnlock(a), keep: true });
-  (noPassword ? $('#unlock-submit') : f.password).focus();
+  (noPassword || ssoStart ? $('#unlock-submit') : f.password).focus();
+}
+
+let continuing = false; // the next submit continues a login begun in a tab (Duo, SSO)
+let ssoStart = false; // the first submit opens the organization's sign-in
+
+function setPasswordShown(on) {
+  const f = $('#form-unlock');
+  f.password.closest('label').hidden = !on;
+  f.password.required = on;
+}
+
+/** A login step runs in a browser tab: show that, and offer to go back to it. */
+function showBrowserStep(kind) {
+  $('#unlock-browser-text').textContent = kind === 'sso'
+    ? t('Die Anmeldung deiner Organisation läuft in einem neuen Tab. Danach geht es hier weiter – auch wenn sich dieses Fenster schließt.')
+    : t('Bitte die Anmeldung im Duo-Tab bestätigen. Danach geht es hier weiter – auch wenn sich dieses Fenster schließt.');
+  $('#unlock-browser').hidden = false;
+  $('#unlock-2fa').hidden = true;
+  $('#unlock-device').hidden = true;
+}
+
+/** Shows what a login step returned that needs the user (also used when a reopened popup picks up the outcome). */
+function showLoginResult(r, extra = {}) {
+  const f = $('#form-unlock');
+  $('#unlock-browser').hidden = true;
+  continuing = !!r.continues;
+  if (r.status === 'needs_browser') { showBrowserStep(r.kind); return true; }
+  if (r.status === 'needs_2fa') {
+    f.twoFactorProvider.replaceChildren(...r.twoFactorProviders.map((p) => el('option', { value: p.id }, p.label)));
+    $('#btn-email-code').hidden = !r.twoFactorProviders.some((p) => p.id === '1');
+    $('#unlock-2fa').hidden = false;
+    updateTwoFactorKind();
+    if (extra.requestEmailCode) toast(t('Code wurde gesendet'));
+    (isDuo() ? $('#unlock-submit') : f.twoFactorCode).focus();
+    return true;
+  }
+  if (r.status === 'needs_device_otp') {
+    $('#unlock-device').hidden = false;
+    f.deviceOtp.focus();
+    return true;
+  }
+  if (r.status === 'needs_password') {
+    // signed in through the organization; the master password decrypts the vault
+    ssoStart = false;
+    setPasswordShown(true);
+    $('#unlock-2fa').hidden = true;
+    $('#unlock-submit').textContent = t('Entsperren');
+    $('#unlock-hint')?.remove();
+    $('#unlock-title').after(el('p', { className: 'hint', id: 'unlock-hint' }, t('Bei der Organisation angemeldet. Jetzt das Master-Passwort eingeben, um den Tresor zu entschlüsseln.')));
+    f.password.focus();
+    return true;
+  }
+  return false;
+}
+
+const isDuo = () => ['2', '6'].includes($('#form-unlock').twoFactorProvider.value);
+function updateTwoFactorKind() {
+  const duo = isDuo();
+  $('#unlock-code').hidden = duo;
+  $('#unlock-duo-hint').hidden = !duo;
+}
+
+async function finishLogin(r) {
+  toast(r.error ? t('Angemeldet, Sync-Fehler: {error}', { error: r.error }) : tn(r.itemCount, '{n} Eintrag geladen', '{n} Einträge geladen'));
+  show('main');
+  await refresh();
 }
 
 async function submitUnlock(ev, extra = {}) {
@@ -299,6 +371,7 @@ async function submitUnlock(ev, extra = {}) {
   }
 
   const credentials = {
+    ...(continuing ? { continue: true } : {}),
     password: f.password.value,
     twoFactorCode: $('#unlock-2fa').hidden ? undefined : f.twoFactorCode.value || undefined,
     twoFactorProvider: $('#unlock-2fa').hidden ? undefined : f.twoFactorProvider.value,
@@ -317,30 +390,64 @@ async function submitUnlock(ev, extra = {}) {
   }).catch(() => {}), 400);
   try {
     const r = await call('login', { id: unlockAccount.id, credentials });
-    if (r.status === 'needs_2fa') {
-      f.twoFactorProvider.replaceChildren(...r.twoFactorProviders.map((p) => el('option', { value: p.id }, p.label)));
-      $('#btn-email-code').hidden = !r.twoFactorProviders.some((p) => p.id === '1');
-      $('#unlock-2fa').hidden = false;
-      if (extra.requestEmailCode) toast(t('Code wurde gesendet'));
-      f.twoFactorCode.focus();
+    if (r.status === 'needs_browser') {
+      // The tab takes the focus and the toolbar popup closes; the background finishes the step. A popup that
+      // stays open (window, sidebar) waits for it here.
+      showLoginResult(r);
+      watchBrowserStep(unlockAccount.id);
       return;
     }
-    if (r.status === 'needs_device_otp') {
-      $('#unlock-device').hidden = false;
-      f.deviceOtp.focus();
-      return;
-    }
-    toast(r.error ? t('Angemeldet, Sync-Fehler: {error}', { error: r.error }) : tn(r.itemCount, '{n} Eintrag geladen', '{n} Einträge geladen'));
-    show('main');
-    await refresh();
+    if (showLoginResult(r, extra)) return;
+    await finishLogin(r);
   } catch (e) {
     err.textContent = e.message;
     err.hidden = false;
+    // the background keeps the organization's sign-in after a wrong master password; anything else starts over
+    if (continuing && !(e.code === 'bad_password' && (unlockAccount.config ?? unlockAccount).login === 'sso')) continuing = false;
   } finally {
     clearInterval(poll);
     btn.disabled = false;
-    btn.textContent = providerOf(unlockAccount.provider)?.unlockMode === 'none' ? t('Verbinden') : t('Entsperren');
+    btn.textContent = providerOf(unlockAccount.provider)?.unlockMode === 'none' ? t('Verbinden')
+      : ssoStart ? t('Mit SSO anmelden') : t('Entsperren');
   }
+}
+
+/** Waits for the login step in the tab (popup open as a window or sidebar, or reopened while the tab is open). */
+let watchTimer = null;
+function watchBrowserStep(id) {
+  clearInterval(watchTimer);
+  watchTimer = setInterval(async () => {
+    if (unlockAccount?.id !== id || currentView() !== 'unlock') { clearInterval(watchTimer); return; }
+    const s = await call('loginFlow', { id }).catch(() => null);
+    if (s?.phase === 'browser' || s?.phase === 'working') return;
+    clearInterval(watchTimer);
+    if (s?.phase === 'done') await applyFlowOutcome(id, s);
+  }, 500);
+}
+
+/** The outcome of a step that finished in the background: show it, continue, or report the error. */
+async function applyFlowOutcome(id, s) {
+  const o = s.outcome ?? {};
+  if (!s.awaitingInput) await call('loginFlowClear', { id }).catch(() => {});
+  if (o.status === 'error') {
+    $('#unlock-browser').hidden = true;
+    $('#unlock-error').textContent = o.error;
+    $('#unlock-error').hidden = false;
+    return;
+  }
+  if (showLoginResult({ ...o, continues: s.awaitingInput })) return;
+  await finishLogin(o);
+}
+
+/** A reopened popup: a login of an account is running in a tab or finished there – continue in its unlock form. */
+export async function resumeLoginFlow() {
+  const s = await call('loginFlow', {}).catch(() => null);
+  const a = s && accountOf(s.id);
+  if (!a) return false;
+  openUnlock(a);
+  if (s.phase === 'done') await applyFlowOutcome(a.id, s);
+  else { showBrowserStep(s.kind); watchBrowserStep(a.id); }
+  return true;
 }
 
 export function initAccounts() {
@@ -350,6 +457,10 @@ export function initAccounts() {
   $('#acc-fields').addEventListener('change', applyShowWhen);
   $('#form-account').addEventListener('submit', (e) => submitAccount(e).catch((x) => toast(x.message)));
   $('#form-unlock').addEventListener('submit', submitUnlock);
+  $('#form-unlock').twoFactorProvider.addEventListener('change', updateTwoFactorKind);
+  $('#btn-login-tab').addEventListener('click', async () => {
+    if (!await call('loginFlowFocus', { id: unlockAccount.id }).catch(() => false)) toast(t('Der Tab ist nicht mehr offen. Bitte erneut anmelden.'));
+  });
   $('#btn-email-code').addEventListener('click', () => {
     $('#form-unlock').twoFactorProvider.value = '1';
     submitUnlock(null, { requestEmailCode: true, twoFactorCode: undefined });
