@@ -1,7 +1,7 @@
 // This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 // Copyright (c) 2026 Die OmniVault-Mitwirkenden
-// Native-messaging transport for the CLI-backed providers (Proton Pass, pass, 1Password, LastPass).
+// Native-messaging transport for the CLI-backed providers (Proton Pass, pass, gopass, 1Password, LastPass, Dashlane).
 // All talk to one host (native/omnivault_host.py) and differ only by the `backend` field of a request.
 import { mark, t } from '../i18n/index.js';
 import { ext } from '../lib/browser.js';
@@ -28,6 +28,9 @@ const HOST_MESSAGES = new Set([
   mark('1Password CLI lieferte keine Vorlage'), mark('Nur Logins, Notizen, Karten und Identitäten können angelegt werden'),
   mark('Die Adresse lässt sich über op nicht ändern – bitte in der 1Password-App ändern'),
   mark('`gopass` wurde nicht gefunden. Bitte gopass installieren.'),
+  mark('`dcli` (Dashlane CLI) wurde nicht gefunden.'), mark('Dashlane: nicht angemeldet. Bitte im Terminal „dcli sync“ ausführen.'),
+  mark('Dashlane: Der Tresor ist gesperrt. Bitte im Terminal „dcli sync“ ausführen; das Master-Passwort muss gespeichert sein (dcli configure save-master-password true).'),
+  mark('dcli wartet auf eine Eingabe. Bitte einmal im Terminal „dcli sync“ ausführen.'), mark('Dashlane CLI lieferte kein gültiges JSON'),
 ]);
 const HOST_PATTERNS = [
   [/^Ungültige (.+)$/, (m) => t('Ungültige {name}', { name: m[1] })],

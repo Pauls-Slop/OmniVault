@@ -941,5 +941,14 @@
  "Der Server hat keine Duo-Adresse geliefert. Ist Duo für dieses Konto richtig eingerichtet?": "O servidor não enviou um endereço do Duo. O Duo está configurado corretamente para esta conta?",
  "Bitte die SSO-Kennung der Organisation im Konto eintragen.": "Informe o identificador de SSO da organização na conta.",
  "Duo öffnet sich in einem neuen Tab. Nach der Bestätigung dort schließt OmniVault den Tab und meldet dich an.": "O Duo abre em uma nova aba. Depois da confirmação lá, o OmniVault fecha a aba e faz seu login.",
- "Zum Tab wechseln": "Ir para a aba"
+ "Zum Tab wechseln": "Ir para a aba",
+ "Nur lesen, über das offizielle Dashlane-CLI (dcli) und den OmniVault-Host (native/README.md). Voraussetzung: dcli installiert (Release-Datei von github.com/Dashlane/dashlane-cli oder „brew install dashlane/tap/dashlane-cli“) und einmal im Terminal mit „dcli sync“ angemeldet; das Master-Passwort muss dcli gespeichert haben (Standard).": "Somente leitura. Usa a CLI oficial do Dashlane (dcli) pelo app auxiliar do OmniVault (native/README.md). Instale o dcli antes (arquivo da versão em github.com/Dashlane/dashlane-cli ou “brew install dashlane/tap/dashlane-cli”) e entre uma vez em um terminal com “dcli sync”; o dcli precisa manter sua senha mestra salva (padrão).",
+ "dcli (Dashlane CLI) wurde nicht gefunden.": "dcli (CLI do Dashlane) não foi encontrado.",
+ "Dashlane: nicht angemeldet. Bitte im Terminal „dcli sync“ ausführen.": "Dashlane: você não entrou. Execute “dcli sync” em um terminal.",
+ "Dashlane: Der Tresor ist gesperrt. Bitte im Terminal „dcli sync“ ausführen; das Master-Passwort muss gespeichert sein (dcli configure save-master-password true).": "Dashlane: o cofre está bloqueado. Execute “dcli sync” em um terminal; a senha mestra precisa estar salva (dcli configure save-master-password true).",
+ "Dashlane: Das CLI kann nur lesen. Bitte in der Dashlane-App ändern.": "Dashlane: a CLI só consegue ler. Faça as alterações no app do Dashlane.",
+ "`dcli` (Dashlane CLI) wurde nicht gefunden.": "`dcli` (CLI do Dashlane) não foi encontrado.",
+ "dcli wartet auf eine Eingabe. Bitte einmal im Terminal „dcli sync“ ausführen.": "O dcli está aguardando uma entrada. Execute “dcli sync” uma vez em um terminal.",
+ "Dashlane CLI lieferte kein gültiges JSON": "A CLI do Dashlane retornou um JSON inválido",
+ "Dashlane® ist eine Marke von Dashlane SAS. OmniVault ist nicht mit Dashlane verbunden, wird von Dashlane weder unterstützt noch gebilligt und nennt den Namen nur, um die Kompatibilität mit dem offiziellen Dashlane-CLI zu beschreiben.": "Dashlane® é uma marca da Dashlane SAS. O OmniVault não é afiliado ao Dashlane, nem tem apoio ou aprovação do Dashlane, e usa o nome só para descrever a compatibilidade com a CLI oficial do Dashlane."
 }

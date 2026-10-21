@@ -7,7 +7,7 @@ Chromium-based browsers. Search across all your accounts at once, copy and fill 
 move entries between managers – without giving up the manager you already use.
 
 > OmniVault is an independent open-source project. It is not affiliated with, endorsed by or sponsored by Bitwarden
-> Inc., Passbolt S.A., Proton AG, AgileBits Inc. (1Password) or LastPass US LP. All trademarks belong to their owners.
+> Inc., Passbolt S.A., Proton AG, AgileBits Inc. (1Password), LastPass US LP or Dashlane SAS. All trademarks belong to their owners.
 
 ## Supported password managers
 
@@ -21,6 +21,7 @@ move entries between managers – without giving up the manager you already use.
 | **gopass** | Local helper → `gopass` + GnuPG | ✅ | ✅ |
 | **1Password** | Local helper → official `op` CLI | ✅ | ✅ |
 | **LastPass** | Local helper → official `lpass` CLI | ✅ | ✅ |
+| **Dashlane** | Local helper → official `dcli` CLI | ✅ | – (the CLI is read-only) |
 | **Proton Pass** | Local helper → official `pass-cli` | ✅ | ✅ |
 | **KeePassXC** | KeePassXC's own browser integration (`keepassxc-proxy`) | ✅ | ✅ (logins) |
 | **KeePass files, browser exports and others** | Import a KeePass database (`.kdbx`), a CSV, JSON or KeePass XML export into any account above | – | – |
@@ -125,17 +126,17 @@ Click the OmniVault icon, then *New* (the plus sign at the top right) → *Add a
   tab; once you are done there, OmniVault closes the tab and the popup continues where it left off. Accounts that unlock
   without a master password (trusted devices, Key Connector) and FIDO2 / WebAuthn as the second factor are not
   supported yet – for the latter, the API key works.
-- **pass, gopass, 1Password, LastPass, Proton Pass:** these need the local helper described below.
+- **pass, gopass, 1Password, LastPass, Dashlane, Proton Pass:** these need the local helper described below.
 - **KeePassXC:** uses KeePassXC's own browser integration, see [KeePassXC](#keepassxc) below.
 
-### Local helper for pass, gopass, 1Password, LastPass and Proton Pass
+### Local helper for pass, gopass, 1Password, LastPass, Dashlane and Proton Pass
 
 These managers have no open network API, but they do have official command-line tools. OmniVault talks to those tools
 through a small local helper (Python 3.8+, standard library only). OmniVault never ships or replaces the official
 tools – you install them and sign in yourself.
 
 1. Install the official tool and sign in in your terminal, then check that it works:
-   `pass ls`, `gopass ls`, `op whoami`, `lpass status` or `pass-cli info`.
+   `pass ls`, `gopass ls`, `op whoami`, `lpass status`, `dcli status` or `pass-cli info`.
 2. Register the helper. Find your extension ID on `chrome://extensions` (Developer mode must be on):
 
    ```bash
@@ -155,6 +156,10 @@ What the official tools allow through the helper:
 - **1Password:** cards and identities can be created and edited. `op` cannot write an identity's address (a new
   address is kept in the notes) and does not show passkeys; saving a login with a passkey through `op` removes the
   passkey, so edit such logins in the 1Password app.
+- **Dashlane:** read-only, because the official `dcli` can only read. Install it from the
+  [releases](https://github.com/Dashlane/dashlane-cli/releases) or with `brew install dashlane/tap/dashlane-cli`, sign in
+  once with `dcli sync` and keep the master password saved (the default). Logins (with TOTP), secure notes and
+  secrets are shown; the helper removes passwords and notes from the list and fetches an entry when you open it.
 - **Password history:** LastPass's and Proton Pass's tools don't output it. For 1Password it is shown if `op`
   includes it in its output (not documented by 1Password; `native/selftest.py` tells you).
 
@@ -260,7 +265,7 @@ Third-party components and their licenses are listed in [THIRD_PARTY_NOTICES.md]
 
 Bitwarden is a registered trademark of Bitwarden Inc. Passbolt is a trademark of Passbolt S.A.
 ([passbolt.com](https://www.passbolt.com)). LastPass is a trademark of LastPass US LP. 1Password is a trademark of
-AgileBits Inc. Proton and Proton Pass are trademarks of Proton AG. HashiCorp Vault is a trademark of HashiCorp.
+AgileBits Inc. Dashlane is a trademark of Dashlane SAS. Proton and Proton Pass are trademarks of Proton AG. HashiCorp Vault is a trademark of HashiCorp.
 OpenBao is a Linux Foundation project; its trademarks are held by LF Projects, LLC.
 All other names are trademarks of their respective owners and are used only to describe compatibility. OmniVault is
 not affiliated with, endorsed by or sponsored by any of them.

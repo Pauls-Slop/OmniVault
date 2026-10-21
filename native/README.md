@@ -1,4 +1,4 @@
-# Native-Host: pass, gopass, 1Password, LastPass und Proton Pass
+# Native-Host: pass, gopass, 1Password, LastPass, Dashlane und Proton Pass
 
 Einige Passwortmanager haben keine für Fremd-Clients offene Netz-API, aber ein offizielles Kommandozeilen-Programm.
 OmniVault spricht mit diesen Programmen über **einen** kleinen lokalen Host per *Native Messaging*. Der Host
@@ -6,7 +6,7 @@ OmniVault spricht mit diesen Programmen über **einen** kleinen lokalen Host per
 keinen Code der Anbieter und liefert keines ihrer Programme mit: Sie installieren und entsperren das Programm selbst.
 
 ```
-Browser-Erweiterung ⇄ (Native Messaging, JSON) ⇄ omnivault_host.py ⇄ pass | gopass | op | lpass | pass-cli
+Browser-Erweiterung ⇄ (Native Messaging, JSON) ⇄ omnivault_host.py ⇄ pass | gopass | op | lpass | dcli | pass-cli
 ```
 
 | Anbieter | Programm | Anmeldung | Modul |
@@ -15,6 +15,7 @@ Browser-Erweiterung ⇄ (Native Messaging, JSON) ⇄ omnivault_host.py ⇄ pass 
 | gopass | `gopass` (≥ 1.15, mit gpg) + `gpg` | `gopass setup` bzw. `gopass init`; der gpg-Agent entsperrt den Schlüssel | `ov_gopass.py` |
 | 1Password | `op` (1Password CLI 2.x) | `op signin`, Desktop-App-Integration oder Service-Account | `ov_onepassword.py` |
 | LastPass | `lpass` (lastpass-cli) | `lpass login <E-Mail>` | `ov_lastpass.py` |
+| Dashlane (nur lesen) | `dcli` (Dashlane CLI ≥ 6) | `dcli sync` (E-Mail, Zweitfaktor, Master-Passwort im Terminal) | `ov_dashlane.py` |
 | Proton Pass | `pass-cli` (≥ 2.3 empfohlen) | `pass-cli login` | `ov_proton.py` |
 
 Gemeinsame Bausteine (Nachrichtenformat, Programmaufruf, ID-Prüfung) liegen in `ov_common.py`.
@@ -26,10 +27,20 @@ sobald das CLI für Ihr Konto freigeschaltet ist.
 ## 1. Programm installieren und anmelden
 
 Installieren Sie das Programm nach der Anleitung des Anbieters und melden Sie sich im Terminal an. Prüfen Sie die
-Anmeldung mit `pass ls`, `gopass ls`, `op whoami`, `lpass status` bzw. `pass-cli info`.
+Anmeldung mit `pass ls`, `gopass ls`, `op whoami`, `lpass status`, `dcli status` bzw. `pass-cli info`.
+
+**Dashlane:** `dcli` gibt es als fertige Datei für Linux, macOS und Windows (x64) unter
+[github.com/Dashlane/dashlane-cli/releases](https://github.com/Dashlane/dashlane-cli/releases) oder per Homebrew
+(`brew install dashlane/tap/dashlane-cli`); Anleitung: [dashlane.github.io/dashlane-cli](https://dashlane.github.io/dashlane-cli/install).
+Einmal im Terminal `dcli sync` ausführen: dcli fragt nach E-Mail, Bestätigungscode und Master-Passwort und speichert
+das Master-Passwort verschlüsselt, den Schlüssel dazu im Schlüsselbund des Systems (unter Linux z. B. über libsecret).
+`dcli status` muss danach `Logged in: Yes` und `Locked: No` zeigen. Ist das Speichern abgeschaltet
+(`dcli configure save-master-password false`) oder hat `dcli lock` den Tresor gesperrt, fragt dcli bei jedem Aufruf
+nach dem Master-Passwort; OmniVault meldet ihn dann als gesperrt und gibt nie selbst ein Passwort ein. Biometrie
+(`dcli configure user-presence --method biometrics`, nur macOS) ist ungetestet.
 
 OmniVault sieht nie Ihr Master-Passwort. Die Sitzung gehört dem jeweiligen Programm; `op signout`, `lpass logout`
-oder `pass-cli logout` beenden sie.
+`dcli logout` oder `pass-cli logout` beenden sie.
 
 ## 2. Host registrieren
 
@@ -56,6 +67,7 @@ der Shell starten. Der Host sucht die Programme im `PATH` und zusätzlich in `/o
 | `gopass` | `OMNIVAULT_GOPASS_BIN` |
 | `op` | `OMNIVAULT_OP_BIN` |
 | `lpass` | `OMNIVAULT_LPASS_BIN` |
+| `dcli` | `OMNIVAULT_DCLI_BIN` |
 | `pass-cli` | `OMNIVAULT_PASS_CLI` |
 
 ## 3. In OmniVault verbinden
@@ -65,26 +77,34 @@ nach der Berechtigung „Mit kooperierenden nativen Anwendungen kommunizieren“
 
 ## Was geht
 
-| Funktion | pass | gopass | 1Password | LastPass | Proton Pass |
-|---|---|---|---|---|---|
-| Lesen (Benutzer, Passwort, URL, Notizen) | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Karten, Identitäten, SSH-Schlüssel lesen | – | – | ✅ (Karten, Identitäten) | – | ✅ |
-| Karten, Identitäten anlegen und ändern | – | – | ✅ (aus der `op`-Vorlage; Adresse nur lesen) | – | – |
-| Anhänge herunterladen (bis 30 MB) | – | – | ✅ (`op read`, `op document get`) | ✅ (`lpass show --attach`) | ✅ (`item attachment download`) |
-| Passwortverlauf | – | – | wenn `op` ihn ausgibt | – | – |
-| TOTP lesen | ✅ (`otpauth://`-Zeile) | ✅ (`otpauth://`-Zeile) | ✅ | – | ✅ |
-| Login / Notiz anlegen, ändern, löschen | ✅ (nur Logins) | ✅ (nur Logins) | ✅ (Löschen nach „Zuletzt gelöscht“) | ✅ | ✅ (Löschen in den Papierkorb) |
-| Zusatzfelder lesen und ändern | ✅ (`Name: Wert`-Zeilen) | ✅ (`Name: Wert`-Zeilen) | ✅ (andere Felder und Abschnitte bleiben erhalten) | – | nur lesen |
-| Ordner / Gruppe / Tresor | ✅ (Pfad, neu anlegen) | ✅ (Pfad und eingehängte Speicher; verschieben mit `gopass mv`) | ✅ (Tresore: verschieben, neu anlegen) | ✅ (Gruppe, neu anlegen) | ✅ (Tresor, verschieben ab 2.3) |
-| Geheimnisse erst bei Bedarf laden | – (lädt beim Abgleich) | – (lädt beim Abgleich) | ✅ | ✅ | ✅ |
-| Favoriten | in OmniVault gespeichert | in OmniVault gespeichert | ✅ (`--favorite`) | in OmniVault gespeichert | in OmniVault gespeichert |
-| TOTP ändern | ✅ | ✅ | ✅ | – | – |
-| Konflikterkennung (Änderung von anderswo wird nicht überschrieben) | – | – | ✅ (`version`) | ✅ (`last_modified_gmt`) | ✅ (`modify_time`) |
+| Funktion | pass | gopass | 1Password | LastPass | Proton Pass | Dashlane |
+|---|---|---|---|---|---|---|
+| Lesen (Benutzer, Passwort, URL, Notizen) | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ (Logins, sichere Notizen, Secrets) |
+| Karten, Identitäten, SSH-Schlüssel lesen | – | – | ✅ (Karten, Identitäten) | – | ✅ | – (Secrets als Notiz) |
+| Karten, Identitäten anlegen und ändern | – | – | ✅ (aus der `op`-Vorlage; Adresse nur lesen) | – | – | – |
+| Anhänge herunterladen (bis 30 MB) | – | – | ✅ (`op read`, `op document get`) | ✅ (`lpass show --attach`) | ✅ (`item attachment download`) | – |
+| Passwortverlauf | – | – | wenn `op` ihn ausgibt | – | – | – |
+| TOTP lesen | ✅ (`otpauth://`-Zeile) | ✅ (`otpauth://`-Zeile) | ✅ | – | ✅ | ✅ (`otpSecret` bzw. `otpUrl`) |
+| Login / Notiz anlegen, ändern, löschen | ✅ (nur Logins) | ✅ (nur Logins) | ✅ (Löschen nach „Zuletzt gelöscht“) | ✅ | ✅ (Löschen in den Papierkorb) | – (dcli kann nur lesen) |
+| Zusatzfelder lesen und ändern | ✅ (`Name: Wert`-Zeilen) | ✅ (`Name: Wert`-Zeilen) | ✅ (andere Felder und Abschnitte bleiben erhalten) | – | nur lesen | nur lesen (E-Mail, zweiter Login) |
+| Ordner / Gruppe / Tresor | ✅ (Pfad, neu anlegen) | ✅ (Pfad und eingehängte Speicher; verschieben mit `gopass mv`) | ✅ (Tresore: verschieben, neu anlegen) | ✅ (Gruppe, neu anlegen) | ✅ (Tresor, verschieben ab 2.3) | – |
+| Geheimnisse erst bei Bedarf laden | – (lädt beim Abgleich) | – (lädt beim Abgleich) | ✅ | ✅ | ✅ | 🟡 (dcli liefert sie immer; der Host verwirft sie in der Liste) |
+| Favoriten | in OmniVault gespeichert | in OmniVault gespeichert | ✅ (`--favorite`) | in OmniVault gespeichert | in OmniVault gespeichert | in OmniVault gespeichert |
+| TOTP ändern | ✅ | ✅ | ✅ | – | – | – |
+| Konflikterkennung (Änderung von anderswo wird nicht überschrieben) | – | – | ✅ (`version`) | ✅ (`last_modified_gmt`) | ✅ (`modify_time`) | – (nur lesen) |
 
 pass und gopass kennen keinen eigenen Notiz-Typ: Jeder Eintrag beginnt mit einer Passwortzeile. gopass: Der Host ruft
 nur `gopass ls --flat`, `gopass mounts`, `gopass show -f -n`, `gopass insert -f` (Inhalt über stdin), `gopass mv -f`
 und `gopass rm -f` auf; eingehängte Speicher (`gopass mounts`) erscheinen als Ordner der obersten Ebene, Verschieben
 zwischen ihnen geht über `gopass mv`. Benachrichtigungen und Erinnerungen von gopass sind für diese Aufrufe abgeschaltet.
+
+Dashlane: Der Host ruft nur `dcli --version`, `dcli status`, `dcli sync` und `dcli password|note|secret --output json`
+(beim Öffnen eines Eintrags mit dem Filter `id={…}`) auf, immer mit `/dev/null` als Eingabe. dcli gibt diese Listen
+stets mit allen Geheimnissen aus; der Host behält davon für die Liste nur Titel, Benutzer bzw. E-Mail, URL und ob es
+TOTP gibt, und liest Passwort, Notiz und TOTP-Schlüssel erst, wenn Sie einen Eintrag öffnen – erneut über dcli, nichts
+wird zwischengespeichert. IDs müssen die Form `{UUID}` haben. Dashlane-„Secrets“ (beliebiger Text, z. B. ein
+SSH-Schlüssel) erscheinen als Notiz; Ausweise (`dcli id`), Ordner und Anhänge gibt dcli nicht bzw. nicht als Liste
+aus. dcli gleicht selbst höchstens stündlich mit dem Server ab; `dcli sync` erzwingt es.
 
 ## Sicherheit
 
@@ -151,7 +171,9 @@ Notizen, Zusatzfelder, Titel ändern, TOTP-Schlüssel, Einträge ohne Website-Ad
 |---|---|
 | „Der OmniVault-Host ist nicht installiert“ | `install.py` nicht ausgeführt oder falsche Erweiterungs-ID; erneut mit der richtigen ID ausführen |
 | „… wurde nicht gefunden“ | Programm fehlt oder liegt nicht im Suchpfad; installieren oder die Variable aus der Tabelle oben setzen |
-| Konto bleibt „gesperrt“ | Im Terminal anmelden (`op signin`, `lpass login`, `pass-cli login`) bzw. den gpg-Schlüssel entsperren |
+| Konto bleibt „gesperrt“ | Im Terminal anmelden (`op signin`, `lpass login`, `dcli sync`, `pass-cli login`) bzw. den gpg-Schlüssel entsperren |
+| „Dashlane: Der Tresor ist gesperrt“ | dcli hat das Master-Passwort nicht gespeichert: `dcli configure save-master-password true`, dann `dcli sync`; ohne Schlüsselbund (Linux ohne libsecret) geht das nicht |
+| „dcli wartet auf eine Eingabe“ | dcli will etwas fragen (z. B. nach einem Update des CLI, ob der lokale Speicher zurückgesetzt werden soll): einmal `dcli sync` im Terminal |
 | „Your account is not yet allowed to use our CLI“ | Proton hat das CLI für Ihr Konto (noch) nicht freigegeben |
 | „mit einem Sperrcode gesperrt“ | `pass-cli`-Sitzung mit Sperrcode: im Terminal `pass-cli session unlock` |
 | „bitte pass-cli aktualisieren“ | Version älter als 2.3: `pass-cli update` |
@@ -169,6 +191,7 @@ python3 selftest.py pass                       # nur lesen
 python3 selftest.py gopass --write              # Wegwerf-Eintrag anlegen, ändern, verschieben, löschen
 python3 selftest.py onepassword --write        # zusätzlich anlegen, ändern, löschen (Login, Karte, Identität)
 python3 selftest.py lastpass --write
+python3 selftest.py dashlane                    # nur lesen: dcli sync, Liste, je ein Login, eine Notiz, ein Secret
 python3 selftest.py proton --write --vault OmniVault-Test   # Proton: vorher einen LEEREN Tresor anlegen
 python3 selftest.py lastpass --limit 200       # mehr Einträge nach Anhängen durchsuchen (Standard 25)
 ```
@@ -183,7 +206,9 @@ Wegwerf-Identität aus der `op`-Vorlage an, liest sie zurück, ändert und lösc
 pass ist gegen das echte `pass` + GnuPG getestet, gopass gegen das offizielle Release 1.17.4 (Linux amd64,
 Hash geprüft, `test/gopass-bin.sh`) + GnuPG, auch mit einem eingehängten zweiten Speicher. 1Password und LastPass sind gegen simulierte Programme getestet,
 die die Formate von `op` 2.x und `lastpass-cli` 1.x nachbilden; Proton Pass gegen ein simuliertes `pass-cli`, dessen
-Befehle, Fehlermeldungen und Exit-Codes mit dem echten `pass-cli` 2.3.1 (ohne Anmeldung) abgeglichen sind. Prüfen Sie
-diese drei vor dem produktiven Einsatz mit `selftest.py` gegen die echten Programme.
+Befehle, Fehlermeldungen und Exit-Codes mit dem echten `pass-cli` 2.3.1 (ohne Anmeldung) abgeglichen sind. Dashlane ist
+gegen ein simuliertes `dcli` getestet, dessen JSON-Felder dem Quelltext von dcli folgen; Version, `dcli status` und
+die Meldung ohne Anmeldung sind gegen das echte Release 6.2642.0 (Linux x64, Hash geprüft, `test/dcli-bin.sh`)
+abgeglichen. Prüfen Sie diese vier vor dem produktiven Einsatz mit `selftest.py` gegen die echten Programme.
 
 Alle genannten Namen sind Marken ihrer Inhaber; OmniVault ist mit ihnen nicht verbunden.

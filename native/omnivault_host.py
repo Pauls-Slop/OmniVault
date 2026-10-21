@@ -13,6 +13,7 @@ unlocked themselves – nothing of them is bundled:
   backend "gopass"       gopass        (`gopass` + gpg)
   backend "onepassword"  1Password     (`op`)
   backend "lastpass"     LastPass      (`lpass`)
+  backend "dashlane"     Dashlane      (`dcli`, read only)
 
 Request {"id", "backend", "cmd", "args"} → response {"id", "ok", "result" | "error"}; large item lists are sent
 in several messages with "more": true. Only commands from each backend's fixed list are accepted. Python 3
@@ -20,6 +21,7 @@ standard library only.
 """
 import sys
 
+import ov_dashlane
 import ov_gopass
 import ov_lastpass
 import ov_onepassword
@@ -33,6 +35,7 @@ BACKENDS = {
     "gopass": ov_gopass.COMMANDS,
     "onepassword": ov_onepassword.COMMANDS,
     "lastpass": ov_lastpass.COMMANDS,
+    "dashlane": ov_dashlane.COMMANDS,
 }
 
 

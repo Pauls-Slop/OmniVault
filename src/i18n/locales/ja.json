@@ -908,5 +908,14 @@
  "Der Server hat keine Duo-Adresse geliefert. Ist Duo für dieses Konto richtig eingerichtet?": "サーバーから Duo のアドレスが返されませんでした。このアカウントで Duo は正しく設定されていますか？",
  "Bitte die SSO-Kennung der Organisation im Konto eintragen.": "アカウントに組織の SSO 識別子を入力してください。",
  "Duo öffnet sich in einem neuen Tab. Nach der Bestätigung dort schließt OmniVault den Tab und meldet dich an.": "Duo が新しいタブで開きます。そこで承認すると、OmniVault がタブを閉じてログインします。",
- "Zum Tab wechseln": "タブに切り替える"
+ "Zum Tab wechseln": "タブに切り替える",
+ "Nur lesen, über das offizielle Dashlane-CLI (dcli) und den OmniVault-Host (native/README.md). Voraussetzung: dcli installiert (Release-Datei von github.com/Dashlane/dashlane-cli oder „brew install dashlane/tap/dashlane-cli“) und einmal im Terminal mit „dcli sync“ angemeldet; das Master-Passwort muss dcli gespeichert haben (Standard).": "読み取り専用です。OmniVault の補助アプリ（native/README.md）を通じて、公式の Dashlane CLI（dcli）を使います。先に dcli をインストールし（github.com/Dashlane/dashlane-cli のリリースファイル、または「brew install dashlane/tap/dashlane-cli」）、ターミナルで「dcli sync」を実行して一度ログインしてください。dcli がマスターパスワードを保存している必要があります（既定の設定）。",
+ "dcli (Dashlane CLI) wurde nicht gefunden.": "dcli（Dashlane CLI）が見つかりません。",
+ "Dashlane: nicht angemeldet. Bitte im Terminal „dcli sync“ ausführen.": "Dashlane にログインしていません。ターミナルで「dcli sync」を実行してください。",
+ "Dashlane: Der Tresor ist gesperrt. Bitte im Terminal „dcli sync“ ausführen; das Master-Passwort muss gespeichert sein (dcli configure save-master-password true).": "Dashlane の保管庫がロックされています。ターミナルで「dcli sync」を実行してください。マスターパスワードを保存しておく必要があります（dcli configure save-master-password true）。",
+ "Dashlane: Das CLI kann nur lesen. Bitte in der Dashlane-App ändern.": "Dashlane の CLI は読み取りのみ可能です。変更は Dashlane アプリで行ってください。",
+ "`dcli` (Dashlane CLI) wurde nicht gefunden.": "`dcli`（Dashlane CLI）が見つかりません。",
+ "dcli wartet auf eine Eingabe. Bitte einmal im Terminal „dcli sync“ ausführen.": "dcli が入力を待っています。ターミナルで「dcli sync」を一度実行してください。",
+ "Dashlane CLI lieferte kein gültiges JSON": "Dashlane CLI から無効な JSON が返されました",
+ "Dashlane® ist eine Marke von Dashlane SAS. OmniVault ist nicht mit Dashlane verbunden, wird von Dashlane weder unterstützt noch gebilligt und nennt den Namen nur, um die Kompatibilität mit dem offiziellen Dashlane-CLI zu beschreiben.": "Dashlane® は Dashlane SAS の商標です。OmniVault は Dashlane と提携しておらず、Dashlane による支援や承認も受けていません。名称は公式の Dashlane CLI との互換性を説明するためにのみ使用しています。"
 }

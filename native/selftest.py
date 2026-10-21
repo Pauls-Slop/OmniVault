@@ -6,6 +6,7 @@
 Self-test of the OmniVault host against YOUR own, unlocked CLI session.
 
   python3 selftest.py pass                         # read-only
+  python3 selftest.py dashlane                     # Dashlane is read only (no --write)
   python3 selftest.py gopass --write               # gopass: also create, edit, move and delete a throw-away entry
   python3 selftest.py onepassword --write          # also create, edit and delete throw-away entries
                                                    # (1Password: a login, a card and an identity)
@@ -54,7 +55,7 @@ def main():
     cmd = omnivault_host.BACKENDS[a.backend]
     proton = a.backend == "proton"
     # Proton addresses items by vault (shareId) + itemId, the other backends by a single id.
-    ref = (lambda it: {"shareId": it["shareId"], "itemId": it["itemId"]}) if proton else (lambda it: {"id": it["id"]})
+    ref = (lambda it: {"shareId": it["shareId"], "itemId": it["itemId"]}) if proton else (lambda it: {"id": it["id"], **({"kind": it["kind"]} if it.get("kind") else {})})
     state = {}
 
     def status():
@@ -63,6 +64,8 @@ def main():
             raise RuntimeError("Programm nicht gefunden")
         if not (st.get("loggedIn") or st.get("ready")):
             raise RuntimeError("nicht angemeldet bzw. nicht initialisiert")
+        if st.get("locked"):
+            raise RuntimeError("angemeldet, aber gesperrt")
         return st.get("cli")
 
     def listing():
@@ -77,8 +80,16 @@ def main():
         items = state["list"]["items"]
         if not items:
             return "kein Eintrag vorhanden"
-        got = cmd["reveal"](ref(items[0]))
-        return f"Felder: {sorted(k for k, v in got.items() if v not in (None, '', [], {}))}"
+        # one entry of each kind (Dashlane: logins, notes and secrets come from different dcli commands)
+        firsts = {}
+        for it in items:
+            firsts.setdefault(it.get("kind", ""), it)
+        out = []
+        for kind, it in firsts.items():
+            got = cmd["reveal"](ref(it))
+            filled = sorted(k for k, v in got.items() if v not in (None, '', [], {}))
+            out.append(f"{kind + ': ' if kind else ''}{filled}")
+        return "Felder: " + "; ".join(out)
 
     def extras():
         """Attachments, password history and passkeys over a sample of entries (only counts are printed). The
@@ -113,11 +124,15 @@ def main():
 
     if not step("Status", status):
         finish()
+    if a.backend == "dashlane":
+        step("Mit dem Server abgleichen (dcli sync)", lambda: cmd["sync"]({}) and None)
     if step("Liste ohne Geheimnisse", listing):
         step("Ein Geheimnis abrufen", reveal)
         step("Anhänge, Passwortverlauf, Passkeys zählen", extras)
         step("Einen Anhang herunterladen (nur Größe)", download)
-    if not a.write:
+    if a.write and "create" not in cmd:
+        print(f"--write übersprungen: {a.backend} kann über das CLI nur lesen")
+    if not a.write or "create" not in cmd:
         finish()
 
     created = {}

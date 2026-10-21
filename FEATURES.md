@@ -29,6 +29,7 @@ umsetzt und womit das geprüft ist. Wer einen Provider ändert, passt die Zeile 
 | gopass | Native-Host → `gopass` + GnuPG | R (gopass 1.17.4) ²⁵ |
 | 1Password | Native-Host → offizielles `op` | S |
 | LastPass | Native-Host → offizielles `lpass` | S |
+| Dashlane | Native-Host → offizielles `dcli`, **nur lesen** | S, dazu R ohne Konto (dcli 6.2642.0) ²⁶ |
 | KeePassXC | Browser-Schnittstelle von KeePassXC über `keepassxc-proxy` (kein OmniVault-Host) | S ¹⁶ |
 | Proton Pass | Native-Host → offizielles `pass-cli` | S, **zurückgestellt** ¹ |
 | alle anderen (KeePass-Dateien `.kdbx`, Chrome, Firefox …) | Dateiimport in ein beschreibbares Konto | siehe Import |
@@ -48,33 +49,34 @@ Bitwarden Cloud und Vaultwarden nutzen denselben Provider; gegen bitwarden.com/.
 
 ## Parität zwischen den Anbietern
 
-| Funktion | Bitwarden / Vaultwarden | Vault / OpenBao | Passbolt | pass | gopass | 1Password | LastPass | Proton Pass |
-|---|---| --- |---|---| --- |---|---|---|
-| Logins lesen, anlegen, bearbeiten, löschen | ✅ R | ✅ R ²⁴ | ✅ R | ✅ R | ✅ R ²⁵ | ✅ S | ✅ S | ✅ S |
-| Notizen | ✅ R | ✅ R (ohne `password`-Schlüssel) | ✅ R (v5) ² | – ³ | – | ✅ S | ✅ S | ✅ S |
-| Karten, Identitäten lesen | ✅ R | – | – | – | – | ✅ S ⁴ | – | ✅ S |
-| Karten, Identitäten anlegen und bearbeiten | ✅ R | – | – | – | – | 🟡 S ⁴ | – | ⛔ |
-| Zusatzfelder lesen | ✅ R | ✅ R (übrige Schlüssel, verborgen) | ✅ R (v5) | ✅ R | ✅ R | ✅ S | ⛔ | ✅ S |
-| Zusatzfelder bearbeiten | ✅ R | ✅ R | ✅ R (v5-Logins) | ✅ R ⁵ | ✅ R | ✅ S | ⛔ | ⛔ |
-| TOTP lesen und ändern | ✅ R | ✅ R | ✅ R | ✅ R | ✅ R | ✅ S | ⛔ | 🟡 S (nur lesen) |
-| Favoriten | ✅ R | ✅ L | ✅ R | ✅ L | ✅ L | ✅ S | ✅ L | ✅ L |
-| Ordner / Tresore anzeigen und verschieben | ✅ R | ✅ R (Pfade) | ✅ R (anzeigen), ✅ S (verschieben) | ✅ R (Pfade) | ✅ R (Pfade, eingehängte Speicher) | ✅ S (Tresore) | ✅ S (Gruppen) | ✅ S (Tresore) |
-| Ordner / Tresor anlegen | ✅ R | ✅ R | ✅ R ⁶ | ✅ R | ✅ R | ✅ S | ✅ S | ❌ |
-| Papierkorb: Löschen landet dort | ✅ R | ✅ R (weiches Löschen der aktuellen Version) | – (endgültig) | – (endgültig) | – (endgültig) | ✅ S („Zuletzt gelöscht“) | – (endgültig) | ✅ S |
-| Papierkorb in OmniVault anzeigen, wiederherstellen, endgültig löschen | ✅ R | ✅ R (`undelete`; endgültig: alle Versionen) | – | – | – | ⛔ ¹⁷ | – | ❌ (zurückgestellt) |
-| Anhänge herunterladen | ✅ R | – | – | – | – | ✅ S ¹⁹ | ✅ S ¹⁹ | ✅ S ¹⁹ |
-| Anhänge hochladen und löschen | ✅ R ¹⁸ | – | – | – | – | ⛔ ²⁰ | ⛔ ²⁰ | ⛔ ²⁰ |
-| Passwortverlauf | ✅ R | ❌ (Versionen gibt es, OmniVault zeigt sie nicht) | – | – | – | 🟡 S ²¹ | ⛔ ²¹ | ⛔ ²¹ |
-| Passkeys anzeigen | ✅ R | – | – ⁹ | – ⁹ | – | ⛔ ²² | ⛔ ²² | ✅ S (nur Seite und Benutzer) |
-| Passkeys auf Webseiten anlegen und damit anmelden, entfernen | ✅ R (Bitwarden-Format, mit den offiziellen Apps austauschbar) | – | – ⁹ | – ⁹ | – | ⛔ ¹⁰ | ⛔ ¹⁰ | ⛔ ¹⁰ |
-| Teilen, Rechte ändern, Zugriff entziehen | 🟡 R ⁷ | ⛔ (Policies verwaltet der Server) | ✅ R | – | – | ⛔ | ⛔ | ⛔ |
-| Geteilte Einträge bearbeiten | ✅ R (Organisation) | ✅ R (je nach Policy) | ✅ R (Geheimnis für alle Leser neu verschlüsselt) | – | – | 🟡 (wie eigene, ungetestet) | 🟡 (wie eigene, ungetestet) | ❌ |
-| Konflikterkennung (veralteter Stand wird nicht überschrieben) | ✅ R | ✅ R (Check-and-Set) | ✅ R | – | – | ✅ S ¹³ | ✅ S ¹³ | ✅ S ¹³ |
-| Geheimnisse erst bei Bedarf entschlüsseln | – (alles lokal) | ✅ R (Werte erst bei Bedarf gelesen) | ✅ R | ❌ ⁸ | ❌ | ✅ S | ✅ S | ✅ S |
-| Rate-Limit verständlich melden | ✅ R | ✅ | ✅ | – | – | – | – | – |
+| Funktion | Bitwarden / Vaultwarden | Vault / OpenBao | Passbolt | pass | gopass | 1Password | LastPass | Proton Pass | Dashlane |
+|---|---| --- |---|---| --- |---|---|---|---|
+| Logins lesen, anlegen, bearbeiten, löschen | ✅ R | ✅ R ²⁴ | ✅ R | ✅ R | ✅ R ²⁵ | ✅ S | ✅ S | ✅ S | 🟡 S (nur lesen) ²⁶ |
+| Notizen | ✅ R | ✅ R (ohne `password`-Schlüssel) | ✅ R (v5) ² | – ³ | – | ✅ S | ✅ S | ✅ S | 🟡 S (sichere Notizen und Secrets, nur lesen) |
+| Karten, Identitäten lesen | ✅ R | – | – | – | – | ✅ S ⁴ | – | ✅ S | ❌ (`dcli id` liest Ausweise, OmniVault nutzt es nicht) |
+| Karten, Identitäten anlegen und bearbeiten | ✅ R | – | – | – | – | 🟡 S ⁴ | – | ⛔ | ⛔ |
+| Zusatzfelder lesen | ✅ R | ✅ R (übrige Schlüssel, verborgen) | ✅ R (v5) | ✅ R | ✅ R | ✅ S | ⛔ | ✅ S | ✅ S (E-Mail, zweiter Login) |
+| Zusatzfelder bearbeiten | ✅ R | ✅ R | ✅ R (v5-Logins) | ✅ R ⁵ | ✅ R | ✅ S | ⛔ | ⛔ | ⛔ |
+| TOTP lesen und ändern | ✅ R | ✅ R | ✅ R | ✅ R | ✅ R | ✅ S | ⛔ | 🟡 S (nur lesen) | 🟡 S (nur lesen) |
+| Favoriten | ✅ R | ✅ L | ✅ R | ✅ L | ✅ L | ✅ S | ✅ L | ✅ L | ✅ L |
+| Ordner / Tresore anzeigen und verschieben | ✅ R | ✅ R (Pfade) | ✅ R (anzeigen), ✅ S (verschieben) | ✅ R (Pfade) | ✅ R (Pfade, eingehängte Speicher) | ✅ S (Tresore) | ✅ S (Gruppen) | ✅ S (Tresore) | ⛔ (`dcli` gibt keine Ordner aus) |
+| Ordner / Tresor anlegen | ✅ R | ✅ R | ✅ R ⁶ | ✅ R | ✅ R | ✅ S | ✅ S | ❌ | ⛔ |
+| Papierkorb: Löschen landet dort | ✅ R | ✅ R (weiches Löschen der aktuellen Version) | – (endgültig) | – (endgültig) | – (endgültig) | ✅ S („Zuletzt gelöscht“) | – (endgültig) | ✅ S | ⛔ |
+| Papierkorb in OmniVault anzeigen, wiederherstellen, endgültig löschen | ✅ R | ✅ R (`undelete`; endgültig: alle Versionen) | – | – | – | ⛔ ¹⁷ | – | ❌ (zurückgestellt) | ⛔ |
+| Anhänge herunterladen | ✅ R | – | – | – | – | ✅ S ¹⁹ | ✅ S ¹⁹ | ✅ S ¹⁹ | ⛔ |
+| Anhänge hochladen und löschen | ✅ R ¹⁸ | – | – | – | – | ⛔ ²⁰ | ⛔ ²⁰ | ⛔ ²⁰ | ⛔ |
+| Passwortverlauf | ✅ R | ❌ (Versionen gibt es, OmniVault zeigt sie nicht) | – | – | – | 🟡 S ²¹ | ⛔ ²¹ | ⛔ ²¹ | ⛔ |
+| Passkeys anzeigen | ✅ R | – | – ⁹ | – ⁹ | – | ⛔ ²² | ⛔ ²² | ✅ S (nur Seite und Benutzer) | ⛔ |
+| Passkeys auf Webseiten anlegen und damit anmelden, entfernen | ✅ R (Bitwarden-Format, mit den offiziellen Apps austauschbar) | – | – ⁹ | – ⁹ | – | ⛔ ¹⁰ | ⛔ ¹⁰ | ⛔ ¹⁰ | ⛔ ¹⁰ |
+| Teilen, Rechte ändern, Zugriff entziehen | 🟡 R ⁷ | ⛔ (Policies verwaltet der Server) | ✅ R | – | – | ⛔ | ⛔ | ⛔ | ⛔ |
+| Geteilte Einträge bearbeiten | ✅ R (Organisation) | ✅ R (je nach Policy) | ✅ R (Geheimnis für alle Leser neu verschlüsselt) | – | – | 🟡 (wie eigene, ungetestet) | 🟡 (wie eigene, ungetestet) | ❌ | ⛔ |
+| Konflikterkennung (veralteter Stand wird nicht überschrieben) | ✅ R | ✅ R (Check-and-Set) | ✅ R | – | – | ✅ S ¹³ | ✅ S ¹³ | ✅ S ¹³ | – (nur lesen) |
+| Geheimnisse erst bei Bedarf entschlüsseln | – (alles lokal) | ✅ R (Werte erst bei Bedarf gelesen) | ✅ R | ❌ ⁸ | ❌ | ✅ S | ✅ S | ✅ S | 🟡 S (der Host verwirft sie in der Liste) ²⁶ |
+| Rate-Limit verständlich melden | ✅ R | ✅ | ✅ | – | – | – | – | – | – |
 
 ²⁴ HashiCorp Vault / OpenBao: KV-Engine Version 2, gegen echtes OpenBao 2.7.1 (Dev-Server) mit Token und userpass getestet (Integrations- und Browsertest), dazu ein simulierter Server für Unit-Tests; gegen HashiCorp Vault selbst ist nichts automatisiert getestet, die genutzte API ist dieselbe. Abbildung der Schlüssel in README.md. Grenzen: höchstens 2000 Einträge und 12 Ordnerebenen je Konto; Pfade ohne Leserecht werden mit Hinweis übersprungen; KV Version 1, andere Anmeldemethoden (OIDC, AppRole, LDAP …) und `custom_metadata` werden nicht unterstützt.
 ²⁵ gopass: über den OmniVault-Host mit dem gopass-CLI, gegen das offizielle Release 1.17.4 + GnuPG getestet (auch mit einem eingehängten zweiten Speicher und Verschieben dorthin). Eintragsformat wie bei pass; eingehängte Speicher sind Ordner der obersten Ebene. Nicht unterstützt: Anhänge (`gopass fscopy`), Verlauf aus git, age-Verschlüsselung ungetestet.
+²⁶ Dashlane: über den OmniVault-Host mit dem offiziellen Dashlane-CLI `dcli` (Apache-2.0), das den Tresor nur lesen kann. Gegen ein simuliertes `dcli` getestet, dessen JSON-Ausgabe (`dcli password|note|secret --output json`) dem Quelltext und der Doku von dcli folgt; Version, `dcli status` und das Verhalten ohne Anmeldung sind gegen das echte Release 6.2642.0 (Linux x64, Hash geprüft) abgeglichen. `dcli` gibt die Liste immer mit Geheimnissen aus: Der Host entfernt Passwörter, Notiztexte und TOTP-Schlüssel, bevor die Liste zum Browser geht, und liest einen Eintrag beim Öffnen erneut über seine ID. Dashlane-„Secrets“ (z. B. SSH-Schlüssel als Text) erscheinen als Notizen. Anmelden, Zweitfaktor und SSO übernimmt `dcli` im Terminal (`dcli sync`); das Master-Passwort muss `dcli` gespeichert haben, sonst gilt der Tresor als gesperrt. Nicht unterstützt: Ausweise (`dcli id`), Ordner, Anhänge, Passkeys, Schreiben (⛔ über das CLI).
 
 ² Ein frisch installierter Passbolt 5.16 arbeitet mit v4-Ressourcen; Notizen ohne Passwort und Zusatzfelder gibt es
 erst, wenn ein Admin die verschlüsselten Metadaten (v5) einschaltet. Beide Zustände sind gegen den echten Server getestet.
@@ -131,7 +133,7 @@ legen Dateien in Azure Blob Storage ab; OmniVault fragt dafür beim ersten Hochl
 Premium- oder Organisationskonto voraus.
 ⁸ pass legt URL und Benutzer in der verschlüsselten Datei ab; ohne Entschlüsseln gäbe es keinen Seitenabgleich.
 ⁹ Passbolt und pass kennen keine Passkeys.
-¹⁰ Die Programme `op`, `lpass` und `pass-cli` geben die privaten Schlüssel von Passkeys nicht heraus; Proton Pass
+¹⁰ Die Programme `op`, `lpass`, `dcli` und `pass-cli` geben die privaten Schlüssel von Passkeys nicht heraus; Proton Pass
 zeigt nur, für welche Seite und welchen Benutzer ein Passkey existiert.
 ¹³ Der Host vergleicht vor dem Ändern den Änderungsstand des Programms (1Password `version`, LastPass
 `last_modified_gmt`, Proton `modify_time`). Meldet ein Programm keinen, wird nicht geprüft; `selftest.py --write`
@@ -141,29 +143,29 @@ zeigt, ob das echte Programm ihn liefert.
 
 | Funktion | Bitwarden / Vaultwarden | Vault / OpenBao | Passbolt | CLI-Anbieter |
 |---|---| --- |---|---|
-| Anmelden mit Master-Passwort / Passphrase | ✅ R (PBKDF2, Argon2id) | ✅ R (Token oder userpass) | ✅ R (privater Schlüssel + Passphrase) | im CLI (`op signin`, `lpass login`, gpg-Agent) |
+| Anmelden mit Master-Passwort / Passphrase | ✅ R (PBKDF2, Argon2id) | ✅ R (Token oder userpass) | ✅ R (privater Schlüssel + Passphrase) | im CLI (`op signin`, `lpass login`, `dcli sync`, gpg-Agent) |
 | OpenPGP-Schlüssel: RSA, Ed25519/Cv25519, v6 nach RFC 9580 (Argon2-S2K, AEAD, SEIPD v2) | – | – | ✅ R (RSA, ECC), ✅ U (v6) ¹⁵ | – |
 | Bitwardens neues Verschlüsselungsformat („Encryption V2“: COSE, XAES-256-GCM, Cipher-Blobs) | ✅ U lesen; Schreiben gesperrt ¹⁴ | – | – | – |
 | Anmelden mit API-Schlüssel | ✅ R | – | – | – |
 | Zwei-Faktor | 🟡 S ¹¹ | ❌ (MFA des Servers) | 🟡 S ¹² | übernimmt das CLI |
-| Duo Universal Prompt (persönlich und Organisation) im Tab, Popup setzt danach fort | ✅ S ²⁶ | – | ❌ | – |
+| Duo Universal Prompt (persönlich und Organisation) im Tab, Popup setzt danach fort | ✅ S ²⁷ | – | ❌ | – |
 | Bestätigung neuer Geräte (E-Mail-Code) | ✅ S | – | – | – |
 | Selbst gehosteter Server | ✅ R | ✅ R | ✅ R | – |
 | Token-Erneuerung / Sitzung halten | ✅ R | ✅ R (`renew-self`) | ✅ S | ✅ S |
 | Serveridentität prüfen | – | – (TLS des Browsers) | ✅ R (Schlüssel-Pinning) | – |
 | Entsperren mit PIN, 4–12 Ziffern, Prüfung schon bei der Eingabe (nach Auto-Sperre, bis zum Browser-Neustart) | ✅ S | ✅ (gleicher Weg, nicht eigens getestet) | ✅ S | ✅ (gleicher Weg, nicht eigens getestet) |
-| SSO der Organisation (OIDC mit PKCE im Tab), danach Master-Passwort | ✅ R (Vaultwarden mit lokalem OIDC-Anbieter), ✅ S (Bitwarden) ²⁶ | ❌ (OIDC) | ❌ | – |
+| SSO der Organisation (OIDC mit PKCE im Tab), danach Master-Passwort | ✅ R (Vaultwarden mit lokalem OIDC-Anbieter), ✅ S (Bitwarden) ²⁷ | ❌ (OIDC) | ❌ | – |
 | Konten ohne Master-Passwort (vertrauenswürdige Geräte, Key Connector) | ❌ – klare Meldung (R + S) | – | – | – |
 | Biometrie | ⛔ (Browser-Erweiterungen haben keinen Zugriff) | ⛔ | ⛔ | – |
 
-¹¹ TOTP, E-Mail, YubiKey-OTP, Duo (²⁶). WebAuthn fehlt; in diesem Fall hilft der API-Schlüssel.
+¹¹ TOTP, E-Mail, YubiKey-OTP, Duo (²⁷). WebAuthn fehlt; in diesem Fall hilft der API-Schlüssel.
 ¹² TOTP und YubiKey-OTP. Duo fehlt.
 ¹⁴ Noch von keinem Produktivkonto genutzt und von Vaultwarden nicht unterstützt (Stand 19.10.2026). Geprüft gegen
 die Vektoren der XAES-Spezifikation, Bitwardens veröffentlichte Vektoren (nur lokal) und ein unabhängig in Python
 erzeugtes V2-Konto. Solche Konten sind in OmniVault nur lesbar, bis Schreiben im neuen Format umgesetzt ist.
 ¹⁵ OmniVault kann v6-Schlüssel; ob ein Passbolt-Server sie annimmt, entscheidet der Server (er prüft mit GnuPG,
 das RFC 9580 bisher nicht umsetzt – ungeprüft).
-²⁶ Duo und SSO schicken den Browser nur auf feste Seiten des Web-Tresors zurück (`duo-redirect-connector.html`,
+²⁷ Duo und SSO schicken den Browser nur auf feste Seiten des Web-Tresors zurück (`duo-redirect-connector.html`,
 `sso-connector.html`). OmniVault öffnet dafür einen Tab, wartet im Hintergrund, bis er dort ankommt, liest Code und
 State aus der Adresse, schließt den Tab und meldet an; das Popup, das sich beim Tabwechsel schließt, zeigt beim
 nächsten Öffnen das Ergebnis oder fragt nach dem Master-Passwort. Keine zusätzliche Berechtigung: Die Seiten liegen
@@ -270,7 +272,8 @@ Einstellungen → Darstellung → Sprache wechselt sofort.
 | Funktion | Grund |
 |---|---|
 | Passkeys in Formularen innerhalb fremder iframes, Sicherheitsschlüssel-Erweiterungen (PRF, largeBlob) | nicht umgesetzt; der Browser übernimmt diese Anfragen |
-| Passkeys für 1Password, LastPass, Proton Pass | deren Kommandozeilenprogramme geben die Schlüssel nicht heraus |
+| Passkeys für 1Password, LastPass, Dashlane, Proton Pass | deren Kommandozeilenprogramme geben die Schlüssel nicht heraus |
+| Dashlane: Einträge anlegen, ändern, löschen | das offizielle `dcli` kann nur lesen |
 | Bitwarden Send, Notfallzugriff | nicht umgesetzt |
 | Bitwarden: Rechte in einer Organisation verwalten (Mitglieder, Gruppen, Rechte je Sammlung) | nicht umgesetzt; Sammlungen eines Eintrags ändert OmniVault |
 | Bitwarden: WebAuthn- und Duo-Zweitfaktor, SSO | brauchen den Web-Tresor des Anbieters als Gegenstelle; Ausweg API-Schlüssel |

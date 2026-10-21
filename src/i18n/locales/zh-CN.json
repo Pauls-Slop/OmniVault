@@ -908,5 +908,14 @@
  "Der Server hat keine Duo-Adresse geliefert. Ist Duo für dieses Konto richtig eingerichtet?": "服务器未提供 Duo 地址。此账户的 Duo 是否已正确设置？",
  "Bitte die SSO-Kennung der Organisation im Konto eintragen.": "请在账户设置中填写组织的 SSO 标识符。",
  "Duo öffnet sich in einem neuen Tab. Nach der Bestätigung dort schließt OmniVault den Tab und meldet dich an.": "Duo 会在新标签页中打开。在那里确认后，OmniVault 会关闭该标签页并为你登录。",
- "Zum Tab wechseln": "切换到标签页"
+ "Zum Tab wechseln": "切换到标签页",
+ "Nur lesen, über das offizielle Dashlane-CLI (dcli) und den OmniVault-Host (native/README.md). Voraussetzung: dcli installiert (Release-Datei von github.com/Dashlane/dashlane-cli oder „brew install dashlane/tap/dashlane-cli“) und einmal im Terminal mit „dcli sync“ angemeldet; das Master-Passwort muss dcli gespeichert haben (Standard).": "只读。通过 OmniVault 辅助程序（native/README.md）使用官方 Dashlane CLI（dcli）。请先安装 dcli（github.com/Dashlane/dashlane-cli 上的发布文件，或“brew install dashlane/tap/dashlane-cli”），并在终端中运行“dcli sync”登录一次；dcli 必须保存主密码（默认设置）。",
+ "dcli (Dashlane CLI) wurde nicht gefunden.": "未找到 dcli（Dashlane CLI）。",
+ "Dashlane: nicht angemeldet. Bitte im Terminal „dcli sync“ ausführen.": "Dashlane：尚未登录。请在终端中运行“dcli sync”。",
+ "Dashlane: Der Tresor ist gesperrt. Bitte im Terminal „dcli sync“ ausführen; das Master-Passwort muss gespeichert sein (dcli configure save-master-password true).": "Dashlane：密码库已锁定。请在终端中运行“dcli sync”；必须保存主密码（dcli configure save-master-password true）。",
+ "Dashlane: Das CLI kann nur lesen. Bitte in der Dashlane-App ändern.": "Dashlane：CLI 只能读取。请在 Dashlane 应用中进行更改。",
+ "`dcli` (Dashlane CLI) wurde nicht gefunden.": "未找到 `dcli`（Dashlane CLI）。",
+ "dcli wartet auf eine Eingabe. Bitte einmal im Terminal „dcli sync“ ausführen.": "dcli 正在等待输入。请在终端中运行一次“dcli sync”。",
+ "Dashlane CLI lieferte kein gültiges JSON": "Dashlane CLI 返回了无效的 JSON",
+ "Dashlane® ist eine Marke von Dashlane SAS. OmniVault ist nicht mit Dashlane verbunden, wird von Dashlane weder unterstützt noch gebilligt und nennt den Namen nur, um die Kompatibilität mit dem offiziellen Dashlane-CLI zu beschreiben.": "Dashlane® 是 Dashlane SAS 的商标。OmniVault 与 Dashlane 无关联，也未获得 Dashlane 的支持或认可，提及该名称仅用于说明与官方 Dashlane CLI 的兼容性。"
 }
