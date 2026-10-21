@@ -884,5 +884,36 @@
  "{n}-mal in Datenlecks bekannt": {
   "one": "Seen in {n} data breach",
   "other": "Seen {n} times in data breaches"
- }
+ },
+ "Lade {done} von {total} …": "Loading {done} of {total} …",
+ "Bitte die vollständige Server-Adresse angeben (https://…)": "Enter the full server address (https://…)",
+ "Ungültiger Mount": "Invalid mount",
+ "Server nicht erreichbar ({base}): {error}": "Can’t reach the server ({base}): {error}",
+ "Der Server ist versiegelt (sealed). Bitte zuerst entsiegeln.": "The server is sealed. Unseal it first.",
+ "Zugriff verweigert – Token ungültig, abgelaufen oder ohne Berechtigung für diesen Pfad": "Access denied – the token is invalid, expired or not allowed to use this path",
+ "Der Eintrag wurde inzwischen auf dem Server geändert. Bitte synchronisieren und erneut bearbeiten.": "Someone changed this item on the server in the meantime. Sync, then edit it again.",
+ "Server-Fehler: {error}": "Server error: {error}",
+ "KV-Geheimnisse (Version 2) eines HashiCorp-Vault- oder OpenBao-Servers. Pfade werden zu Ordnern, Schlüssel wie username, password, url, notes und totp zu Login-Feldern.": "KV secrets (version 2) on a HashiCorp Vault or OpenBao server. Paths become folders; keys such as username, password, url, notes and totp become login fields.",
+ "Token": "Token",
+ "Server-Adresse": "Server address",
+ "Anmeldung": "Sign-in method",
+ "Benutzername und Passwort (userpass)": "Username and password (userpass)",
+ "KV-Mount": "KV mount",
+ "Pfad-Präfix (optional)": "Path prefix (optional)",
+ "Nur Geheimnisse unterhalb dieses Pfads werden angezeigt.": "Only secrets below this path are shown.",
+ "Namespace (optional)": "Namespace (optional)",
+ "Bitte Token bzw. Passwort eingeben": "Enter the token or password",
+ "Bitte den Benutzernamen im Konto eintragen": "Enter the username in the account settings",
+ "Benutzername oder Passwort falsch": "Wrong username or password",
+ "Server lieferte kein Token": "The server didn’t return a token",
+ "Token ungültig oder abgelaufen": "Token is invalid or expired",
+ "Unter „{mount}“ ist keine KV-Engine (Version 2) eingehängt": "No KV secrets engine (version 2) is mounted at “{mount}”",
+ "Nur ein Teil geladen: höchstens {n} Einträge und {depth} Ordnerebenen": "Only partly loaded: at most {n} items and {depth} folder levels",
+ "Unter „{path}“ gibt es schon einen Eintrag": "There’s already an item at “{path}”",
+ "Wiederherstellen fehlgeschlagen": "Couldn’t restore the item",
+ "{n} Pfade ohne Leserecht übersprungen": {
+  "one": "{n} path without read access skipped",
+  "other": "{n} paths without read access skipped"
+ },
+ "HashiCorp Vault ist eine Marke von HashiCorp. OpenBao ist ein Projekt der Linux Foundation; seine Marken hält LF Projects, LLC. OmniVault ist mit keinem von beiden verbunden und nennt die Namen nur, um die Kompatibilität zu beschreiben.": "HashiCorp Vault is a trademark of HashiCorp. OpenBao is a Linux Foundation project; its trademarks are held by LF Projects, LLC. OmniVault isn’t affiliated with either and uses these names only to describe compatibility."
 }

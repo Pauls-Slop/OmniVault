@@ -7,7 +7,7 @@ import { ext } from '../lib/browser.js';
 import { generatePassword } from '../lib/generator.js';
 import { matchesUrl } from '../lib/match.js';
 import { totp } from '../lib/totp.js';
-import { describeProviders, getProvider } from '../providers/registry.js';
+import { describeProviders, getProvider, registry } from '../providers/registry.js';
 import * as store from './accounts.js';
 import { fillActiveTab, insertIntoFocused, rememberGenerated } from './autofill.js';
 import { applyLocalFavorites, forgetLocalFavorites, writer } from './favorites.js';
@@ -26,6 +26,12 @@ const cache = new Map(); // accountId -> { items, folders, syncedAt, error, warn
 
 const cfg = (account) => ({ ...account.config, id: account.id });
 
+/** Progress of long syncs (providers that read entry by entry report it): accountId → { done, total }. */
+const syncProgress = new Map();
+for (const p of Object.values(registry)) {
+  if ('onProgress' in p) p.onProgress = (id, done, total) => syncProgress.set(id, { done, total });
+}
+
 async function ensureSynced(account, force = false) {
   const cached = cache.get(account.id);
   if (cached && !force) return cached;
@@ -33,7 +39,8 @@ async function ensureSynced(account, force = false) {
   if (!session) { cache.delete(account.id); return null; }
   const provider = getProvider(account.provider);
   try {
-    const result = await provider.sync(cfg(account), session);
+    syncProgress.delete(account.id);
+    const result = await provider.sync(cfg(account), session).finally(() => syncProgress.delete(account.id));
     if (result.session) await store.setSession(account.id, result.session);
     await applyLocalFavorites(provider, account.id, result.items);
     const entry = { items: result.items, trash: result.trash ?? [], folders: result.folders ?? [], organizations: result.organizations ?? [], syncedAt: Date.now(), error: null, warning: result.warning ?? null, readOnly: !!result.readOnly };
@@ -601,6 +608,8 @@ const handlers = {
     const entry = await ensureSynced(await store.getAccount(id), true);
     return { status: 'ok', itemCount: entry?.items.length ?? 0, error: entry?.error };
   },
+
+  progress: ({ id }) => syncProgress.get(id) ?? null,
 
   lock: ({ id }) => lock(id),
   lockAll: () => lockAll(),

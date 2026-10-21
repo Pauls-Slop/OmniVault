@@ -186,7 +186,23 @@ function renderConfigFields(values = {}) {
   $('#acc-note').textContent = p.note ?? '';
   $('#acc-note').hidden = !p.note;
   $('#acc-submit').disabled = p.status !== 'ready';
-  $('#acc-fields').replaceChildren(...p.configFields.flatMap((f) => fieldNode(f, values[f.name])));
+  $('#acc-fields').replaceChildren(...p.configFields.flatMap((f) => {
+    const nodes = [fieldNode(f, values[f.name])].flat();
+    if (f.showWhen) for (const n of nodes) n.dataset.showWhen = JSON.stringify(f.showWhen);
+    return nodes;
+  }));
+  applyShowWhen();
+}
+
+/** Fields that only matter for one choice of another field (e.g. the user name for userpass logins). */
+function applyShowWhen() {
+  const f = $('#form-account');
+  for (const n of $('#acc-fields').querySelectorAll('[data-show-when]')) {
+    const { field, value } = JSON.parse(n.dataset.showWhen);
+    const on = f.elements[field]?.value === value;
+    n.hidden = !on;
+    for (const i of n.querySelectorAll('input, select, textarea')) i.disabled = !on;
+  }
 }
 
 function readConfig() {
@@ -198,6 +214,7 @@ function readConfig() {
     let v = input?.value ?? '';
     if (field.type === 'select' && v === CUSTOM) v = f.elements[`${field.name}__custom`].value;
     if (input?.hasAttribute('data-keep-if-empty') && !v.trim()) continue; // stored key unchanged
+    if (input?.disabled && field.showWhen) continue; // not used with the current choice
     cfg[field.name] = v.trim();
   }
   return cfg;
@@ -245,7 +262,8 @@ export function openUnlock(a) {
   f.reset();
   const p = providerOf(a.provider);
   $('#unlock-title').replaceChildren(badge(a.short, a.hue), ' ', t('{account} entsperren', { account: a.label }));
-  $('#unlock-label').textContent = p?.unlockLabel ?? t('Passwort');
+  const cfgOf = a.config ?? a;
+  $('#unlock-label').textContent = p?.unlockLabels?.labels[cfgOf[p.unlockLabels.field] || Object.keys(p.unlockLabels.labels)[0]] ?? p?.unlockLabel ?? t('Passwort');
   const noPassword = p?.unlockMode === 'none';
   f.password.closest('label').hidden = noPassword;
   f.password.required = !noPassword;
@@ -292,6 +310,11 @@ async function submitUnlock(ev, extra = {}) {
   const btn = $('#unlock-submit');
   btn.disabled = true;
   btn.textContent = t('Entsperre …');
+  // providers that read entry by entry report how far the first sync is
+  const id = unlockAccount.id;
+  const poll = setInterval(() => call('progress', { id }).then((p) => {
+    if (p && btn.disabled) btn.textContent = t('Lade {done} von {total} …', p);
+  }).catch(() => {}), 400);
   try {
     const r = await call('login', { id: unlockAccount.id, credentials });
     if (r.status === 'needs_2fa') {
@@ -314,6 +337,7 @@ async function submitUnlock(ev, extra = {}) {
     err.textContent = e.message;
     err.hidden = false;
   } finally {
+    clearInterval(poll);
     btn.disabled = false;
     btn.textContent = providerOf(unlockAccount.provider)?.unlockMode === 'none' ? t('Verbinden') : t('Entsperren');
   }
@@ -323,6 +347,7 @@ export function initAccounts() {
   $('#acc-provider').addEventListener('change', () => { renderConfigFields(); updatePreview(); });
   $('#form-account').addEventListener('input', updatePreview);
   $('#form-account').addEventListener('change', updatePreview);
+  $('#acc-fields').addEventListener('change', applyShowWhen);
   $('#form-account').addEventListener('submit', (e) => submitAccount(e).catch((x) => toast(x.message)));
   $('#form-unlock').addEventListener('submit', submitUnlock);
   $('#btn-email-code').addEventListener('click', () => {

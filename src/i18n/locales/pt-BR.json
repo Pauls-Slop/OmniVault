@@ -884,5 +884,36 @@
  "{n}-mal in Datenlecks bekannt": {
   "one": "Encontrada em {n} vazamento de dados",
   "other": "Encontrada {n} vezes em vazamentos de dados"
- }
+ },
+ "Lade {done} von {total} …": "Carregando {done} de {total}…",
+ "Bitte die vollständige Server-Adresse angeben (https://…)": "Informe o endereço completo do servidor (https://…)",
+ "Ungültiger Mount": "Ponto de montagem inválido",
+ "Server nicht erreichbar ({base}): {error}": "Não foi possível acessar o servidor ({base}): {error}",
+ "Der Server ist versiegelt (sealed). Bitte zuerst entsiegeln.": "O servidor está selado (sealed). Faça o unseal primeiro.",
+ "Zugriff verweigert – Token ungültig, abgelaufen oder ohne Berechtigung für diesen Pfad": "Acesso negado – o token é inválido, expirou ou não tem permissão para este caminho",
+ "Der Eintrag wurde inzwischen auf dem Server geändert. Bitte synchronisieren und erneut bearbeiten.": "Alguém alterou este item no servidor nesse meio-tempo. Sincronize e edite de novo.",
+ "Server-Fehler: {error}": "Erro do servidor: {error}",
+ "KV-Geheimnisse (Version 2) eines HashiCorp-Vault- oder OpenBao-Servers. Pfade werden zu Ordnern, Schlüssel wie username, password, url, notes und totp zu Login-Feldern.": "Segredos KV (versão 2) de um servidor HashiCorp Vault ou OpenBao. Caminhos viram pastas; chaves como username, password, url, notes e totp viram campos de login.",
+ "Token": "Token",
+ "Server-Adresse": "Endereço do servidor",
+ "Anmeldung": "Método de login",
+ "Benutzername und Passwort (userpass)": "Nome de usuário e senha (userpass)",
+ "KV-Mount": "Montagem KV",
+ "Pfad-Präfix (optional)": "Prefixo do caminho (opcional)",
+ "Nur Geheimnisse unterhalb dieses Pfads werden angezeigt.": "Só os segredos abaixo deste caminho são exibidos.",
+ "Namespace (optional)": "Namespace (opcional)",
+ "Bitte Token bzw. Passwort eingeben": "Informe o token ou a senha",
+ "Bitte den Benutzernamen im Konto eintragen": "Informe o nome de usuário nas configurações da conta",
+ "Benutzername oder Passwort falsch": "Nome de usuário ou senha incorretos",
+ "Server lieferte kein Token": "O servidor não retornou um token",
+ "Token ungültig oder abgelaufen": "Token inválido ou expirado",
+ "Unter „{mount}“ ist keine KV-Engine (Version 2) eingehängt": "Não há mecanismo KV (versão 2) montado em “{mount}”",
+ "Nur ein Teil geladen: höchstens {n} Einträge und {depth} Ordnerebenen": "Carregado só em parte: no máximo {n} itens e {depth} níveis de pastas",
+ "Unter „{path}“ gibt es schon einen Eintrag": "Já existe um item em “{path}”",
+ "Wiederherstellen fehlgeschlagen": "Não foi possível restaurar o item",
+ "{n} Pfade ohne Leserecht übersprungen": {
+  "one": "{n} caminho sem permissão de leitura ignorado",
+  "other": "{n} caminhos sem permissão de leitura ignorados"
+ },
+ "HashiCorp Vault ist eine Marke von HashiCorp. OpenBao ist ein Projekt der Linux Foundation; seine Marken hält LF Projects, LLC. OmniVault ist mit keinem von beiden verbunden und nennt die Namen nur, um die Kompatibilität zu beschreiben.": "HashiCorp Vault é uma marca da HashiCorp. OpenBao é um projeto da Linux Foundation, cujas marcas pertencem à LF Projects, LLC. O OmniVault não é afiliado a nenhum deles e usa esses nomes só para descrever a compatibilidade."
 }

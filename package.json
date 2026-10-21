@@ -19,6 +19,7 @@
     "vendor:fetch": "vendor/fetch-sources.sh",
     "vendor:build": "node vendor/build.mjs",
     "test:passbolt": "test/passbolt-server.sh start && PASSBOLT_URL=http://127.0.0.1:8900 node --test test/passbolt-real.test.js && test/passbolt-server.sh start && PASSBOLT_URL=http://127.0.0.1:8900 node test/e2e-passbolt.mjs; s=$?; test/passbolt-server.sh stop; exit $s",
+    "test:openbao": "test/openbao-server.sh start && OPENBAO_URL=http://127.0.0.1:8820 node --test test/openbao-real.test.js && OPENBAO_URL=http://127.0.0.1:8820 node test/e2e-openbao.mjs; s=$?; test/openbao-server.sh stop; exit $s",
     "test:inline": "node test/e2e-inline.mjs",
     "test:i18n": "node test/e2e-i18n.mjs",
     "test:passkeys": "node test/e2e-passkeys.mjs",

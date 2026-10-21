@@ -884,5 +884,36 @@
  "{n}-mal in Datenlecks bekannt": {
   "one": "Trovata in {n} violazione di dati",
   "other": "Trovata {n} volte in violazioni di dati"
- }
+ },
+ "Lade {done} von {total} …": "Caricamento {done} di {total}…",
+ "Bitte die vollständige Server-Adresse angeben (https://…)": "Inserisci l’indirizzo completo del server (https://…)",
+ "Ungültiger Mount": "Mount non valido",
+ "Server nicht erreichbar ({base}): {error}": "Impossibile raggiungere il server ({base}): {error}",
+ "Der Server ist versiegelt (sealed). Bitte zuerst entsiegeln.": "Il server è sigillato (sealed). Esegui prima l’unseal.",
+ "Zugriff verweigert – Token ungültig, abgelaufen oder ohne Berechtigung für diesen Pfad": "Accesso negato: il token non è valido, è scaduto o non ha i permessi per questo percorso",
+ "Der Eintrag wurde inzwischen auf dem Server geändert. Bitte synchronisieren und erneut bearbeiten.": "Qualcuno ha modificato questo elemento sul server nel frattempo. Sincronizza e poi modificalo di nuovo.",
+ "Server-Fehler: {error}": "Errore del server: {error}",
+ "KV-Geheimnisse (Version 2) eines HashiCorp-Vault- oder OpenBao-Servers. Pfade werden zu Ordnern, Schlüssel wie username, password, url, notes und totp zu Login-Feldern.": "Segreti KV (versione 2) di un server HashiCorp Vault o OpenBao. I percorsi diventano cartelle, chiavi come username, password, url, notes e totp campi di accesso.",
+ "Token": "Token",
+ "Server-Adresse": "Indirizzo del server",
+ "Anmeldung": "Metodo di accesso",
+ "Benutzername und Passwort (userpass)": "Nome utente e password (userpass)",
+ "KV-Mount": "Mount KV",
+ "Pfad-Präfix (optional)": "Prefisso del percorso (facoltativo)",
+ "Nur Geheimnisse unterhalb dieses Pfads werden angezeigt.": "Vengono mostrati solo i segreti sotto questo percorso.",
+ "Namespace (optional)": "Namespace (facoltativo)",
+ "Bitte Token bzw. Passwort eingeben": "Inserisci il token o la password",
+ "Bitte den Benutzernamen im Konto eintragen": "Inserisci il nome utente nelle impostazioni dell’account",
+ "Benutzername oder Passwort falsch": "Nome utente o password errati",
+ "Server lieferte kein Token": "Il server non ha restituito alcun token",
+ "Token ungültig oder abgelaufen": "Token non valido o scaduto",
+ "Unter „{mount}“ ist keine KV-Engine (Version 2) eingehängt": "Nessun motore KV (versione 2) è montato su “{mount}”",
+ "Nur ein Teil geladen: höchstens {n} Einträge und {depth} Ordnerebenen": "Caricamento parziale: al massimo {n} elementi e {depth} livelli di cartelle",
+ "Unter „{path}“ gibt es schon einen Eintrag": "Esiste già un elemento in “{path}”",
+ "Wiederherstellen fehlgeschlagen": "Impossibile ripristinare l’elemento",
+ "{n} Pfade ohne Leserecht übersprungen": {
+  "one": "{n} percorso senza permesso di lettura ignorato",
+  "other": "{n} percorsi senza permesso di lettura ignorati"
+ },
+ "HashiCorp Vault ist eine Marke von HashiCorp. OpenBao ist ein Projekt der Linux Foundation; seine Marken hält LF Projects, LLC. OmniVault ist mit keinem von beiden verbunden und nennt die Namen nur, um die Kompatibilität zu beschreiben.": "HashiCorp Vault è un marchio di HashiCorp. OpenBao è un progetto della Linux Foundation, i cui marchi sono detenuti da LF Projects, LLC. OmniVault non è affiliato a nessuno dei due e usa questi nomi solo per descrivere la compatibilità."
 }

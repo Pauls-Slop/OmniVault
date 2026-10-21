@@ -16,6 +16,7 @@ move entries between managers – without giving up the manager you already use.
 | **Bitwarden** (bitwarden.com, bitwarden.eu) | Directly; your vault is decrypted in the browser | ✅ | ✅ |
 | **Vaultwarden** and self-hosted Bitwarden | Directly | ✅ | ✅ |
 | **Passbolt** v4 and v5 (incl. sharing) | Directly; OpenPGP in the browser | ✅ | ✅ |
+| **HashiCorp Vault / OpenBao** (KV secrets engine v2) | Directly over the HTTP API (token or userpass) | ✅ | ✅ |
 | **pass** (password-store) | Local helper → `pass` + GnuPG | ✅ | ✅ |
 | **1Password** | Local helper → official `op` CLI | ✅ | ✅ |
 | **LastPass** | Local helper → official `lpass` CLI | ✅ | ✅ |
@@ -27,6 +28,36 @@ Proton Pass support is on hold: Proton currently only offers its CLI on paid pla
 for your account.
 
 For a detailed, per-feature overview see [FEATURES.md](FEATURES.md) (German).
+
+### HashiCorp Vault / OpenBao
+
+OmniVault reads and writes the KV secrets engine (version 2) of a HashiCorp Vault or OpenBao server. In the account
+form you enter the server address, the KV mount (default `secret`), optionally a path prefix (only secrets below it
+are shown) and a namespace (sent as `X-Vault-Namespace`), and choose how to sign in: with a token or with username
+and password (`userpass` auth method). The token is kept in session memory only and renewed (`renew-self`) while
+you use it.
+
+How secrets map to entries:
+
+| In Vault / OpenBao | In OmniVault |
+|---|---|
+| Path `web/github` (below mount and prefix) | Folder `web`, title `github` |
+| Key `username` (or `login`, `user`) | Username |
+| Key `password` | Password |
+| Key `url` (or `uri`, `website`; several addresses separated by spaces or line breaks) | Website addresses |
+| Key `notes` | Notes |
+| Key `totp` (or `otp`; a secret or an `otpauth://` URI) | TOTP |
+| Any other key | Hidden custom field |
+| Secret without a `password` key | Secure note |
+
+Key names are matched case-insensitively and written back as they were; new entries use the first name in each row.
+Values that are not strings (numbers, lists) stay unchanged unless you edit them. The list is built recursively
+with `LIST` on the metadata path (at most 2000 entries and 12 folder levels); secret values are read only when an
+entry is opened, copied or filled. Edits use check-and-set, so a change made elsewhere in the meantime is reported
+as a conflict instead of being overwritten. Deleting is a soft delete of the current version: the entry appears in
+*Tools → Trash* and can be restored (`undelete`) or removed for good (all versions and metadata). Renaming or moving
+writes the secret at the new path and soft-deletes the old one. Paths the token may not list or read are skipped
+with a notice.
 
 ## Features
 
@@ -85,7 +116,7 @@ npm run build        # creates dist/chrome and dist/firefox
 
 Click the OmniVault icon, then *New* (the plus sign at the top right) → *Add account*, and pick your password manager.
 
-- **Bitwarden, Vaultwarden, Passbolt:** sign in directly in OmniVault. For a self-hosted server, enter its address;
+- **Bitwarden, Vaultwarden, Passbolt, HashiCorp Vault / OpenBao:** sign in directly in OmniVault. For a self-hosted server, enter its address;
   your browser will ask once for permission to access it.
 - **pass, 1Password, LastPass, Proton Pass:** these need the local helper described below.
 - **KeePassXC:** uses KeePassXC's own browser integration, see [KeePassXC](#keepassxc) below.
@@ -222,6 +253,7 @@ Third-party components and their licenses are listed in [THIRD_PARTY_NOTICES.md]
 
 Bitwarden is a registered trademark of Bitwarden Inc. Passbolt is a trademark of Passbolt S.A.
 ([passbolt.com](https://www.passbolt.com)). LastPass is a trademark of LastPass US LP. 1Password is a trademark of
-AgileBits Inc. Proton and Proton Pass are trademarks of Proton AG.
+AgileBits Inc. Proton and Proton Pass are trademarks of Proton AG. HashiCorp Vault is a trademark of HashiCorp.
+OpenBao is a Linux Foundation project; its trademarks are held by LF Projects, LLC.
 All other names are trademarks of their respective owners and are used only to describe compatibility. OmniVault is
 not affiliated with, endorsed by or sponsored by any of them.

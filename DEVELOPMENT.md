@@ -11,6 +11,7 @@ Passwörter finden, Exporte anderer Manager importieren und alles wieder exporti
 | Bitwarden (bitwarden.com, bitwarden.eu) | direkt, Entschlüsselung im Browser | lesen und schreiben, gegen echtes Vaultwarden getestet |
 | Vaultwarden / selbst gehostetes Bitwarden | direkt | wie oben |
 | Passbolt v4 und v5 | direkt, OpenPGP im Browser | lesen, schreiben, teilen; gegen echten Passbolt CE 5.16 getestet |
+| HashiCorp Vault / OpenBao (KV v2) | direkt über die HTTP-API, Token oder userpass | lesen, schreiben, Papierkorb; gegen echtes OpenBao 2.7.1 getestet |
 | pass (password-store) | lokaler Host → `pass` + GnuPG | lesen und schreiben, gegen echtes pass getestet |
 | 1Password | lokaler Host → offizielles `op` | lesen und schreiben, gegen simuliertes CLI getestet |
 | LastPass | lokaler Host → offizielles `lpass` | lesen und schreiben, gegen simuliertes CLI getestet |
@@ -23,7 +24,7 @@ Passwörter finden, Exporte anderer Manager importieren und alles wieder exporti
 - Fremdsoftware und Lizenzen: [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)
 
 OmniVault ist ein unabhängiges Projekt und nicht mit Bitwarden Inc., Passbolt S.A., Proton AG, AgileBits Inc.
-(1Password) oder LastPass US LP verbunden. Alle genannten Marken gehören ihren Inhabern.
+(1Password), LastPass US LP, HashiCorp oder der Linux Foundation (OpenBao) verbunden. Alle genannten Marken gehören ihren Inhabern.
 
 ## Bauen
 
@@ -39,6 +40,7 @@ npm run test:proton  # Proton Pass: Chromium → Native Messaging → Host → s
 npm run test:vaultwarden  # startet ein lokales Vaultwarden und testet Provider, Werkzeuge, Import, Anhänge, Organisationen
                           # (Verschieben, Sammlungen) und den automatischen Abgleich über einen Neustart des Service Workers
 npm run test:passbolt     # richtet einen lokalen Passbolt CE ein (PostgreSQL) und testet Provider und Teilen dagegen
+npm run test:openbao      # startet ein lokales OpenBao (Dev-Modus, Port 8820) und testet Provider und Browser dagegen
 npm run test:inline       # Knopf im Anmeldefeld, „Login speichern?“, Karten ausfüllen
 npm run test:i18n         # Sprachen: Browsersprache, Sprachwahl, alle Ansichten in allen Sprachen + Pseudosprache
 npm run test:passkeys     # Passkeys: Testseite mit Prüfung auf dem Server, OmniVault-Dialog, Rückfall auf den Browser
@@ -53,7 +55,9 @@ Die e2e-Skripte nehmen den Pfad zu Playwright als erstes Argument, falls es nich
 `test/vaultwarden-server.sh`); mit `VAULTWARDEN_BIN=/pfad/zu/vaultwarden` nutzt es ein eigenes. Die GnuPG-Gegenproben
 in `npm test` brauchen ein installiertes `gpg`, sonst werden sie übersprungen; die pass-Tests laufen mit
 `OMNIVAULT_PASS_BIN=/pfad/zu/pass`. `test:passbolt` braucht PHP ≥ 8.2 mit der gnupg-Erweiterung, Composer, git und
-die PostgreSQL-Programme (Details in `test/passbolt-server.sh`).
+die PostgreSQL-Programme (Details in `test/passbolt-server.sh`). `test:openbao` lädt beim ersten Lauf das offizielle
+OpenBao-Release 2.7.1 für Linux amd64 (Hash geprüft, siehe `test/openbao-server.sh`); mit `OPENBAO_BIN=/pfad/zu/bao`
+nutzt es ein eigenes.
 
 **Firefox-Test** (`test/e2e-firefox.mjs`): Playwrights Firefox kann keine Erweiterungen laden, deshalb startet der
 Test ein gewöhnliches Firefox ≥ 140 und steuert es über WebDriver BiDi (`test/firefox-bidi.mjs`, ohne Zusatzpakete,
@@ -124,6 +128,7 @@ src/
     native-host.js   gemeinsamer Native-Messaging-Transport und Basisklasse für CLI-Anbieter
     bitwarden/       API, Krypto, Provider (deckt Vaultwarden ab)
     passbolt/        JWT-Login, MFA, v4/v5-Ressourcen, Ordner, Geheimnisse bei Bedarf entschlüsseln
+    vault/           HashiCorp Vault / OpenBao: KV v2, Token/userpass, Check-and-Set, Papierkorb über undelete
     pass/ onepassword/ lastpass/ protonpass/   dünne Provider über den Host
   content/inline.js  Inhaltsskript (Opt-in): Knopf im Anmeldefeld, „Login speichern?“
   inline/            Liste und Speichern-Leiste als Erweiterungsseiten in iframes

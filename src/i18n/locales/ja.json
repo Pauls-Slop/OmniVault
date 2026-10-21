@@ -852,5 +852,35 @@
  "Have I Been Pwned antwortet nicht ({status})": "Have I Been Pwned が応答しません（{status}）",
  "{n}-mal in Datenlecks bekannt": {
   "other": "データ侵害で {n} 回確認されています"
- }
+ },
+ "Lade {done} von {total} …": "{total} 件中 {done} 件を読み込み中…",
+ "Bitte die vollständige Server-Adresse angeben (https://…)": "サーバーの完全なアドレスを入力してください（https://…）",
+ "Ungültiger Mount": "マウントが無効です",
+ "Server nicht erreichbar ({base}): {error}": "サーバーに接続できません（{base}）: {error}",
+ "Der Server ist versiegelt (sealed). Bitte zuerst entsiegeln.": "サーバーがシール（sealed）されています。先にアンシールしてください。",
+ "Zugriff verweigert – Token ungültig, abgelaufen oder ohne Berechtigung für diesen Pfad": "アクセスが拒否されました。トークンが無効か期限切れ、またはこのパスへの権限がありません",
+ "Der Eintrag wurde inzwischen auf dem Server geändert. Bitte synchronisieren und erneut bearbeiten.": "その間にほかの人がサーバー上でこのアイテムを変更しました。同期してから、もう一度編集してください。",
+ "Server-Fehler: {error}": "サーバーエラー: {error}",
+ "KV-Geheimnisse (Version 2) eines HashiCorp-Vault- oder OpenBao-Servers. Pfade werden zu Ordnern, Schlüssel wie username, password, url, notes und totp zu Login-Feldern.": "HashiCorp Vault または OpenBao サーバーの KV シークレット（バージョン 2）。パスはフォルダーに、username・password・url・notes・totp などのキーはログインのフィールドになります。",
+ "Token": "トークン",
+ "Server-Adresse": "サーバーのアドレス",
+ "Anmeldung": "サインイン方法",
+ "Benutzername und Passwort (userpass)": "ユーザー名とパスワード（userpass）",
+ "KV-Mount": "KV マウント",
+ "Pfad-Präfix (optional)": "パスのプレフィックス（任意）",
+ "Nur Geheimnisse unterhalb dieses Pfads werden angezeigt.": "このパスより下のシークレットだけが表示されます。",
+ "Namespace (optional)": "名前空間（任意）",
+ "Bitte Token bzw. Passwort eingeben": "トークンまたはパスワードを入力してください",
+ "Bitte den Benutzernamen im Konto eintragen": "アカウントの設定でユーザー名を入力してください",
+ "Benutzername oder Passwort falsch": "ユーザー名またはパスワードが正しくありません",
+ "Server lieferte kein Token": "サーバーからトークンが返されませんでした",
+ "Token ungültig oder abgelaufen": "トークンが無効か期限切れです",
+ "Unter „{mount}“ ist keine KV-Engine (Version 2) eingehängt": "「{mount}」に KV エンジン（バージョン 2）がマウントされていません",
+ "Nur ein Teil geladen: höchstens {n} Einträge und {depth} Ordnerebenen": "一部のみ読み込みました（最大 {n} 件、フォルダー {depth} 階層まで）",
+ "Unter „{path}“ gibt es schon einen Eintrag": "「{path}」にはすでにアイテムがあります",
+ "Wiederherstellen fehlgeschlagen": "アイテムを復元できませんでした",
+ "{n} Pfade ohne Leserecht übersprungen": {
+  "other": "読み取り権限のないパスを {n} 件スキップしました"
+ },
+ "HashiCorp Vault ist eine Marke von HashiCorp. OpenBao ist ein Projekt der Linux Foundation; seine Marken hält LF Projects, LLC. OmniVault ist mit keinem von beiden verbunden und nennt die Namen nur, um die Kompatibilität zu beschreiben.": "HashiCorp Vault は HashiCorp の商標です。OpenBao は Linux Foundation のプロジェクトで、その商標は LF Projects, LLC が保有しています。OmniVault はいずれとも提携しておらず、互換性を説明するためにのみこれらの名称を使用しています。"
 }

@@ -884,5 +884,36 @@
  "{n}-mal in Datenlecks bekannt": {
   "one": "Vu dans {n} fuite de données",
   "other": "Vu {n} fois dans des fuites de données"
- }
+ },
+ "Lade {done} von {total} …": "Chargement {done} sur {total}…",
+ "Bitte die vollständige Server-Adresse angeben (https://…)": "Saisissez l’adresse complète du serveur (https://…)",
+ "Ungültiger Mount": "Point de montage non valide",
+ "Server nicht erreichbar ({base}): {error}": "Impossible de joindre le serveur ({base}) : {error}",
+ "Der Server ist versiegelt (sealed). Bitte zuerst entsiegeln.": "Le serveur est scellé (sealed). Descellez-le d’abord.",
+ "Zugriff verweigert – Token ungültig, abgelaufen oder ohne Berechtigung für diesen Pfad": "Accès refusé : le jeton est invalide, a expiré ou n’a pas les droits sur ce chemin",
+ "Der Eintrag wurde inzwischen auf dem Server geändert. Bitte synchronisieren und erneut bearbeiten.": "Quelqu’un a modifié cet élément sur le serveur entre-temps. Synchronisez, puis modifiez-le à nouveau.",
+ "Server-Fehler: {error}": "Erreur du serveur : {error}",
+ "KV-Geheimnisse (Version 2) eines HashiCorp-Vault- oder OpenBao-Servers. Pfade werden zu Ordnern, Schlüssel wie username, password, url, notes und totp zu Login-Feldern.": "Secrets KV (version 2) d’un serveur HashiCorp Vault ou OpenBao. Les chemins deviennent des dossiers, les clés comme username, password, url, notes et totp des champs d’identifiant.",
+ "Token": "Jeton",
+ "Server-Adresse": "Adresse du serveur",
+ "Anmeldung": "Méthode de connexion",
+ "Benutzername und Passwort (userpass)": "Nom d’utilisateur et mot de passe (userpass)",
+ "KV-Mount": "Point de montage KV",
+ "Pfad-Präfix (optional)": "Préfixe de chemin (facultatif)",
+ "Nur Geheimnisse unterhalb dieses Pfads werden angezeigt.": "Seuls les secrets situés sous ce chemin sont affichés.",
+ "Namespace (optional)": "Espace de noms (facultatif)",
+ "Bitte Token bzw. Passwort eingeben": "Saisissez le jeton ou le mot de passe",
+ "Bitte den Benutzernamen im Konto eintragen": "Saisissez le nom d’utilisateur dans les paramètres du compte",
+ "Benutzername oder Passwort falsch": "Nom d’utilisateur ou mot de passe incorrect",
+ "Server lieferte kein Token": "Le serveur n’a renvoyé aucun jeton",
+ "Token ungültig oder abgelaufen": "Jeton invalide ou expiré",
+ "Unter „{mount}“ ist keine KV-Engine (Version 2) eingehängt": "Aucun moteur KV (version 2) n’est monté sur « {mount} »",
+ "Nur ein Teil geladen: höchstens {n} Einträge und {depth} Ordnerebenen": "Chargement partiel : au plus {n} éléments et {depth} niveaux de dossiers",
+ "Unter „{path}“ gibt es schon einen Eintrag": "Un élément existe déjà à « {path} »",
+ "Wiederherstellen fehlgeschlagen": "Impossible de restaurer l’élément",
+ "{n} Pfade ohne Leserecht übersprungen": {
+  "one": "{n} chemin sans droit de lecture ignoré",
+  "other": "{n} chemins sans droit de lecture ignorés"
+ },
+ "HashiCorp Vault ist eine Marke von HashiCorp. OpenBao ist ein Projekt der Linux Foundation; seine Marken hält LF Projects, LLC. OmniVault ist mit keinem von beiden verbunden und nennt die Namen nur, um die Kompatibilität zu beschreiben.": "HashiCorp Vault est une marque de HashiCorp. OpenBao est un projet de la Linux Foundation, dont les marques sont détenues par LF Projects, LLC. OmniVault n’est affilié à aucun d’eux et n’utilise ces noms que pour décrire la compatibilité."
 }

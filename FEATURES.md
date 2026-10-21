@@ -7,7 +7,7 @@ umsetzt und womit das geprüft ist. Wer einen Provider ändert, passt die Zeile 
 
 | Zeichen | Bedeutung |
 |---|---|
-| ✅ R | umgesetzt, gegen die **echte Gegenstelle** getestet: lokales Vaultwarden, lokaler Passbolt CE 5.16, echtes `pass` + GnuPG |
+| ✅ R | umgesetzt, gegen die **echte Gegenstelle** getestet: lokales Vaultwarden, lokaler Passbolt CE 5.16, lokales OpenBao 2.7.1, echtes `pass` + GnuPG |
 | ✅ S | umgesetzt, gegen einen **simulierten** Server bzw. ein simuliertes CLI getestet |
 | ✅ U | umgesetzt, durch Unit-Tests mit Beispieldaten abgedeckt |
 | ✅ | umgesetzt, nur manuell bzw. indirekt geprüft |
@@ -24,6 +24,7 @@ umsetzt und womit das geprüft ist. Wer einen Provider ändert, passt die Zeile 
 |---|---|---|
 | Bitwarden (Cloud) und Vaultwarden | direkt über die Server-API, Entschlüsselung im Browser | R (Vaultwarden) |
 | Passbolt v4 und v5 | direkt über die Server-API, OpenPGP im Browser | R (Passbolt CE 5.16, zwei Nutzer) |
+| HashiCorp Vault / OpenBao (KV v2) | direkt über die HTTP-API, Token oder userpass | R (OpenBao 2.7.1) ²⁴ |
 | pass (password-store) | Native-Host → `pass` + GnuPG | R |
 | 1Password | Native-Host → offizielles `op` | S |
 | LastPass | Native-Host → offizielles `lpass` | S |
@@ -46,30 +47,32 @@ Bitwarden Cloud und Vaultwarden nutzen denselben Provider; gegen bitwarden.com/.
 
 ## Parität zwischen den Anbietern
 
-| Funktion | Bitwarden / Vaultwarden | Passbolt | pass | 1Password | LastPass | Proton Pass |
-|---|---|---|---|---|---|---|
-| Logins lesen, anlegen, bearbeiten, löschen | ✅ R | ✅ R | ✅ R | ✅ S | ✅ S | ✅ S |
-| Notizen | ✅ R | ✅ R (v5) ² | – ³ | ✅ S | ✅ S | ✅ S |
-| Karten, Identitäten lesen | ✅ R | – | – | ✅ S ⁴ | – | ✅ S |
-| Karten, Identitäten anlegen und bearbeiten | ✅ R | – | – | 🟡 S ⁴ | – | ⛔ |
-| Zusatzfelder lesen | ✅ R | ✅ R (v5) | ✅ R | ✅ S | ⛔ | ✅ S |
-| Zusatzfelder bearbeiten | ✅ R | ✅ R (v5-Logins) | ✅ R ⁵ | ✅ S | ⛔ | ⛔ |
-| TOTP lesen und ändern | ✅ R | ✅ R | ✅ R | ✅ S | ⛔ | 🟡 S (nur lesen) |
-| Favoriten | ✅ R | ✅ R | ✅ L | ✅ S | ✅ L | ✅ L |
-| Ordner / Tresore anzeigen und verschieben | ✅ R | ✅ R (anzeigen), ✅ S (verschieben) | ✅ R (Pfade) | ✅ S (Tresore) | ✅ S (Gruppen) | ✅ S (Tresore) |
-| Ordner / Tresor anlegen | ✅ R | ✅ R ⁶ | ✅ R | ✅ S | ✅ S | ❌ |
-| Papierkorb: Löschen landet dort | ✅ R | – (endgültig) | – (endgültig) | ✅ S („Zuletzt gelöscht“) | – (endgültig) | ✅ S |
-| Papierkorb in OmniVault anzeigen, wiederherstellen, endgültig löschen | ✅ R | – | – | ⛔ ¹⁷ | – | ❌ (zurückgestellt) |
-| Anhänge herunterladen | ✅ R | – | – | ✅ S ¹⁹ | ✅ S ¹⁹ | ✅ S ¹⁹ |
-| Anhänge hochladen und löschen | ✅ R ¹⁸ | – | – | ⛔ ²⁰ | ⛔ ²⁰ | ⛔ ²⁰ |
-| Passwortverlauf | ✅ R | – | – | 🟡 S ²¹ | ⛔ ²¹ | ⛔ ²¹ |
-| Passkeys anzeigen | ✅ R | – ⁹ | – ⁹ | ⛔ ²² | ⛔ ²² | ✅ S (nur Seite und Benutzer) |
-| Passkeys auf Webseiten anlegen und damit anmelden, entfernen | ✅ R (Bitwarden-Format, mit den offiziellen Apps austauschbar) | – ⁹ | – ⁹ | ⛔ ¹⁰ | ⛔ ¹⁰ | ⛔ ¹⁰ |
-| Teilen, Rechte ändern, Zugriff entziehen | 🟡 R ⁷ | ✅ R | – | ⛔ | ⛔ | ⛔ |
-| Geteilte Einträge bearbeiten | ✅ R (Organisation) | ✅ R (Geheimnis für alle Leser neu verschlüsselt) | – | 🟡 (wie eigene, ungetestet) | 🟡 (wie eigene, ungetestet) | ❌ |
-| Konflikterkennung (veralteter Stand wird nicht überschrieben) | ✅ R | ✅ R | – | ✅ S ¹³ | ✅ S ¹³ | ✅ S ¹³ |
-| Geheimnisse erst bei Bedarf entschlüsseln | – (alles lokal) | ✅ R | ❌ ⁸ | ✅ S | ✅ S | ✅ S |
-| Rate-Limit verständlich melden | ✅ R | ✅ | – | – | – | – |
+| Funktion | Bitwarden / Vaultwarden | Vault / OpenBao | Passbolt | pass | 1Password | LastPass | Proton Pass |
+|---|---| --- |---|---|---|---|---|
+| Logins lesen, anlegen, bearbeiten, löschen | ✅ R | ✅ R ²⁴ | ✅ R | ✅ R | ✅ S | ✅ S | ✅ S |
+| Notizen | ✅ R | ✅ R (ohne `password`-Schlüssel) | ✅ R (v5) ² | – ³ | ✅ S | ✅ S | ✅ S |
+| Karten, Identitäten lesen | ✅ R | – | – | – | ✅ S ⁴ | – | ✅ S |
+| Karten, Identitäten anlegen und bearbeiten | ✅ R | – | – | – | 🟡 S ⁴ | – | ⛔ |
+| Zusatzfelder lesen | ✅ R | ✅ R (übrige Schlüssel, verborgen) | ✅ R (v5) | ✅ R | ✅ S | ⛔ | ✅ S |
+| Zusatzfelder bearbeiten | ✅ R | ✅ R | ✅ R (v5-Logins) | ✅ R ⁵ | ✅ S | ⛔ | ⛔ |
+| TOTP lesen und ändern | ✅ R | ✅ R | ✅ R | ✅ R | ✅ S | ⛔ | 🟡 S (nur lesen) |
+| Favoriten | ✅ R | ✅ L | ✅ R | ✅ L | ✅ S | ✅ L | ✅ L |
+| Ordner / Tresore anzeigen und verschieben | ✅ R | ✅ R (Pfade) | ✅ R (anzeigen), ✅ S (verschieben) | ✅ R (Pfade) | ✅ S (Tresore) | ✅ S (Gruppen) | ✅ S (Tresore) |
+| Ordner / Tresor anlegen | ✅ R | ✅ R | ✅ R ⁶ | ✅ R | ✅ S | ✅ S | ❌ |
+| Papierkorb: Löschen landet dort | ✅ R | ✅ R (weiches Löschen der aktuellen Version) | – (endgültig) | – (endgültig) | ✅ S („Zuletzt gelöscht“) | – (endgültig) | ✅ S |
+| Papierkorb in OmniVault anzeigen, wiederherstellen, endgültig löschen | ✅ R | ✅ R (`undelete`; endgültig: alle Versionen) | – | – | ⛔ ¹⁷ | – | ❌ (zurückgestellt) |
+| Anhänge herunterladen | ✅ R | – | – | – | ✅ S ¹⁹ | ✅ S ¹⁹ | ✅ S ¹⁹ |
+| Anhänge hochladen und löschen | ✅ R ¹⁸ | – | – | – | ⛔ ²⁰ | ⛔ ²⁰ | ⛔ ²⁰ |
+| Passwortverlauf | ✅ R | ❌ (Versionen gibt es, OmniVault zeigt sie nicht) | – | – | 🟡 S ²¹ | ⛔ ²¹ | ⛔ ²¹ |
+| Passkeys anzeigen | ✅ R | – | – ⁹ | – ⁹ | ⛔ ²² | ⛔ ²² | ✅ S (nur Seite und Benutzer) |
+| Passkeys auf Webseiten anlegen und damit anmelden, entfernen | ✅ R (Bitwarden-Format, mit den offiziellen Apps austauschbar) | – | – ⁹ | – ⁹ | ⛔ ¹⁰ | ⛔ ¹⁰ | ⛔ ¹⁰ |
+| Teilen, Rechte ändern, Zugriff entziehen | 🟡 R ⁷ | ⛔ (Policies verwaltet der Server) | ✅ R | – | ⛔ | ⛔ | ⛔ |
+| Geteilte Einträge bearbeiten | ✅ R (Organisation) | ✅ R (je nach Policy) | ✅ R (Geheimnis für alle Leser neu verschlüsselt) | – | 🟡 (wie eigene, ungetestet) | 🟡 (wie eigene, ungetestet) | ❌ |
+| Konflikterkennung (veralteter Stand wird nicht überschrieben) | ✅ R | ✅ R (Check-and-Set) | ✅ R | – | ✅ S ¹³ | ✅ S ¹³ | ✅ S ¹³ |
+| Geheimnisse erst bei Bedarf entschlüsseln | – (alles lokal) | ✅ R (Werte erst bei Bedarf gelesen) | ✅ R | ❌ ⁸ | ✅ S | ✅ S | ✅ S |
+| Rate-Limit verständlich melden | ✅ R | ✅ | ✅ | – | – | – | – |
+
+²⁴ HashiCorp Vault / OpenBao: KV-Engine Version 2, gegen echtes OpenBao 2.7.1 (Dev-Server) mit Token und userpass getestet (Integrations- und Browsertest), dazu ein simulierter Server für Unit-Tests; gegen HashiCorp Vault selbst ist nichts automatisiert getestet, die genutzte API ist dieselbe. Abbildung der Schlüssel in README.md. Grenzen: höchstens 2000 Einträge und 12 Ordnerebenen je Konto; Pfade ohne Leserecht werden mit Hinweis übersprungen; KV Version 1, andere Anmeldemethoden (OIDC, AppRole, LDAP …) und `custom_metadata` werden nicht unterstützt.
 
 ² Ein frisch installierter Passbolt 5.16 arbeitet mit v4-Ressourcen; Notizen ohne Passwort und Zusatzfelder gibt es
 erst, wenn ein Admin die verschlüsselten Metadaten (v5) einschaltet. Beide Zustände sind gegen den echten Server getestet.
@@ -134,20 +137,20 @@ zeigt, ob das echte Programm ihn liefert.
 
 ## Anmeldung und Sitzung
 
-| Funktion | Bitwarden / Vaultwarden | Passbolt | CLI-Anbieter |
-|---|---|---|---|
-| Anmelden mit Master-Passwort / Passphrase | ✅ R (PBKDF2, Argon2id) | ✅ R (privater Schlüssel + Passphrase) | im CLI (`op signin`, `lpass login`, gpg-Agent) |
-| OpenPGP-Schlüssel: RSA, Ed25519/Cv25519, v6 nach RFC 9580 (Argon2-S2K, AEAD, SEIPD v2) | – | ✅ R (RSA, ECC), ✅ U (v6) ¹⁵ | – |
-| Bitwardens neues Verschlüsselungsformat („Encryption V2“: COSE, XAES-256-GCM, Cipher-Blobs) | ✅ U lesen; Schreiben gesperrt ¹⁴ | – | – |
-| Anmelden mit API-Schlüssel | ✅ R | – | – |
-| Zwei-Faktor | 🟡 S ¹¹ | 🟡 S ¹² | übernimmt das CLI |
-| Bestätigung neuer Geräte (E-Mail-Code) | ✅ S | – | – |
-| Selbst gehosteter Server | ✅ R | ✅ R | – |
-| Token-Erneuerung / Sitzung halten | ✅ R | ✅ S | ✅ S |
-| Serveridentität prüfen | – | ✅ R (Schlüssel-Pinning) | – |
-| Entsperren mit PIN, 4–12 Ziffern, Prüfung schon bei der Eingabe (nach Auto-Sperre, bis zum Browser-Neustart) | ✅ S | ✅ S | ✅ (gleicher Weg, nicht eigens getestet) |
-| SSO / vertrauenswürdige Geräte | ❌ | ❌ | – |
-| Biometrie | ⛔ (Browser-Erweiterungen haben keinen Zugriff) | ⛔ | – |
+| Funktion | Bitwarden / Vaultwarden | Vault / OpenBao | Passbolt | CLI-Anbieter |
+|---|---| --- |---|---|
+| Anmelden mit Master-Passwort / Passphrase | ✅ R (PBKDF2, Argon2id) | ✅ R (Token oder userpass) | ✅ R (privater Schlüssel + Passphrase) | im CLI (`op signin`, `lpass login`, gpg-Agent) |
+| OpenPGP-Schlüssel: RSA, Ed25519/Cv25519, v6 nach RFC 9580 (Argon2-S2K, AEAD, SEIPD v2) | – | – | ✅ R (RSA, ECC), ✅ U (v6) ¹⁵ | – |
+| Bitwardens neues Verschlüsselungsformat („Encryption V2“: COSE, XAES-256-GCM, Cipher-Blobs) | ✅ U lesen; Schreiben gesperrt ¹⁴ | – | – | – |
+| Anmelden mit API-Schlüssel | ✅ R | – | – | – |
+| Zwei-Faktor | 🟡 S ¹¹ | ❌ (MFA des Servers) | 🟡 S ¹² | übernimmt das CLI |
+| Bestätigung neuer Geräte (E-Mail-Code) | ✅ S | – | – | – |
+| Selbst gehosteter Server | ✅ R | ✅ R | ✅ R | – |
+| Token-Erneuerung / Sitzung halten | ✅ R | ✅ R (`renew-self`) | ✅ S | ✅ S |
+| Serveridentität prüfen | – | – (TLS des Browsers) | ✅ R (Schlüssel-Pinning) | – |
+| Entsperren mit PIN, 4–12 Ziffern, Prüfung schon bei der Eingabe (nach Auto-Sperre, bis zum Browser-Neustart) | ✅ S | ✅ (gleicher Weg, nicht eigens getestet) | ✅ S | ✅ (gleicher Weg, nicht eigens getestet) |
+| SSO / vertrauenswürdige Geräte | ❌ | ❌ (OIDC) | ❌ | – |
+| Biometrie | ⛔ (Browser-Erweiterungen haben keinen Zugriff) | ⛔ | ⛔ | – |
 
 ¹¹ TOTP, E-Mail, YubiKey-OTP. WebAuthn und Duo fehlen; in diesem Fall hilft der API-Schlüssel.
 ¹² TOTP und YubiKey-OTP. Duo fehlt.
@@ -169,7 +172,7 @@ das RFC 9580 bisher nicht umsetzt – ungeprüft).
 | Übertragen zwischen Anbietern | ✅ R: Logins, Notizen, Karten, Identitäten und Zusatzfelder, soweit das Ziel sie speichern kann; sonst stehen sie lesbar in den Notizen. Passkeys gehen mit, wenn das Ziel sie speichern kann (Bitwarden → Bitwarden); Anhänge, Verlauf und sonst auch Passkeys bleiben im Original (Hinweis vorher, je nach Zielkonto). |
 | Spiegel-Regeln (Quelle → Ziel, optional mit Löschen, ohne Ping-Pong) | ✅ R + U |
 | Automatischer Abgleich entsperrter Konten (auch nach Neustart des Service Workers, mit Spiegel-Regeln) | ✅ R (Browsertest: Worker beendet, Alarm weckt ihn, Änderung eines anderen Clients kommt an und wird gespiegelt) |
-| Papierkorb (Werkzeuge → Papierkorb) | ✅ R (Bitwarden/Vaultwarden) |
+| Papierkorb (Werkzeuge → Papierkorb) | ✅ R (Bitwarden/Vaultwarden, Vault/OpenBao) |
 | Export: Bitwarden-JSON (vollständig, mit Passkeys samt Schlüssel wie bei Bitwarden) und CSV, je Konto oder alle | ✅ R + U |
 
 ## Dateiimport

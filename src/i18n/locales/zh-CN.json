@@ -852,5 +852,35 @@
  "Have I Been Pwned antwortet nicht ({status})": "Have I Been Pwned 无响应（{status}）",
  "{n}-mal in Datenlecks bekannt": {
   "other": "在数据泄露中出现过 {n} 次"
- }
+ },
+ "Lade {done} von {total} …": "正在加载 {done}/{total}…",
+ "Bitte die vollständige Server-Adresse angeben (https://…)": "请输入完整的服务器地址（https://…）",
+ "Ungültiger Mount": "挂载路径无效",
+ "Server nicht erreichbar ({base}): {error}": "无法连接服务器（{base}）：{error}",
+ "Der Server ist versiegelt (sealed). Bitte zuerst entsiegeln.": "服务器处于密封（sealed）状态，请先解封。",
+ "Zugriff verweigert – Token ungültig, abgelaufen oder ohne Berechtigung für diesen Pfad": "访问被拒绝：令牌无效、已过期或无权访问此路径",
+ "Der Eintrag wurde inzwischen auf dem Server geändert. Bitte synchronisieren und erneut bearbeiten.": "有人在此期间修改了服务器上的这个项目。请同步后再编辑。",
+ "Server-Fehler: {error}": "服务器错误：{error}",
+ "KV-Geheimnisse (Version 2) eines HashiCorp-Vault- oder OpenBao-Servers. Pfade werden zu Ordnern, Schlüssel wie username, password, url, notes und totp zu Login-Feldern.": "HashiCorp Vault 或 OpenBao 服务器上的 KV 机密（版本 2）。路径会成为文件夹，username、password、url、notes 和 totp 等键会成为登录字段。",
+ "Token": "令牌",
+ "Server-Adresse": "服务器地址",
+ "Anmeldung": "登录方式",
+ "Benutzername und Passwort (userpass)": "用户名和密码（userpass）",
+ "KV-Mount": "KV 挂载路径",
+ "Pfad-Präfix (optional)": "路径前缀（可选）",
+ "Nur Geheimnisse unterhalb dieses Pfads werden angezeigt.": "只显示此路径下的机密。",
+ "Namespace (optional)": "命名空间（可选）",
+ "Bitte Token bzw. Passwort eingeben": "请输入令牌或密码",
+ "Bitte den Benutzernamen im Konto eintragen": "请在账户设置中填写用户名",
+ "Benutzername oder Passwort falsch": "用户名或密码错误",
+ "Server lieferte kein Token": "服务器未返回令牌",
+ "Token ungültig oder abgelaufen": "令牌无效或已过期",
+ "Unter „{mount}“ ist keine KV-Engine (Version 2) eingehängt": "“{mount}”下未挂载 KV 引擎（版本 2）",
+ "Nur ein Teil geladen: höchstens {n} Einträge und {depth} Ordnerebenen": "仅加载了一部分：最多 {n} 个项目和 {depth} 层文件夹",
+ "Unter „{path}“ gibt es schon einen Eintrag": "“{path}”处已有项目",
+ "Wiederherstellen fehlgeschlagen": "无法恢复项目",
+ "{n} Pfade ohne Leserecht übersprungen": {
+  "other": "已跳过 {n} 个无读取权限的路径"
+ },
+ "HashiCorp Vault ist eine Marke von HashiCorp. OpenBao ist ein Projekt der Linux Foundation; seine Marken hält LF Projects, LLC. OmniVault ist mit keinem von beiden verbunden und nennt die Namen nur, um die Kompatibilität zu beschreiben.": "HashiCorp Vault 是 HashiCorp 的商标。OpenBao 是 Linux Foundation 的项目，其商标由 LF Projects, LLC 持有。OmniVault 与二者均无关联，提及这些名称仅用于说明兼容性。"
 }
