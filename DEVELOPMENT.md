@@ -63,6 +63,11 @@ als AppImage, das Mozillas offizielles Release-Archiv unverändert enthält; Has
 mit `FIREFOX_BIN=/pfad/zu/firefox` nutzt es ein eigenes. Headless reicht; unter `xvfb-run -a` läuft Firefox sichtbar,
 und Strg+Umschalt+L wird als echte X11-Taste gedrückt.
 
+**Argon2 im Hintergrund** (gemessen in Chromium, Service Worker, t=3, p=4): 64 MiB ≈ 0,7 s, 256 MiB ≈ 2,1 s,
+512 MiB ≈ 4,3 s, 1 GiB ≈ 8,5 s – auch Bitwardens Höchstwert funktioniert. Während der Ableitung warten andere
+Nachrichten an den Hintergrund. Jede Ableitung nutzt eine neue WebAssembly-Instanz, damit deren Speicher danach
+freigegeben wird (sonst blieben nach einer 1-GiB-Ableitung über 1 GiB im Hintergrund belegt).
+
 Kryptografie kommt aus etablierten Open-Source-Bibliotheken – OpenPGP.js (LGPL), argon2id (MIT), die
 Argon2-Referenzimplementierung (CC0/Apache-2.0, für Argon2d in KeePass-Dateien) und für XChaCha20-Poly1305, ChaCha20 und
 Salsa20 @noble/ciphers (MIT), alle als separate Dateien in `vendor/` – und aus WebCrypto. Sonst gibt es keine Laufzeitabhängigkeiten. Bibliotheken neu bauen

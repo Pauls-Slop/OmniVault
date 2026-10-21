@@ -13,11 +13,10 @@ import { PIN_MAX, PIN_MIN, validPin } from './pin-rules.js';
 
 const { subtle } = globalThis.crypto;
 const ARGON = { passes: 3, memorySize: 64 * 1024, parallelism: 1, tagLength: 32 }; // 64 MiB
-let argon2;
 
 async function pinKey(pin, salt) {
-  argon2 ??= loadArgon2id();
-  const raw = (await argon2)({ password: utf8(pin), salt, ...ARGON });
+  // a fresh WebAssembly instance each time, so its 64 MiB are freed afterwards instead of staying in the background
+  const raw = (await loadArgon2id())({ password: utf8(pin), salt, ...ARGON });
   return subtle.importKey('raw', raw, 'AES-GCM', false, ['encrypt', 'decrypt']);
 }
 

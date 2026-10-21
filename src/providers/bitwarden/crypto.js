@@ -15,8 +15,6 @@ const subtle = globalThis.crypto.subtle;
 
 export const KDF = { PBKDF2: 0, ARGON2ID: 1 };
 
-/** argon2id library (MIT, WASM), loaded on first use. */
-let argon2;
 
 async function pbkdf2(password, salt, iterations, bytes = 32) {
   const key = await subtle.importKey('raw', password, 'PBKDF2', false, ['deriveBits']);
@@ -55,8 +53,9 @@ export async function deriveMasterKey(password, email, kdf) {
   }
   if (kdf.kdf === KDF.ARGON2ID) {
     const salt = new Uint8Array(await subtle.digest('SHA-256', utf8(normalizedEmail)));
-    argon2 ??= loadArgon2id();
-    const hash = await argon2;
+    // A fresh WebAssembly instance per derivation: its memory (up to 1 GiB with Bitwarden's highest setting) cannot
+    // shrink, and a cached instance would keep it allocated in the background for as long as the browser runs.
+    const hash = await loadArgon2id();
     return hash({
       password: pw,
       salt,
