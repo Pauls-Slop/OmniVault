@@ -119,6 +119,12 @@ Click the OmniVault icon, then *New* (the plus sign at the top right) → *Add a
 
 - **Bitwarden, Vaultwarden, Passbolt, HashiCorp Vault / OpenBao:** sign in directly in OmniVault. For a self-hosted server, enter its address;
   your browser will ask once for permission to access it.
+- **Ways to sign in to Bitwarden / Vaultwarden:** master password, with an authenticator app (TOTP), e-mail code,
+  YubiKey OTP or Duo as the second factor; with your organization's single sign-on (*Sign in with SSO* plus the
+  organization identifier), followed by your master password; or with a personal API key. Duo and SSO open in a new
+  tab; once you are done there, OmniVault closes the tab and the popup continues where it left off. Accounts that unlock
+  without a master password (trusted devices, Key Connector) and FIDO2 / WebAuthn as the second factor are not
+  supported yet – for the latter, the API key works.
 - **pass, gopass, 1Password, LastPass, Proton Pass:** these need the local helper described below.
 - **KeePassXC:** uses KeePassXC's own browser integration, see [KeePassXC](#keepassxc) below.
 

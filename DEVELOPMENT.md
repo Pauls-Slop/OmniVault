@@ -40,6 +40,8 @@ npm run test:popup   # echtes Toolbar-Popup über CDP; mit `xvfb-run -a` sichtba
 npm run test:proton  # Proton Pass: Chromium → Native Messaging → Host → simuliertes pass-cli
 npm run test:vaultwarden  # startet ein lokales Vaultwarden und testet Provider, Werkzeuge, Import, Anhänge, Organisationen
                           # (Verschieben, Sammlungen) und den automatischen Abgleich über einen Neustart des Service Workers
+npm run test:vaultwarden-sso  # Vaultwarden mit SSO gegen einen lokalen OIDC-Anbieter: Anmeldung, Master-Passwort, Erneuerung
+npm run test:login        # Duo und SSO im Tab (simulierte Server), mit echtem Toolbar-Popup; mit `xvfb-run -a` sichtbar
 npm run test:passbolt     # richtet einen lokalen Passbolt CE ein (PostgreSQL) und testet Provider und Teilen dagegen
 npm run test:openbao      # startet ein lokales OpenBao (Dev-Modus, Port 8820) und testet Provider und Browser dagegen
 npm run test:inline       # Knopf im Anmeldefeld, „Login speichern?“, Karten ausfüllen

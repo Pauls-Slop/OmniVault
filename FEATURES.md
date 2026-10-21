@@ -146,21 +146,30 @@ zeigt, ob das echte Programm ihn liefert.
 | Bitwardens neues Verschlüsselungsformat („Encryption V2“: COSE, XAES-256-GCM, Cipher-Blobs) | ✅ U lesen; Schreiben gesperrt ¹⁴ | – | – | – |
 | Anmelden mit API-Schlüssel | ✅ R | – | – | – |
 | Zwei-Faktor | 🟡 S ¹¹ | ❌ (MFA des Servers) | 🟡 S ¹² | übernimmt das CLI |
+| Duo Universal Prompt (persönlich und Organisation) im Tab, Popup setzt danach fort | ✅ S ²⁶ | – | ❌ | – |
 | Bestätigung neuer Geräte (E-Mail-Code) | ✅ S | – | – | – |
 | Selbst gehosteter Server | ✅ R | ✅ R | ✅ R | – |
 | Token-Erneuerung / Sitzung halten | ✅ R | ✅ R (`renew-self`) | ✅ S | ✅ S |
 | Serveridentität prüfen | – | – (TLS des Browsers) | ✅ R (Schlüssel-Pinning) | – |
 | Entsperren mit PIN, 4–12 Ziffern, Prüfung schon bei der Eingabe (nach Auto-Sperre, bis zum Browser-Neustart) | ✅ S | ✅ (gleicher Weg, nicht eigens getestet) | ✅ S | ✅ (gleicher Weg, nicht eigens getestet) |
-| SSO / vertrauenswürdige Geräte | ❌ | ❌ (OIDC) | ❌ | – |
+| SSO der Organisation (OIDC mit PKCE im Tab), danach Master-Passwort | ✅ R (Vaultwarden mit lokalem OIDC-Anbieter), ✅ S (Bitwarden) ²⁶ | ❌ (OIDC) | ❌ | – |
+| Konten ohne Master-Passwort (vertrauenswürdige Geräte, Key Connector) | ❌ – klare Meldung (R + S) | – | – | – |
 | Biometrie | ⛔ (Browser-Erweiterungen haben keinen Zugriff) | ⛔ | ⛔ | – |
 
-¹¹ TOTP, E-Mail, YubiKey-OTP. WebAuthn und Duo fehlen; in diesem Fall hilft der API-Schlüssel.
+¹¹ TOTP, E-Mail, YubiKey-OTP, Duo (²⁶). WebAuthn fehlt; in diesem Fall hilft der API-Schlüssel.
 ¹² TOTP und YubiKey-OTP. Duo fehlt.
 ¹⁴ Noch von keinem Produktivkonto genutzt und von Vaultwarden nicht unterstützt (Stand 19.10.2026). Geprüft gegen
 die Vektoren der XAES-Spezifikation, Bitwardens veröffentlichte Vektoren (nur lokal) und ein unabhängig in Python
 erzeugtes V2-Konto. Solche Konten sind in OmniVault nur lesbar, bis Schreiben im neuen Format umgesetzt ist.
 ¹⁵ OmniVault kann v6-Schlüssel; ob ein Passbolt-Server sie annimmt, entscheidet der Server (er prüft mit GnuPG,
 das RFC 9580 bisher nicht umsetzt – ungeprüft).
+²⁶ Duo und SSO schicken den Browser nur auf feste Seiten des Web-Tresors zurück (`duo-redirect-connector.html`,
+`sso-connector.html`). OmniVault öffnet dafür einen Tab, wartet im Hintergrund, bis er dort ankommt, liest Code und
+State aus der Adresse, schließt den Tab und meldet an; das Popup, das sich beim Tabwechsel schließt, zeigt beim
+nächsten Öffnen das Ergebnis oder fragt nach dem Master-Passwort. Keine zusätzliche Berechtigung: Die Seiten liegen
+auf dem Server, auf den das Konto ohnehin zugreift. SSO ist gegen ein echtes Vaultwarden mit einem lokalen
+OIDC-Anbieter getestet (auch Token-Erneuerung); Bitwardens Ablauf (`/sso/prevalidate`, `ssoToken`) und Duo nur gegen
+den simulierten Server, der Adressen wie die echten Server aufbaut. Mit echtem Duo und Bitwarden-SSO ungeprüft.
 
 ## Werkzeuge (anbieterübergreifend)
 
