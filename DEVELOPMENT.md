@@ -55,7 +55,7 @@ in `npm test` brauchen ein installiertes `gpg`, sonst werden sie übersprungen; 
 die PostgreSQL-Programme (Details in `test/passbolt-server.sh`).
 
 **Firefox-Test** (`test/e2e-firefox.mjs`): Playwrights Firefox kann keine Erweiterungen laden, deshalb startet der
-Test ein gewöhnliches Firefox ≥ 128 und steuert es über WebDriver BiDi (`test/firefox-bidi.mjs`, ohne Zusatzpakete,
+Test ein gewöhnliches Firefox ≥ 140 und steuert es über WebDriver BiDi (`test/firefox-bidi.mjs`, ohne Zusatzpakete,
 Node ≥ 22). Die Erweiterung wird temporär installiert (`webExtension.install`, keine Signatur nötig). Mit
 `-remote-allow-system-access` erreicht der Test auch das Browserfenster selbst: Toolbar-Popup, Seitenleiste,
 Tastenkürzel, Kontextmenü, Browserkonsole. `npm run test:firefox` lädt beim ersten Lauf ein Firefox 158 (Fremd-Build
@@ -104,7 +104,7 @@ einer Veröffentlichung von Muttersprachlern anhand des Kontaktabzugs gegengeles
 ## Laden
 
 - **Chrome, Edge, Brave:** `chrome://extensions` → Entwicklermodus → „Entpackte Erweiterung laden“ → `dist/chrome`
-- **Firefox (≥ 128):** `about:debugging#/runtime/this-firefox` → „Temporäres Add-on laden“ → `dist/firefox/manifest.json`
+- **Firefox (≥ 140):** `about:debugging#/runtime/this-firefox` → „Temporäres Add-on laden“ → `dist/firefox/manifest.json`
 
 ## Aufbau
 

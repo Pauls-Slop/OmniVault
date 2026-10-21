@@ -24,7 +24,12 @@ const targets = {
       default_icon: { 16: 'icons/icon16.png', 32: 'icons/icon32.png' },
     },
     browser_specific_settings: {
-      gecko: { id: 'omnivault@example.org', strict_min_version: '128.0' },
+      gecko: {
+        id: 'omnivault@example.org',
+        strict_min_version: '140.0',
+        // Logins and vault items (incl. cards and identities) go – encrypted – to the servers the user adds
+        data_collection_permissions: { required: ['authenticationInfo', 'personallyIdentifyingInfo', 'financialAndPaymentInfo'] },
+      },
     },
   },
 };
@@ -106,7 +111,7 @@ for (const [name, manifest] of Object.entries(targets)) {
     outdir: out,
     bundle: true,
     format: 'esm',
-    target: ['chrome120', 'firefox128'],
+    target: ['chrome120', 'firefox140'],
     sourcemap: 'linked',
     define: { __BROWSER__: JSON.stringify(name) },
     logLevel: 'info',

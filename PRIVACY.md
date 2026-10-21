@@ -15,6 +15,9 @@ extension for Chrome, Firefox and other Chromium-based browsers, and to the opti
   computer** that you install and register yourself.
 - Nothing is sold or shared with third parties.
 - Master passwords are never stored. Decrypted keys and sign-in tokens are kept only in the browser's session memory.
+- Firefox asks you at installation to agree to the transfer of **authentication information, personal information
+  (identities) and payment information (cards)**. These are the categories OmniVault sends – encrypted where the
+  password manager encrypts them – to the servers you add; nothing goes to the OmniVault project.
 
 ## Where your data goes
 

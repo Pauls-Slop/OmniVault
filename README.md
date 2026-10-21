@@ -76,7 +76,7 @@ npm run build        # creates dist/chrome and dist/firefox
 
 - **Chrome, Edge, Brave and other Chromium browsers:** open `chrome://extensions`, turn on *Developer mode*, click
   *Load unpacked* and select the `dist/chrome` folder.
-- **Firefox 128 or later:** open `about:debugging#/runtime/this-firefox`, click *Load Temporary Add-on…* and
+- **Firefox 140 or later:** open `about:debugging#/runtime/this-firefox`, click *Load Temporary Add-on…* and
   select `dist/firefox/manifest.json`. Temporary add-ons are removed when Firefox closes.
 
 ### 3. Add your accounts

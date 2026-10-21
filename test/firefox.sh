@@ -9,7 +9,7 @@
 # NOTE: the default download is a third-party AppImage (github.com/ivan-hc/Firefox-appimage, release 20261019-232047)
 # that repackages Mozilla's official release tarball unchanged (application.ini: mozilla-release, BuildID
 # 20261007201254) plus a launcher; it is unpacked, never executed as an AppImage. Use $FIREFOX_BIN for a Firefox
-# from Mozilla or your distribution. Any Firefox ≥ 128 works (WebDriver BiDi webExtension.install).
+# from Mozilla or your distribution. Any Firefox ≥ 140 works (WebDriver BiDi webExtension.install).
 set -eu
 DIR=${FIREFOX_DIR:-${TMPDIR:-/tmp}/omnivault-firefox}
 URL=https://github.com/ivan-hc/Firefox-appimage/releases/download/20261019-232047/Firefox-stable-158.0-x86_64.AppImage
