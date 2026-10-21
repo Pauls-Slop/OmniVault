@@ -18,6 +18,7 @@ move entries between managers – without giving up the manager you already use.
 | **Passbolt** v4 and v5 (incl. sharing) | Directly; OpenPGP in the browser | ✅ | ✅ |
 | **HashiCorp Vault / OpenBao** (KV secrets engine v2) | Directly over the HTTP API (token or userpass) | ✅ | ✅ |
 | **pass** (password-store) | Local helper → `pass` + GnuPG | ✅ | ✅ |
+| **gopass** | Local helper → `gopass` + GnuPG | ✅ | ✅ |
 | **1Password** | Local helper → official `op` CLI | ✅ | ✅ |
 | **LastPass** | Local helper → official `lpass` CLI | ✅ | ✅ |
 | **Proton Pass** | Local helper → official `pass-cli` | ✅ | ✅ |
@@ -118,17 +119,17 @@ Click the OmniVault icon, then *New* (the plus sign at the top right) → *Add a
 
 - **Bitwarden, Vaultwarden, Passbolt, HashiCorp Vault / OpenBao:** sign in directly in OmniVault. For a self-hosted server, enter its address;
   your browser will ask once for permission to access it.
-- **pass, 1Password, LastPass, Proton Pass:** these need the local helper described below.
+- **pass, gopass, 1Password, LastPass, Proton Pass:** these need the local helper described below.
 - **KeePassXC:** uses KeePassXC's own browser integration, see [KeePassXC](#keepassxc) below.
 
-### Local helper for pass, 1Password, LastPass and Proton Pass
+### Local helper for pass, gopass, 1Password, LastPass and Proton Pass
 
 These managers have no open network API, but they do have official command-line tools. OmniVault talks to those tools
 through a small local helper (Python 3.8+, standard library only). OmniVault never ships or replaces the official
 tools – you install them and sign in yourself.
 
 1. Install the official tool and sign in in your terminal, then check that it works:
-   `pass ls`, `op whoami`, `lpass status` or `pass-cli info`.
+   `pass ls`, `gopass ls`, `op whoami`, `lpass status` or `pass-cli info`.
 2. Register the helper. Find your extension ID on `chrome://extensions` (Developer mode must be on):
 
    ```bash

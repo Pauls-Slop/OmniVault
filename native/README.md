@@ -1,4 +1,4 @@
-# Native-Host: pass, 1Password, LastPass und Proton Pass
+# Native-Host: pass, gopass, 1Password, LastPass und Proton Pass
 
 Einige Passwortmanager haben keine für Fremd-Clients offene Netz-API, aber ein offizielles Kommandozeilen-Programm.
 OmniVault spricht mit diesen Programmen über **einen** kleinen lokalen Host per *Native Messaging*. Der Host
@@ -6,12 +6,13 @@ OmniVault spricht mit diesen Programmen über **einen** kleinen lokalen Host per
 keinen Code der Anbieter und liefert keines ihrer Programme mit: Sie installieren und entsperren das Programm selbst.
 
 ```
-Browser-Erweiterung ⇄ (Native Messaging, JSON) ⇄ omnivault_host.py ⇄ pass | op | lpass | pass-cli
+Browser-Erweiterung ⇄ (Native Messaging, JSON) ⇄ omnivault_host.py ⇄ pass | gopass | op | lpass | pass-cli
 ```
 
 | Anbieter | Programm | Anmeldung | Modul |
 |---|---|---|---|
 | pass | `pass` (password-store) + `gpg` | `pass init <gpg-id>`; der gpg-Agent entsperrt den Schlüssel | `ov_pass.py` |
+| gopass | `gopass` (≥ 1.15, mit gpg) + `gpg` | `gopass setup` bzw. `gopass init`; der gpg-Agent entsperrt den Schlüssel | `ov_gopass.py` |
 | 1Password | `op` (1Password CLI 2.x) | `op signin`, Desktop-App-Integration oder Service-Account | `ov_onepassword.py` |
 | LastPass | `lpass` (lastpass-cli) | `lpass login <E-Mail>` | `ov_lastpass.py` |
 | Proton Pass | `pass-cli` (≥ 2.3 empfohlen) | `pass-cli login` | `ov_proton.py` |
@@ -25,7 +26,7 @@ sobald das CLI für Ihr Konto freigeschaltet ist.
 ## 1. Programm installieren und anmelden
 
 Installieren Sie das Programm nach der Anleitung des Anbieters und melden Sie sich im Terminal an. Prüfen Sie die
-Anmeldung mit `pass ls`, `op whoami`, `lpass status` bzw. `pass-cli info`.
+Anmeldung mit `pass ls`, `gopass ls`, `op whoami`, `lpass status` bzw. `pass-cli info`.
 
 OmniVault sieht nie Ihr Master-Passwort. Die Sitzung gehört dem jeweiligen Programm; `op signout`, `lpass logout`
 oder `pass-cli logout` beenden sie.
@@ -52,6 +53,7 @@ der Shell starten. Der Host sucht die Programme im `PATH` und zusätzlich in `/o
 | Programm | Variable |
 |---|---|
 | `pass` / `gpg` | `OMNIVAULT_PASS_BIN` / `OMNIVAULT_GPG_BIN` |
+| `gopass` | `OMNIVAULT_GOPASS_BIN` |
 | `op` | `OMNIVAULT_OP_BIN` |
 | `lpass` | `OMNIVAULT_LPASS_BIN` |
 | `pass-cli` | `OMNIVAULT_PASS_CLI` |
@@ -63,28 +65,31 @@ nach der Berechtigung „Mit kooperierenden nativen Anwendungen kommunizieren“
 
 ## Was geht
 
-| Funktion | pass | 1Password | LastPass | Proton Pass |
-|---|---|---|---|---|
-| Lesen (Benutzer, Passwort, URL, Notizen) | ✅ | ✅ | ✅ | ✅ |
-| Karten, Identitäten, SSH-Schlüssel lesen | – | ✅ (Karten, Identitäten) | – | ✅ |
-| Karten, Identitäten anlegen und ändern | – | ✅ (aus der `op`-Vorlage; Adresse nur lesen) | – | – |
-| Anhänge herunterladen (bis 30 MB) | – | ✅ (`op read`, `op document get`) | ✅ (`lpass show --attach`) | ✅ (`item attachment download`) |
-| Passwortverlauf | – | wenn `op` ihn ausgibt | – | – |
-| TOTP lesen | ✅ (`otpauth://`-Zeile) | ✅ | – | ✅ |
-| Login / Notiz anlegen, ändern, löschen | ✅ (nur Logins) | ✅ (Löschen nach „Zuletzt gelöscht“) | ✅ | ✅ (Löschen in den Papierkorb) |
-| Zusatzfelder lesen und ändern | ✅ (`Name: Wert`-Zeilen) | ✅ (andere Felder und Abschnitte bleiben erhalten) | – | nur lesen |
-| Ordner / Gruppe / Tresor | ✅ (Pfad, neu anlegen) | ✅ (Tresore: verschieben, neu anlegen) | ✅ (Gruppe, neu anlegen) | ✅ (Tresor, verschieben ab 2.3) |
-| Geheimnisse erst bei Bedarf laden | – (lädt beim Abgleich) | ✅ | ✅ | ✅ |
-| Favoriten | in OmniVault gespeichert | ✅ (`--favorite`) | in OmniVault gespeichert | in OmniVault gespeichert |
-| TOTP ändern | ✅ | ✅ | – | – |
-| Konflikterkennung (Änderung von anderswo wird nicht überschrieben) | – | ✅ (`version`) | ✅ (`last_modified_gmt`) | ✅ (`modify_time`) |
+| Funktion | pass | gopass | 1Password | LastPass | Proton Pass |
+|---|---|---|---|---|---|
+| Lesen (Benutzer, Passwort, URL, Notizen) | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Karten, Identitäten, SSH-Schlüssel lesen | – | – | ✅ (Karten, Identitäten) | – | ✅ |
+| Karten, Identitäten anlegen und ändern | – | – | ✅ (aus der `op`-Vorlage; Adresse nur lesen) | – | – |
+| Anhänge herunterladen (bis 30 MB) | – | – | ✅ (`op read`, `op document get`) | ✅ (`lpass show --attach`) | ✅ (`item attachment download`) |
+| Passwortverlauf | – | – | wenn `op` ihn ausgibt | – | – |
+| TOTP lesen | ✅ (`otpauth://`-Zeile) | ✅ (`otpauth://`-Zeile) | ✅ | – | ✅ |
+| Login / Notiz anlegen, ändern, löschen | ✅ (nur Logins) | ✅ (nur Logins) | ✅ (Löschen nach „Zuletzt gelöscht“) | ✅ | ✅ (Löschen in den Papierkorb) |
+| Zusatzfelder lesen und ändern | ✅ (`Name: Wert`-Zeilen) | ✅ (`Name: Wert`-Zeilen) | ✅ (andere Felder und Abschnitte bleiben erhalten) | – | nur lesen |
+| Ordner / Gruppe / Tresor | ✅ (Pfad, neu anlegen) | ✅ (Pfad und eingehängte Speicher; verschieben mit `gopass mv`) | ✅ (Tresore: verschieben, neu anlegen) | ✅ (Gruppe, neu anlegen) | ✅ (Tresor, verschieben ab 2.3) |
+| Geheimnisse erst bei Bedarf laden | – (lädt beim Abgleich) | – (lädt beim Abgleich) | ✅ | ✅ | ✅ |
+| Favoriten | in OmniVault gespeichert | in OmniVault gespeichert | ✅ (`--favorite`) | in OmniVault gespeichert | in OmniVault gespeichert |
+| TOTP ändern | ✅ | ✅ | ✅ | – | – |
+| Konflikterkennung (Änderung von anderswo wird nicht überschrieben) | – | – | ✅ (`version`) | ✅ (`last_modified_gmt`) | ✅ (`modify_time`) |
 
-pass kennt keinen eigenen Notiz-Typ: Jeder Eintrag beginnt mit einer Passwortzeile.
+pass und gopass kennen keinen eigenen Notiz-Typ: Jeder Eintrag beginnt mit einer Passwortzeile. gopass: Der Host ruft
+nur `gopass ls --flat`, `gopass mounts`, `gopass show -f -n`, `gopass insert -f` (Inhalt über stdin), `gopass mv -f`
+und `gopass rm -f` auf; eingehängte Speicher (`gopass mounts`) erscheinen als Ordner der obersten Ebene, Verschieben
+zwischen ihnen geht über `gopass mv`. Benachrichtigungen und Erinnerungen von gopass sind für diese Aufrufe abgeschaltet.
 
 ## Sicherheit
 
 - Geheimnisse gehen beim Anlegen und Ändern über **stdin** an die Programme, nie über die Kommandozeile:
-  `pass insert -m` liest den Inhalt, `op item create -` und `op item edit <id>` lesen ein JSON (beim Ändern das
+  `pass insert -m` und `gopass insert -f` lesen den Inhalt, `op item create -` und `op item edit <id>` lesen ein JSON (beim Ändern das
   vollständige Element mit den geänderten Werten, weil die Vorlage das Element ersetzt),
   `lpass add/edit --non-interactive` liest `Feld: Wert`-Zeilen. So stehen sie nicht in der Prozessliste.
 - 1Password-Karten und -Identitäten beginnen mit der Vorlage des installierten `op` (`op item template get`), damit
@@ -161,6 +166,7 @@ Titel, Benutzernamen oder Passwörter, und lässt sich daher weitergeben:
 
 ```bash
 python3 selftest.py pass                       # nur lesen
+python3 selftest.py gopass --write              # Wegwerf-Eintrag anlegen, ändern, verschieben, löschen
 python3 selftest.py onepassword --write        # zusätzlich anlegen, ändern, löschen (Login, Karte, Identität)
 python3 selftest.py lastpass --write
 python3 selftest.py proton --write --vault OmniVault-Test   # Proton: vorher einen LEEREN Tresor anlegen
@@ -174,7 +180,8 @@ Wegwerf-Identität aus der `op`-Vorlage an, liest sie zurück, ändert und lösc
 
 ## Geprüft
 
-pass ist gegen das echte `pass` + GnuPG getestet. 1Password und LastPass sind gegen simulierte Programme getestet,
+pass ist gegen das echte `pass` + GnuPG getestet, gopass gegen das offizielle Release 1.17.4 (Linux amd64,
+Hash geprüft, `test/gopass-bin.sh`) + GnuPG, auch mit einem eingehängten zweiten Speicher. 1Password und LastPass sind gegen simulierte Programme getestet,
 die die Formate von `op` 2.x und `lastpass-cli` 1.x nachbilden; Proton Pass gegen ein simuliertes `pass-cli`, dessen
 Befehle, Fehlermeldungen und Exit-Codes mit dem echten `pass-cli` 2.3.1 (ohne Anmeldung) abgeglichen sind. Prüfen Sie
 diese drei vor dem produktiven Einsatz mit `selftest.py` gegen die echten Programme.

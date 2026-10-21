@@ -10,6 +10,7 @@ unlocked themselves – nothing of them is bundled:
 
   backend "proton"       Proton Pass   (`pass-cli`)
   backend "pass"         pass          (zx2c4 password-store + gpg)
+  backend "gopass"       gopass        (`gopass` + gpg)
   backend "onepassword"  1Password     (`op`)
   backend "lastpass"     LastPass      (`lpass`)
 
@@ -19,6 +20,7 @@ standard library only.
 """
 import sys
 
+import ov_gopass
 import ov_lastpass
 import ov_onepassword
 import ov_pass
@@ -28,6 +30,7 @@ from ov_common import HostError, read_message, respond, write_message
 BACKENDS = {
     "proton": ov_proton.COMMANDS,
     "pass": ov_pass.COMMANDS,
+    "gopass": ov_gopass.COMMANDS,
     "onepassword": ov_onepassword.COMMANDS,
     "lastpass": ov_lastpass.COMMANDS,
 }

@@ -10,7 +10,7 @@ Installs (or removes) the OmniVault native messaging host for the current user.
   python3 install.py --chrome-id <ID> --keepassxc   # also connect KeePassXC (via its own keepassxc-proxy)
   python3 install.py --uninstall
 
-One host (org.omnivault.host) serves Proton Pass (`pass-cli`), pass (+ gpg), 1Password (`op`) and
+One host (org.omnivault.host) serves Proton Pass (`pass-cli`), pass (+ gpg), gopass (+ gpg), 1Password (`op`) and
 LastPass (`lpass`). The Chrome extension ID is shown on chrome://extensions (developer mode); Firefox uses the
 fixed add-on ID. Only the Python 3 standard library is required; each CLI is installed and unlocked separately.
 """
@@ -29,8 +29,8 @@ SYSTEM = platform.system()
 # The host: its native-messaging name, the files to copy (first one is the entry point) and a description.
 HOSTS = [
     {"name": "org.omnivault.host",
-     "files": ["omnivault_host.py", "ov_common.py", "ov_proton.py", "ov_pass.py", "ov_onepassword.py", "ov_lastpass.py"],
-     "desc": "OmniVault – Proton Pass, pass, 1Password, LastPass (CLI)"},
+     "files": ["omnivault_host.py", "ov_common.py", "ov_proton.py", "ov_pass.py", "ov_gopass.py", "ov_onepassword.py", "ov_lastpass.py"],
+     "desc": "OmniVault – Proton Pass, pass, gopass, 1Password, LastPass (CLI)"},
 ]
 LEGACY_HOST_NAMES = ["org.omnivault.proton", "org.omnivault.cli"]  # before 2.0: removed on install/uninstall
 # KeePassXC: no OmniVault code runs; the manifest under OmniVault's own name points to KeePassXC's keepassxc-proxy

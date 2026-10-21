@@ -882,5 +882,9 @@
  "{n} Pfade ohne Leserecht übersprungen": {
   "other": "已跳过 {n} 个无读取权限的路径"
  },
- "HashiCorp Vault ist eine Marke von HashiCorp. OpenBao ist ein Projekt der Linux Foundation; seine Marken hält LF Projects, LLC. OmniVault ist mit keinem von beiden verbunden und nennt die Namen nur, um die Kompatibilität zu beschreiben.": "HashiCorp Vault 是 HashiCorp 的商标。OpenBao 是 Linux Foundation 的项目，其商标由 LF Projects, LLC 持有。OmniVault 与二者均无关联，提及这些名称仅用于说明兼容性。"
+ "HashiCorp Vault ist eine Marke von HashiCorp. OpenBao ist ein Projekt der Linux Foundation; seine Marken hält LF Projects, LLC. OmniVault ist mit keinem von beiden verbunden und nennt die Namen nur, um die Kompatibilität zu beschreiben.": "HashiCorp Vault 是 HashiCorp 的商标。OpenBao 是 Linux Foundation 的项目，其商标由 LF Projects, LLC 持有。OmniVault 与二者均无关联，提及这些名称仅用于说明兼容性。",
+ "Über das lokale „gopass“ mit gpg und den OmniVault-Host (native/README.md). Eingehängte Speicher erscheinen als Ordner.": "通过 OmniVault 辅助程序（native/README.md），配合 gpg 使用你本地的“gopass”。已挂载的存储库显示为文件夹。",
+ "„gopass“ wurde nicht gefunden. Bitte gopass installieren.": "未安装“gopass”。请安装 gopass。",
+ "Kein gopass-Speicher gefunden. Bitte zuerst „gopass setup“ ausführen.": "未找到 gopass 存储库。请先运行“gopass setup”。",
+ "`gopass` wurde nicht gefunden. Bitte gopass installieren.": "未找到 `gopass`。请安装 gopass。"
 }

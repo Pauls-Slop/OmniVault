@@ -27,6 +27,7 @@ const HOST_MESSAGES = new Set([
   mark('Anhang nicht gefunden'), mark('Das Programm hat keine Datei geschrieben'), mark('Ungültiges Ablaufdatum'),
   mark('1Password CLI lieferte keine Vorlage'), mark('Nur Logins, Notizen, Karten und Identitäten können angelegt werden'),
   mark('Die Adresse lässt sich über op nicht ändern – bitte in der 1Password-App ändern'),
+  mark('`gopass` wurde nicht gefunden. Bitte gopass installieren.'),
 ]);
 const HOST_PATTERNS = [
   [/^Ungültige (.+)$/, (m) => t('Ungültige {name}', { name: m[1] })],
@@ -34,6 +35,7 @@ const HOST_PATTERNS = [
   [/^Anhang zu groß \(höchstens (\d+) MB\)$/, (m) => t('Anhang zu groß (höchstens {n} MB)', { n: m[1] })],
   [/^Feld (.+) fehlt in der 1Password-Vorlage$/, (m) => t('Feld {name} fehlt in der 1Password-Vorlage', { name: m[1] })],
   [/^Programm konnte nicht gestartet werden: (.+)$/, (m) => t('Programm konnte nicht gestartet werden: {error}', { error: m[1] })],
+  [/^Unter „(.+)“ gibt es schon einen Eintrag$/, (m) => t('Unter „{path}“ gibt es schon einen Eintrag', { path: m[1] })],
   [/^Exit-Code (\d+)$/, (m) => t('Exit-Code {code}', { code: m[1] })],
   [/^Unbekannter Befehl (.*)$/, (m) => t('Unbekannter Befehl {command}', { command: m[1] })],
   [/^Unbekanntes Backend (.*)$/, (m) => t('Unbekanntes Backend {backend}', { backend: m[1] })],

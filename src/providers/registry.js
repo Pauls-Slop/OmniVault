@@ -6,13 +6,14 @@ import BitwardenProvider from './bitwarden/index.js';
 import PassboltProvider from './passbolt/index.js';
 import ProtonPassProvider from './protonpass/index.js';
 import PassProvider from './pass/index.js';
+import GopassProvider from './gopass/index.js';
 import OnePasswordProvider from './onepassword/index.js';
 import LastPassProvider from './lastpass/index.js';
 import KeePassXCProvider from './keepassxc/index.js';
 import VaultProvider from './vault/index.js';
 
 // NordPass is postponed (no vault API or CLI).
-const providers = [BitwardenProvider, PassboltProvider, KeePassXCProvider, VaultProvider, ProtonPassProvider, PassProvider, OnePasswordProvider, LastPassProvider];
+const providers = [BitwardenProvider, PassboltProvider, KeePassXCProvider, VaultProvider, ProtonPassProvider, PassProvider, GopassProvider, OnePasswordProvider, LastPassProvider];
 
 export const registry = Object.fromEntries(providers.map((p) => [p.id, p]));
 

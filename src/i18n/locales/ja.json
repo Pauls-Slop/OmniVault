@@ -882,5 +882,9 @@
  "{n} Pfade ohne Leserecht übersprungen": {
   "other": "読み取り権限のないパスを {n} 件スキップしました"
  },
- "HashiCorp Vault ist eine Marke von HashiCorp. OpenBao ist ein Projekt der Linux Foundation; seine Marken hält LF Projects, LLC. OmniVault ist mit keinem von beiden verbunden und nennt die Namen nur, um die Kompatibilität zu beschreiben.": "HashiCorp Vault は HashiCorp の商標です。OpenBao は Linux Foundation のプロジェクトで、その商標は LF Projects, LLC が保有しています。OmniVault はいずれとも提携しておらず、互換性を説明するためにのみこれらの名称を使用しています。"
+ "HashiCorp Vault ist eine Marke von HashiCorp. OpenBao ist ein Projekt der Linux Foundation; seine Marken hält LF Projects, LLC. OmniVault ist mit keinem von beiden verbunden und nennt die Namen nur, um die Kompatibilität zu beschreiben.": "HashiCorp Vault は HashiCorp の商標です。OpenBao は Linux Foundation のプロジェクトで、その商標は LF Projects, LLC が保有しています。OmniVault はいずれとも提携しておらず、互換性を説明するためにのみこれらの名称を使用しています。",
+ "Über das lokale „gopass“ mit gpg und den OmniVault-Host (native/README.md). Eingehängte Speicher erscheinen als Ordner.": "OmniVault の補助アプリ（native/README.md）を通じて、ローカルの「gopass」と gpg を使います。マウントしたストアはフォルダーとして表示されます。",
+ "„gopass“ wurde nicht gefunden. Bitte gopass installieren.": "「gopass」がインストールされていません。gopass をインストールしてください。",
+ "Kein gopass-Speicher gefunden. Bitte zuerst „gopass setup“ ausführen.": "gopass のストアが見つかりません。先に「gopass setup」を実行してください。",
+ "`gopass` wurde nicht gefunden. Bitte gopass installieren.": "`gopass` が見つかりません。gopass をインストールしてください。"
 }

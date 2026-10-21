@@ -13,6 +13,7 @@ Passwörter finden, Exporte anderer Manager importieren und alles wieder exporti
 | Passbolt v4 und v5 | direkt, OpenPGP im Browser | lesen, schreiben, teilen; gegen echten Passbolt CE 5.16 getestet |
 | HashiCorp Vault / OpenBao (KV v2) | direkt über die HTTP-API, Token oder userpass | lesen, schreiben, Papierkorb; gegen echtes OpenBao 2.7.1 getestet |
 | pass (password-store) | lokaler Host → `pass` + GnuPG | lesen und schreiben, gegen echtes pass getestet |
+| gopass | lokaler Host → `gopass` + GnuPG | lesen und schreiben, Speicher als Ordner; gegen echtes gopass 1.17.4 getestet |
 | 1Password | lokaler Host → offizielles `op` | lesen und schreiben, gegen simuliertes CLI getestet |
 | LastPass | lokaler Host → offizielles `lpass` | lesen und schreiben, gegen simuliertes CLI getestet |
 | KeePassXC | KeePassXCs Browser-Schnittstelle über `keepassxc-proxy` | Logins lesen, anlegen, ändern, löschen; gegen simulierten KeePassXC getestet |
@@ -20,7 +21,7 @@ Passwörter finden, Exporte anderer Manager importieren und alles wieder exporti
 | KeePass-Dateien, Browser und andere | Dateiimport (KeePass-Datenbank `.kdbx`, CSV, JSON, KeePass-XML) | in ein beliebiges beschreibbares Konto |
 
 - **Stand je Funktion und Anbieter:** [FEATURES.md](FEATURES.md)
-- **Lokaler Host für pass, 1Password, LastPass, Proton:** [native/README.md](native/README.md)
+- **Lokaler Host für pass, gopass, 1Password, LastPass, Proton:** [native/README.md](native/README.md)
 - Fremdsoftware und Lizenzen: [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)
 
 OmniVault ist ein unabhängiges Projekt und nicht mit Bitwarden Inc., Passbolt S.A., Proton AG, AgileBits Inc.
@@ -33,7 +34,7 @@ npm install
 npm run build        # → dist/chrome, dist/firefox
 npm run package      # baut und packt dist/packages/: Chrome-, Firefox- und Quellpaket (reproduzierbar) + SHA256SUMS
 npm test             # Unit-Tests: Krypto-Testvektoren, simulierte Server und CLIs, Import, Werkzeuge
-npm run test:cli     # pass (echtes pass + gpg), 1Password und LastPass (simulierte CLIs) über den Host
+npm run test:cli     # pass und gopass (echt, mit gpg), 1Password und LastPass (simulierte CLIs) über den Host
 npm run test:e2e     # Erweiterung in Chromium: Popup als Tab, eigenes Fenster (Playwright)
 npm run test:popup   # echtes Toolbar-Popup über CDP; mit `xvfb-run -a` sichtbar statt headless
 npm run test:proton  # Proton Pass: Chromium → Native Messaging → Host → simuliertes pass-cli
@@ -54,7 +55,8 @@ Die e2e-Skripte nehmen den Pfad zu Playwright als erstes Argument, falls es nich
 `test:vaultwarden` lädt beim ersten Lauf ein statisches Vaultwarden-Linux-Binary (Fremd-Build, Hash geprüft, siehe
 `test/vaultwarden-server.sh`); mit `VAULTWARDEN_BIN=/pfad/zu/vaultwarden` nutzt es ein eigenes. Die GnuPG-Gegenproben
 in `npm test` brauchen ein installiertes `gpg`, sonst werden sie übersprungen; die pass-Tests laufen mit
-`OMNIVAULT_PASS_BIN=/pfad/zu/pass`. `test:passbolt` braucht PHP ≥ 8.2 mit der gnupg-Erweiterung, Composer, git und
+`OMNIVAULT_PASS_BIN=/pfad/zu/pass`, die gopass-Tests mit `OMNIVAULT_GOPASS_BIN=/pfad/zu/gopass` oder
+`OMNIVAULT_GOPASS_DOWNLOAD=1` (lädt das gepinnte Release 1.17.4, Hash geprüft, siehe `test/gopass-bin.sh`). `test:passbolt` braucht PHP ≥ 8.2 mit der gnupg-Erweiterung, Composer, git und
 die PostgreSQL-Programme (Details in `test/passbolt-server.sh`). `test:openbao` lädt beim ersten Lauf das offizielle
 OpenBao-Release 2.7.1 für Linux amd64 (Hash geprüft, siehe `test/openbao-server.sh`); mit `OPENBAO_BIN=/pfad/zu/bao`
 nutzt es ein eigenes.
@@ -129,7 +131,7 @@ src/
     bitwarden/       API, Krypto, Provider (deckt Vaultwarden ab)
     passbolt/        JWT-Login, MFA, v4/v5-Ressourcen, Ordner, Geheimnisse bei Bedarf entschlüsseln
     vault/           HashiCorp Vault / OpenBao: KV v2, Token/userpass, Check-and-Set, Papierkorb über undelete
-    pass/ onepassword/ lastpass/ protonpass/   dünne Provider über den Host
+    pass/ gopass/ onepassword/ lastpass/ protonpass/   dünne Provider über den Host
   content/inline.js  Inhaltsskript (Opt-in): Knopf im Anmeldefeld, „Login speichern?“
   inline/            Liste und Speichern-Leiste als Erweiterungsseiten in iframes
   lib/               TOTP, URL-Abgleich, Generator, Duplikate, Import (inkl. KeePass-Datenbanken), Export, Passwortprüfung, PIN-Sperre

@@ -915,5 +915,9 @@
   "one": "Se ha omitido {n} ruta sin permiso de lectura",
   "other": "Se han omitido {n} rutas sin permiso de lectura"
  },
- "HashiCorp Vault ist eine Marke von HashiCorp. OpenBao ist ein Projekt der Linux Foundation; seine Marken hält LF Projects, LLC. OmniVault ist mit keinem von beiden verbunden und nennt die Namen nur, um die Kompatibilität zu beschreiben.": "HashiCorp Vault es una marca de HashiCorp. OpenBao es un proyecto de la Linux Foundation cuyas marcas pertenecen a LF Projects, LLC. OmniVault no está afiliado a ninguno de ellos y usa estos nombres solo para describir la compatibilidad."
+ "HashiCorp Vault ist eine Marke von HashiCorp. OpenBao ist ein Projekt der Linux Foundation; seine Marken hält LF Projects, LLC. OmniVault ist mit keinem von beiden verbunden und nennt die Namen nur, um die Kompatibilität zu beschreiben.": "HashiCorp Vault es una marca de HashiCorp. OpenBao es un proyecto de la Linux Foundation cuyas marcas pertenecen a LF Projects, LLC. OmniVault no está afiliado a ninguno de ellos y usa estos nombres solo para describir la compatibilidad.",
+ "Über das lokale „gopass“ mit gpg und den OmniVault-Host (native/README.md). Eingehängte Speicher erscheinen als Ordner.": "Usa tu «gopass» local con gpg mediante la aplicación auxiliar de OmniVault (native/README.md). Los almacenes montados aparecen como carpetas.",
+ "„gopass“ wurde nicht gefunden. Bitte gopass installieren.": "«gopass» no está instalado. Instala gopass.",
+ "Kein gopass-Speicher gefunden. Bitte zuerst „gopass setup“ ausführen.": "No se encontró ningún almacén de gopass. Ejecuta antes «gopass setup».",
+ "`gopass` wurde nicht gefunden. Bitte gopass installieren.": "No se encontró `gopass`. Instala gopass."
 }

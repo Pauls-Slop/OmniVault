@@ -915,5 +915,9 @@
   "one": "{n} path without read access skipped",
   "other": "{n} paths without read access skipped"
  },
- "HashiCorp Vault ist eine Marke von HashiCorp. OpenBao ist ein Projekt der Linux Foundation; seine Marken hält LF Projects, LLC. OmniVault ist mit keinem von beiden verbunden und nennt die Namen nur, um die Kompatibilität zu beschreiben.": "HashiCorp Vault is a trademark of HashiCorp. OpenBao is a Linux Foundation project; its trademarks are held by LF Projects, LLC. OmniVault isn’t affiliated with either and uses these names only to describe compatibility."
+ "HashiCorp Vault ist eine Marke von HashiCorp. OpenBao ist ein Projekt der Linux Foundation; seine Marken hält LF Projects, LLC. OmniVault ist mit keinem von beiden verbunden und nennt die Namen nur, um die Kompatibilität zu beschreiben.": "HashiCorp Vault is a trademark of HashiCorp. OpenBao is a Linux Foundation project; its trademarks are held by LF Projects, LLC. OmniVault isn’t affiliated with either and uses these names only to describe compatibility.",
+ "Über das lokale „gopass“ mit gpg und den OmniVault-Host (native/README.md). Eingehängte Speicher erscheinen als Ordner.": "Uses your local “gopass” with gpg through the OmniVault helper (native/README.md). Mounted stores show up as folders.",
+ "„gopass“ wurde nicht gefunden. Bitte gopass installieren.": "“gopass” isn't installed. Install gopass.",
+ "Kein gopass-Speicher gefunden. Bitte zuerst „gopass setup“ ausführen.": "No gopass store found. Run “gopass setup” first.",
+ "`gopass` wurde nicht gefunden. Bitte gopass installieren.": "`gopass` wasn't found. Install gopass."
 }

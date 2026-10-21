@@ -6,6 +6,7 @@
 Self-test of the OmniVault host against YOUR own, unlocked CLI session.
 
   python3 selftest.py pass                         # read-only
+  python3 selftest.py gopass --write               # gopass: also create, edit, move and delete a throw-away entry
   python3 selftest.py onepassword --write          # also create, edit and delete throw-away entries
                                                    # (1Password: a login, a card and an identity)
   python3 selftest.py proton --write --vault OmniVault-Test   # Proton: use an EMPTY test vault
@@ -150,8 +151,8 @@ def main():
 
     def conflict():
         """The host must refuse an edit based on an outdated revision (item changed elsewhere meanwhile)."""
-        if a.backend == "pass":
-            return "übersprungen (pass kennt keinen Änderungsstand)"
+        if a.backend in ("pass", "gopass"):
+            return f"übersprungen ({a.backend} kennt keinen Änderungsstand)"
         rev = cmd["reveal"](created).get("revision")
         if not rev:
             raise RuntimeError("das Programm meldet keinen Änderungsstand – die Konflikterkennung greift nicht")
@@ -177,6 +178,12 @@ def main():
         created["itemId"] = back["itemId"] or created["itemId"]
         return "hin und zurück"
 
+    def move_folder():
+        r = cmd["move"]({**created, "name": NAME, "folder": f"{NAME}-Ordner"})
+        assert cmd["reveal"]({"id": r["id"]}).get("password") == "Selbsttest-2!", "Inhalt nach dem Verschieben verändert"
+        created["id"] = r["id"]
+        return None
+
     def delete():
         cmd["delete"](created)
         return "Papierkorb" if proton else "gelöscht"
@@ -186,6 +193,8 @@ def main():
         step("Konflikterkennung (Änderungsstand des Programms)", conflict)
         if proton:
             step("In anderen Tresor verschieben", move)
+        if a.backend == "gopass":
+            step("In einen Unterordner verschieben (gopass mv)", move_folder)
         step("Löschen", delete)
     if a.backend == "onepassword":
         typed_items(cmd)

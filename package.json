@@ -14,7 +14,7 @@
     "test:e2e": "node test/e2e-chrome.mjs",
     "test:popup": "node test/e2e-popup.mjs",
     "test:proton": "node test/e2e-proton.mjs",
-    "test:cli": "node --test test/pass.test.js test/onepassword-lastpass.test.js",
+    "test:cli": "node --test test/pass.test.js test/gopass.test.js test/onepassword-lastpass.test.js",
     "test:vaultwarden": "test/vaultwarden-server.sh start && VAULTWARDEN_URL=http://127.0.0.1:8800 node --test test/vaultwarden.test.js && VAULTWARDEN_URL=http://localhost:8800 node test/e2e-tools.mjs && VAULTWARDEN_URL=http://localhost:8800 node test/e2e-organization.mjs && VAULTWARDEN_URL=http://localhost:8800 node test/e2e-attachments.mjs && VAULTWARDEN_URL=http://localhost:8800 node test/e2e-autosync.mjs; s=$?; test/vaultwarden-server.sh stop; exit $s",
     "vendor:fetch": "vendor/fetch-sources.sh",
     "vendor:build": "node vendor/build.mjs",
