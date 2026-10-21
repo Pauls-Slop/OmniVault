@@ -61,7 +61,7 @@ Bitwarden Cloud und Vaultwarden nutzen denselben Provider; gegen bitwarden.com/.
 | Papierkorb: Löschen landet dort | ✅ R | – (endgültig) | – (endgültig) | ✅ S („Zuletzt gelöscht“) | – (endgültig) | ✅ S |
 | Papierkorb in OmniVault anzeigen, wiederherstellen, endgültig löschen | ✅ R | – | – | ⛔ ¹⁷ | – | ❌ (zurückgestellt) |
 | Anhänge herunterladen | ✅ R | – | – | ✅ S ¹⁹ | ✅ S ¹⁹ | ✅ S ¹⁹ |
-| Anhänge hochladen und löschen | ✅ R ¹⁸ | – | – | ❌ ²⁰ | ⛔ ²⁰ | ⛔ ²⁰ |
+| Anhänge hochladen und löschen | ✅ R ¹⁸ | – | – | ⛔ ²⁰ | ⛔ ²⁰ | ⛔ ²⁰ |
 | Passwortverlauf | ✅ R | – | – | 🟡 S ²¹ | ⛔ ²¹ | ⛔ ²¹ |
 | Passkeys anzeigen | ✅ R | – ⁹ | – ⁹ | ⛔ ²² | ⛔ ²² | ✅ S (nur Seite und Benutzer) |
 | Passkeys auf Webseiten anlegen und damit anmelden, entfernen | ✅ R (Bitwarden-Format, mit den offiziellen Apps austauschbar) | – ⁹ | – ⁹ | ⛔ ¹⁰ | ⛔ ¹⁰ | ⛔ ¹⁰ |
@@ -102,8 +102,10 @@ LastPass: `lpass show` listet Anhänge als `att-<ID>: Dateiname`, `lpass show --
 aus ([lpass.1](https://github.com/lastpass/lastpass-cli/blob/master/lpass.1.txt), Abschnitt Examples). Proton Pass:
 `pass-cli item attachment download --share-id … --item-id … --attachment-id … --output <Datei>` (vorhanden in 2.3.1
 und 2.5.0, [Doku](https://protonpass.github.io/pass-cli/commands/item/)); die Liste kommt aus `item view --output json`.
-²⁰ `lpass` und `pass-cli` (2.5.0) haben keinen Befehl zum Hochladen oder Löschen von Anhängen. `op` kann Dateien per
-Zuweisung `[file]=<Pfad>` anhängen ([Doku](https://www.1password.dev/cli/item-create)); in OmniVault noch nicht umgesetzt.
+²⁰ `lpass` und `pass-cli` (2.5.0) haben keinen Befehl zum Hochladen oder Löschen von Anhängen. `op` kann Dateien nur beim
+**Anlegen** eines Eintrags per Zuweisung `[file]=<Pfad>` anhängen ([Doku](https://www.1password.dev/cli/item-create));
+für vorhandene Einträge dokumentiert `op item edit` keine Datei-Felder, und laut 1Password-Mitarbeitern geht das nur
+beim Anlegen ([Forum](https://www.1password.community/developers-69/how-do-i-create-attach-a-file-field-to-an-existing-item-using-the-1password-cli-10003)).
 ²¹ 1Password: `op` gibt den Verlauf nicht dokumentiert aus; laut Nutzerbericht im 1Password-Forum als Liste alter
 Passwörter ohne Zeitpunkt (`password_details.history`). OmniVault zeigt ihn, wenn `op` ihn liefert; ob das echte `op`
 es tut, zeigt `selftest.py`. LastPass: `lpass show --json` enthält nur id, name, fullname, username, password,
