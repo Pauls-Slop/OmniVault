@@ -874,5 +874,15 @@
  "Anhänge werden nicht übernommen ({n} Einträge: {names}).": {
   "one": "Gli allegati non vengono importati ({n} elemento: {names}).",
   "other": "Gli allegati non vengono importati ({n} elementi: {names})."
+ },
+ "In Datenlecks bekannte Passwörter": "Password trovate in violazioni di dati",
+ "OmniVault fragt dazu den Dienst „Have I Been Pwned“ (api.pwnedpasswords.com). Gesendet werden nur die ersten 5 Zeichen eines Hashwerts je Passwort – weder Passwörter noch Benutzernamen oder Websites. Der Abgleich geschieht hier im Browser.": "OmniVault interroga il servizio “Have I Been Pwned” (api.pwnedpasswords.com). Vengono inviati solo i primi 5 caratteri di un hash di ogni password, mai password, nomi utente o siti web. Il confronto avviene qui, nel tuo browser.",
+ "Zugriff erlauben und prüfen": "Consenti l’accesso e verifica",
+ "Ohne Zugriff auf api.pwnedpasswords.com lässt sich nicht gegen Datenlecks prüfen.": "Senza accesso ad api.pwnedpasswords.com non è possibile verificare le password nelle violazioni di dati.",
+ "Zugriff auf api.pwnedpasswords.com fehlt": "Manca l’accesso ad api.pwnedpasswords.com",
+ "Have I Been Pwned antwortet nicht ({status})": "Have I Been Pwned non risponde ({status})",
+ "{n}-mal in Datenlecks bekannt": {
+  "one": "Trovata in {n} violazione di dati",
+  "other": "Trovata {n} volte in violazioni di dati"
  }
 }

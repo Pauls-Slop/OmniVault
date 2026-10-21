@@ -4,7 +4,10 @@
 // Tools view: duplicates, bulk selection (copy / move / delete), mirror rules between accounts, import, trash.
 import { FORMATS, parseImport } from '../lib/import.js';
 import { MAX_FILE_BYTES as MAX_KDBX_BYTES, isKdbx, openKdbx } from '../lib/kdbx.js';
+import { HIBP_ORIGIN } from '../lib/hibp.js';
+import { ext } from '../lib/browser.js';
 import { openItem } from './detail.js';
+import { requestPermissions } from './resume.js';
 import { S, accountOf, folderPicker, providerOf, refresh, writableAccounts } from './state.js';
 import { formatDateTime, markn } from '../i18n/index.js';
 import { $, ask, back, badge, call, el, icon, iconButton, show, t, tn, toast, typeIcon, uiLanguage } from './ui.js';
@@ -87,8 +90,9 @@ function report(results, kind, pool = S.items) {
 
 /* ---------- view ---------- */
 
-export async function openTools(which) {
+export async function openTools(which, { reportScope } = {}) {
   if (which) tab = which;
+  if (reportScope) scope = reportScope;
   selected.clear();
   const opened = tab;
   show('tools', { restore: () => openTools(opened) });
@@ -186,10 +190,20 @@ async function renderDupes(body) {
     el('optgroup', { label: t('Duplikate') },
       [['all', t('Alle Duplikate')], ['within', t('Innerhalb eines Kontos')], ['across', t('Zwischen Konten')]].map(([v, l]) => el('option', { value: v }, l))),
     el('optgroup', { label: t('Passwörter') },
-      [['reused', t('Mehrfach verwendete Passwörter')], ['weak', t('Schwache Passwörter')]].map(([v, l]) => el('option', { value: v }, l))));
+      [['reused', t('Mehrfach verwendete Passwörter')], ['weak', t('Schwache Passwörter')], ['breached', t('In Datenlecks bekannte Passwörter')]].map(([v, l]) => el('option', { value: v }, l))));
   scopeSel.value = scope;
   scopeSel.addEventListener('change', () => { scope = scopeSel.value; selected.clear(); render(); });
-  const report = ['reused', 'weak'].includes(scope);
+  const report = ['reused', 'weak', 'breached'].includes(scope);
+  if (scope === 'breached' && !(await ext.permissions.contains({ origins: [HIBP_ORIGIN] }).catch(() => false))) {
+    body.append(
+      el('div', { className: 'row filter' }, scopeSel),
+      el('p', { className: 'hint' }, t('OmniVault fragt dazu den Dienst „Have I Been Pwned“ (api.pwnedpasswords.com). Gesendet werden nur die ersten 5 Zeichen eines Hashwerts je Passwort – weder Passwörter noch Benutzernamen oder Websites. Der Abgleich geschieht hier im Browser.')),
+      el('div', { className: 'row' }, el('button', { type: 'button', onclick: () => {
+        requestPermissions({ origins: [HIBP_ORIGIN] }, { view: 'tools', scope: 'breached' }).then((ok) => { if (ok) render(); });
+      } }, t('Zugriff erlauben und prüfen'))),
+      el('div', { className: 'row actions compact' }, el('button', { type: 'button', className: 'secondary', onclick: () => back() }, t('Zurück'))));
+    return;
+  }
   if (report) toast(t('Prüfe Passwörter …'), 30_000);
   const groups = report ? await call('passwordReport', { kind: scope }) : await call('duplicates', { scope });
   if (report) toast(groups.length ? tn(groups.reduce((n, g) => n + g.items.length, 0), '{n} Eintrag gefunden', '{n} Einträge gefunden') : t('Nichts gefunden'));

@@ -17,6 +17,7 @@ import { findDuplicates } from '../lib/dupes.js';
 import { createPinLock, seal, unseal } from '../lib/pinlock.js';
 import { toBitwardenJson, toCsv } from '../lib/export.js';
 import { weakness } from '../lib/strength.js';
+import { HIBP_ORIGIN, breachCounts } from '../lib/hibp.js';
 import { deleteItems, importItems, mirrorTargetSet, passkeysWithKeys, runMirrorRule, transferItems, transferLoss, validateRule } from './tools.js';
 import { createPasskeyService } from './passkeys.js';
 
@@ -382,6 +383,33 @@ async function scheduleAutoSync() {
   if (autoSyncMinutes > 0) await ensureAlarm(AUTOSYNC, autoSyncMinutes);
   else await ext.alarms?.clear(AUTOSYNC);
 }
+/** Logins whose password appears in Have I Been Pwned's Pwned Passwords (range API with padding). */
+async function breachedReport() {
+  if (!(await ext.permissions.contains({ origins: [HIBP_ORIGIN] }).catch(() => false))) {
+    throw new Error(t('Zugriff auf api.pwnedpasswords.com fehlt'));
+  }
+  const byPassword = new Map();
+  for (const i of (await allItems()).filter((x) => x.type === 'login' && x.hasPassword)) {
+    const { item } = await findItem(i.accountId, i.id);
+    if (!item.password) continue;
+    if (!byPassword.has(item.password)) byPassword.set(item.password, []);
+    byPassword.get(item.password).push(i);
+  }
+  let counts;
+  try { counts = await breachCounts([...byPassword.keys()]); } catch (e) {
+    throw new Error(t('Have I Been Pwned antwortet nicht ({status})', { status: e.status ?? e.message }));
+  }
+  const found = [...counts].map(([password, count]) => ({ count, items: byPassword.get(password) }));
+  return found.sort((a, b) => b.count - a.count).map(({ count, items }, n) => {
+    const accounts = [...new Set(items.map((x) => x.accountId))];
+    return {
+      key: `b${n}`, host: tn(count, 'In {n} Datenleck bekannt', '{n}-mal in Datenlecks bekannt'),
+      username: [...new Set(items.map((x) => x.username).filter(Boolean))].join(', '),
+      items, accounts, within: false, across: false,
+    };
+  });
+}
+
 async function autoSync() {
   for (const a of await store.listAccounts()) {
     if (await store.getSession(a.id)) await ensureSynced(a, true);
@@ -478,9 +506,12 @@ const handlers = {
 
   /**
    * Password report in the same group shape as duplicates: 'reused' groups logins sharing one password,
-   * 'weak' groups weak passwords by reason. Passwords never leave the background.
+   * 'weak' groups weak passwords by reason, 'breached' groups passwords known from data breaches (Have I Been Pwned,
+   * k-anonymity: only the first 5 hex digits of each password's SHA-1 leave the browser). Passwords never leave the
+   * background.
    */
   async passwordReport({ kind }) {
+    if (kind === 'breached') return breachedReport();
     const listed = (await allItems()).filter((i) => i.type === 'login' && i.hasPassword);
     const byPassword = new Map();
     const byReason = new Map();

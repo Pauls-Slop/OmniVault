@@ -22,6 +22,7 @@
     "test:inline": "node test/e2e-inline.mjs",
     "test:i18n": "node test/e2e-i18n.mjs",
     "test:passkeys": "node test/e2e-passkeys.mjs",
+    "test:hibp": "node test/e2e-hibp.mjs",
     "test:shortcuts": "xvfb-run -a -s \"-screen 0 1400x900x24\" node test/e2e-shortcuts.mjs",
     "test:firefox": "test/firefox.sh test",
     "psl:build": "node tools/psl-build.mjs",

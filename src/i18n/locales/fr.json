@@ -874,5 +874,15 @@
  "Anhänge werden nicht übernommen ({n} Einträge: {names}).": {
   "one": "Les pièces jointes ne sont pas importées ({n} élément : {names}).",
   "other": "Les pièces jointes ne sont pas importées ({n} éléments : {names})."
+ },
+ "In Datenlecks bekannte Passwörter": "Mots de passe exposés dans des fuites de données",
+ "OmniVault fragt dazu den Dienst „Have I Been Pwned“ (api.pwnedpasswords.com). Gesendet werden nur die ersten 5 Zeichen eines Hashwerts je Passwort – weder Passwörter noch Benutzernamen oder Websites. Der Abgleich geschieht hier im Browser.": "OmniVault interroge le service « Have I Been Pwned » (api.pwnedpasswords.com). Seuls les 5 premiers caractères d’une empreinte de chaque mot de passe sont envoyés, jamais les mots de passe, noms d’utilisateur ou sites web. La comparaison se fait ici, dans votre navigateur.",
+ "Zugriff erlauben und prüfen": "Autoriser l’accès et vérifier",
+ "Ohne Zugriff auf api.pwnedpasswords.com lässt sich nicht gegen Datenlecks prüfen.": "Sans accès à api.pwnedpasswords.com, impossible de vérifier les mots de passe dans les fuites de données.",
+ "Zugriff auf api.pwnedpasswords.com fehlt": "Accès à api.pwnedpasswords.com manquant",
+ "Have I Been Pwned antwortet nicht ({status})": "Have I Been Pwned ne répond pas ({status})",
+ "{n}-mal in Datenlecks bekannt": {
+  "one": "Vu dans {n} fuite de données",
+  "other": "Vu {n} fois dans des fuites de données"
  }
 }

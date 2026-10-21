@@ -218,6 +218,9 @@ if (windowed) {
   else if (r?.view === 'item') { // asked for the cloud file storage while adding an attachment
     await openItem(r.accountId, r.itemId);
     toast(r.granted ? t('Zugriff erteilt – jetzt die Datei wählen.') : t('Ohne Zugriff auf Bitwardens Dateispeicher lassen sich keine Anhänge hochladen.'));
+  } else if (r?.view === 'tools') { // asked for Have I Been Pwned in the password check
+    await openTools('dupes', { reportScope: r.scope });
+    if (!r.granted) toast(t('Ohne Zugriff auf api.pwnedpasswords.com lässt sich nicht gegen Datenlecks prüfen.'));
   } else if (r) await resumeAccountStep(r);
   else if (location.hash === '#settings') { // reloaded after a language change
     history.replaceState(null, '', location.pathname + location.search);

@@ -843,5 +843,14 @@
  },
  "Anhänge werden nicht übernommen ({n} Einträge: {names}).": {
   "other": "附件不会被导入（{n} 个项目：{names}）。"
+ },
+ "In Datenlecks bekannte Passwörter": "在数据泄露中出现过的密码",
+ "OmniVault fragt dazu den Dienst „Have I Been Pwned“ (api.pwnedpasswords.com). Gesendet werden nur die ersten 5 Zeichen eines Hashwerts je Passwort – weder Passwörter noch Benutzernamen oder Websites. Der Abgleich geschieht hier im Browser.": "OmniVault 会查询“Have I Been Pwned”服务（api.pwnedpasswords.com）。每个密码只发送其哈希值的前 5 个字符，不会发送密码、用户名或网站。比对在你的浏览器中完成。",
+ "Zugriff erlauben und prüfen": "允许访问并检查",
+ "Ohne Zugriff auf api.pwnedpasswords.com lässt sich nicht gegen Datenlecks prüfen.": "没有 api.pwnedpasswords.com 的访问权限，无法检查密码是否出现在数据泄露中。",
+ "Zugriff auf api.pwnedpasswords.com fehlt": "缺少 api.pwnedpasswords.com 的访问权限",
+ "Have I Been Pwned antwortet nicht ({status})": "Have I Been Pwned 无响应（{status}）",
+ "{n}-mal in Datenlecks bekannt": {
+  "other": "在数据泄露中出现过 {n} 次"
  }
 }

@@ -843,5 +843,14 @@
  },
  "Anhänge werden nicht übernommen ({n} Einträge: {names}).": {
   "other": "添付ファイルはインポートされません（{n} 件：{names}）。"
+ },
+ "In Datenlecks bekannte Passwörter": "データ侵害で見つかったパスワード",
+ "OmniVault fragt dazu den Dienst „Have I Been Pwned“ (api.pwnedpasswords.com). Gesendet werden nur die ersten 5 Zeichen eines Hashwerts je Passwort – weder Passwörter noch Benutzernamen oder Websites. Der Abgleich geschieht hier im Browser.": "OmniVault は「Have I Been Pwned」サービス（api.pwnedpasswords.com）に問い合わせます。送信されるのは各パスワードのハッシュ値の先頭 5 文字だけで、パスワード、ユーザー名、サイトは送信されません。照合はこのブラウザー内で行われます。",
+ "Zugriff erlauben und prüfen": "アクセスを許可して確認",
+ "Ohne Zugriff auf api.pwnedpasswords.com lässt sich nicht gegen Datenlecks prüfen.": "api.pwnedpasswords.com へのアクセスがないと、データ侵害に含まれるパスワードを確認できません。",
+ "Zugriff auf api.pwnedpasswords.com fehlt": "api.pwnedpasswords.com へのアクセスがありません",
+ "Have I Been Pwned antwortet nicht ({status})": "Have I Been Pwned が応答しません（{status}）",
+ "{n}-mal in Datenlecks bekannt": {
+  "other": "データ侵害で {n} 回確認されています"
  }
 }

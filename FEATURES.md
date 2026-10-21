@@ -163,6 +163,7 @@ das RFC 9580 bisher nicht umsetzt – ungeprüft).
 |---|---|
 | Duplikate in einem Konto und zwischen Konten (Website + Benutzer) | ✅ R + U |
 | Mehrfach verwendete und schwache Passwörter (Werkzeuge → Prüfen, nur lokal) | ✅ R + U |
+| In Datenlecks bekannte Passwörter (Have I Been Pwned, k-Anonymität: nur 5 Zeichen des SHA-1 je Passwort, mit Padding; erst nach Zustimmung über die optionale Berechtigung `api.pwnedpasswords.com`) | ✅ S + U (Dienst im Browsertest simuliert) |
 | Mehrfachauswahl: kopieren, verschieben, löschen | ✅ R |
 | Kopieren / Verschieben aus Detailansicht und Editor | ✅ R |
 | Übertragen zwischen Anbietern | ✅ R: Logins, Notizen, Karten, Identitäten und Zusatzfelder, soweit das Ziel sie speichern kann; sonst stehen sie lesbar in den Notizen. Passkeys gehen mit, wenn das Ziel sie speichern kann (Bitwarden → Bitwarden); Anhänge, Verlauf und sonst auch Passkeys bleiben im Original (Hinweis vorher, je nach Zielkonto). |
@@ -256,7 +257,7 @@ Einstellungen → Darstellung → Sprache wechselt sofort.
 |---|---|
 | Passkeys in Formularen innerhalb fremder iframes, Sicherheitsschlüssel-Erweiterungen (PRF, largeBlob) | nicht umgesetzt; der Browser übernimmt diese Anfragen |
 | Passkeys für 1Password, LastPass, Proton Pass | deren Kommandozeilenprogramme geben die Schlüssel nicht heraus |
-| Bitwarden Send, Notfallzugriff, Berichte über Datenlecks (HIBP) | nicht umgesetzt |
+| Bitwarden Send, Notfallzugriff | nicht umgesetzt |
 | Bitwarden: Rechte in einer Organisation verwalten (Mitglieder, Gruppen, Rechte je Sammlung) | nicht umgesetzt; Sammlungen eines Eintrags ändert OmniVault |
 | Bitwarden: WebAuthn- und Duo-Zweitfaktor, SSO | brauchen den Web-Tresor des Anbieters als Gegenstelle; Ausweg API-Schlüssel |
 | Passbolt: Duo, Kontowiederherstellung, Ordner teilen | nicht umgesetzt |

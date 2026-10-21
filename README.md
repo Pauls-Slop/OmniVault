@@ -48,7 +48,9 @@ For a detailed, per-feature overview see [FEATURES.md](FEATURES.md) (German).
 
 **Tools across managers**
 - Copy, move or mirror entries between accounts and providers
-- Find duplicates within and across accounts, plus reused and weak passwords (checked locally only)
+- Find duplicates within and across accounts, plus reused and weak passwords (checked locally only) and, if you
+  allow it, passwords known from data breaches (Have I Been Pwned; only the first 5 characters of each password's
+  SHA-1 hash are sent)
 - Import exports from other managers; export to Bitwarden JSON or CSV
 - Trash view for Bitwarden / Vaultwarden
 - Attachments: download them; in Bitwarden / Vaultwarden also add and delete them (up to 30 MB per file)
