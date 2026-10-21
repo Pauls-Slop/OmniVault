@@ -115,7 +115,7 @@ function relyingParty(origin) {
   };
 }
 
-function listen(handler, port) {
+export function listen(handler, port) {
   const server = http.createServer((req, res) => {
     let body = '';
     req.on('data', (c) => { body += c; });
@@ -127,7 +127,9 @@ function listen(handler, port) {
       if (req.url.split('?')[0] === '/webauthn.html') { res.writeHead(200, { 'Content-Type': 'text/html' }); return res.end(WEBAUTHN_PAGE); }
       const rp = handler.rp?.handle(req.url.split('?')[0], body);
       if (rp) { res.writeHead(200, { 'Content-Type': 'application/json' }); return res.end(JSON.stringify(rp)); }
-      const r = await handler(req.url.split('?')[0], { method: req.method, headers: req.headers, body: body || undefined });
+      const url = new URL(req.url, 'http://localhost');
+      const r = await handler(url.pathname, { method: req.method, headers: req.headers, body: body || undefined, query: url.searchParams });
+      if (r.html != null) { res.writeHead(r.status, { 'Content-Type': 'text/html; charset=utf-8' }); return res.end(r.html); }
       res.writeHead(r.status, { 'Content-Type': 'application/json', ...cors, ...(r.headers ?? {}) });
       res.end(JSON.stringify(r.body));
     });

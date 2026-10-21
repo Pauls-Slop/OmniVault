@@ -2,6 +2,7 @@
 // If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 // Copyright (c) 2026 Die OmniVault-Mitwirkenden
 // Simulated Bitwarden/Vaultwarden server state built with the real client crypto.
+import { createHash } from 'node:crypto';
 import { b64 } from '../src/lib/bytes.js';
 import {
   deriveMasterKey, encryptSym, masterPasswordHash, splitKey, stretchMasterKey,
@@ -24,7 +25,23 @@ async function encryptedPasskey(key, fields) {
   return out;
 }
 
-export async function fakeBitwarden({ kdf, twoFactor = false, loginUri = 'https://github.com/login', extraItems = 0, collections = false, collectionsV2 = true }) {
+const b64u = (s) => Buffer.from(s).toString('base64url');
+const page = (title, body) => ({ status: 200, html: `<!doctype html><meta charset="utf-8"><title>${title}</title><body>${body}</body>` });
+const redirect = (location) => ({ status: 302, headers: { Location: location }, body: {} });
+
+/**
+ * Options beyond the vault:
+ * - origin: the server's own address (web vault, as configured in DOMAIN); the connector pages live there
+ * - duo: 2 (personal) or 6 (organization) – Duo Universal Prompt as the only second factor; duoOrigin is Duo's host;
+ *   duoCodeParam 'duo_code' like Duo with use_duo_code_attribute (Bitwarden's library), else 'code' (Vaultwarden)
+ * - sso: { identifier } – Enterprise SSO for that organization identifier; ssoTwoFactor: TOTP after the sign-in
+ * - masterPassword: false | 'tde' | 'keyconnector' – an account without master password (SSO only)
+ */
+export async function fakeBitwarden({
+  kdf, twoFactor = false, loginUri = 'https://github.com/login', extraItems = 0, collections = false, collectionsV2 = true,
+  origin = 'https://vault.example.org', duo = null, duoOrigin = 'https://api-1234abcd.duosecurity.com', duoCodeParam = 'code',
+  sso = null, ssoTwoFactor = false, masterPassword = true,
+}) {
   const mk = await deriveMasterKey(PASSWORD, EMAIL, kdf);
   const hash = await masterPasswordHash(mk, PASSWORD);
   const userKeyBytes = crypto.getRandomValues(new Uint8Array(64));
@@ -136,13 +153,114 @@ export async function fakeBitwarden({ kdf, twoFactor = false, loginUri = 'https:
   const requests = [];
   const findCipher = (id) => sync.Ciphers.find((c) => (c.Id ?? c.id) === id);
 
-  const handle = function handle(path, { method = 'GET', headers = {}, body } = {}) {
+  // Duo: state → { email, code } as the server keeps it; SSO: state → { challenge, redirectUri, code }
+  const duoStates = new Map();
+  const ssoAuth = new Map();
+  const flow = { duoUrls: [], ssoAuthorize: [], tokenForms: [] };
+  const header = (headers, name) => headers[name] ?? headers[name.toLowerCase()] ?? Object.entries(headers).find(([k]) => k.toLowerCase() === name.toLowerCase())?.[1];
+
+  function duoChallenge(headers) {
+    // like the servers: Duo's address with a signed request; the return address is fixed by the server
+    const client = header(headers, 'Bitwarden-Client-Name') || 'web';
+    const state = `st${crypto.randomUUID().replace(/-/g, '')}`;
+    duoStates.set(state, { email: EMAIL });
+    const redirectUri = `${origin}/duo-redirect-connector.html?client=${client}`;
+    const claims = { response_type: 'code', scope: 'openid', client_id: 'DIXXXXXXXXXXXXXXXXXX', redirect_uri: redirectUri, state, duo_uname: EMAIL, nonce: 'n1' };
+    const jwt = `${b64u(JSON.stringify({ alg: 'HS512', typ: 'JWT' }))}.${b64u(JSON.stringify(claims))}.c2lnbmF0dXJl`;
+    const authUrl = `${duoOrigin}/oauth/v1/authorize?response_type=code&client_id=DIXXXXXXXXXXXXXXXXXX&request=${jwt}`;
+    flow.duoUrls.push(authUrl);
+    return { status: 400, body: { error: 'invalid_grant', error_description: 'Two factor required.', TwoFactorProviders: [String(duo)], TwoFactorProviders2: { [duo]: { Host: new URL(duoOrigin).host, AuthUrl: authUrl } } } };
+  }
+  const duoValid = (f) => {
+    if (f.get('twoFactorProvider') !== String(duo)) return false;
+    const [code, state] = (f.get('twoFactorToken') ?? '').split('|');
+    const s = duoStates.get(state);
+    if (!s?.code || s.code !== code) return false;
+    duoStates.delete(state); // single use
+    return true;
+  };
+
+  function tokenResponse() {
+    const kdfJson = { KdfType: kdf.kdf, Iterations: kdf.kdfIterations, Memory: kdf.kdfMemory ?? null, Parallelism: kdf.kdfParallelism ?? null };
+    if (masterPassword !== true) {
+      return {
+        access_token: 'AT1', refresh_token: 'RT1', expires_in: 3600,
+        UserDecryptionOptions: {
+          HasMasterPassword: false,
+          ...(masterPassword === 'tde' ? { TrustedDeviceOption: { HasAdminApproval: true, HasLoginApprovingDevice: false, HasManageResetPasswordPermission: false } } : {}),
+          ...(masterPassword === 'keyconnector' ? { KeyConnectorOption: { KeyConnectorUrl: 'https://key-connector.example.org' } } : {}),
+        },
+      };
+    }
+    return {
+      access_token: 'AT1', refresh_token: 'RT1', expires_in: 3600, Key: protectedKey,
+      Kdf: kdf.kdf, KdfIterations: kdf.kdfIterations, KdfMemory: kdf.kdfMemory, KdfParallelism: kdf.kdfParallelism,
+      UserDecryptionOptions: { HasMasterPassword: true, MasterPasswordUnlock: { Kdf: kdfJson, MasterKeyEncryptedUserKey: protectedKey, Salt: EMAIL } },
+    };
+  }
+
+  const handle = function handle(path, { method = 'GET', headers = {}, body, query = new URLSearchParams() } = {}) {
     const auth = headers.Authorization ?? headers.authorization;
+    // web vault pages the servers send the browser back to (the real ones hand over to the app; here just a page)
+    if (path === '/duo-redirect-connector.html' || path === '/sso-connector.html') return page('Connector', '<p>Weiterleitung …</p>');
+    // Duo's prompt (on Duo's host in reality): a button that confirms and redirects back with code and state
+    if (path === '/oauth/v1/authorize') {
+      let claims;
+      try { claims = JSON.parse(Buffer.from(query.get('request').split('.')[1], 'base64url').toString()); } catch { return { status: 400, body: { error: 'invalid_request' } }; }
+      return page('Duo', `<h1>Duo</h1><p>${claims.duo_uname}</p><a id="duo-approve" href="/duo/approve?state=${claims.state}&redirect=${encodeURIComponent(claims.redirect_uri)}">Approve</a>`);
+    }
+    if (path === '/duo/approve') {
+      const s = duoStates.get(query.get('state'));
+      if (!s) return { status: 400, body: { error: 'unknown state' } };
+      s.code = `duo${Math.random().toString(36).slice(2, 10)}`;
+      const back = new URL(query.get('redirect'));
+      back.searchParams.set(duoCodeParam, s.code);
+      back.searchParams.set('state', query.get('state'));
+      return redirect(back.href);
+    }
+    // SSO: prevalidate, authorize (fixed return address for client "browser"), the identity provider, token exchange
+    if (path.endsWith('/sso/prevalidate')) {
+      if (!sso || query.get('domainHint')?.toLowerCase() !== sso.identifier.toLowerCase()) return { status: 400, body: { message: 'Organization not found or SSO configuration not enabled' } };
+      return { status: 200, body: { token: 'SSOTOKEN1' } };
+    }
+    if (path.endsWith('/connect/authorize')) {
+      flow.ssoAuthorize.push(Object.fromEntries(query));
+      if (!sso) return { status: 400, body: { error: 'SSO sign-in is not available' } };
+      if (query.get('client_id') !== 'browser') return { status: 400, body: { error: 'invalid_client' } };
+      if (query.get('redirect_uri') !== `${origin}/sso-connector.html`) return { status: 400, body: { error: 'invalid_request', error_description: 'Invalid redirect_uri' } };
+      if (query.get('code_challenge_method') !== 'S256' || !query.get('code_challenge')) return { status: 400, body: { error: 'Unsupported code challenge method' } };
+      if (query.get('domain_hint') !== sso.identifier || query.get('ssoToken') !== 'SSOTOKEN1') return { status: 400, body: { error: 'No domain_hint provided' } };
+      const state = query.get('state');
+      ssoAuth.set(state, { challenge: query.get('code_challenge'), redirectUri: query.get('redirect_uri') });
+      return redirect(`/idp/login?state=${encodeURIComponent(state)}`);
+    }
+    if (path === '/idp/login') return page('Identity provider', `<h1>Company sign-in</h1><a id="idp-approve" href="/idp/approve?state=${encodeURIComponent(query.get('state'))}">Sign in</a>`);
+    if (path === '/idp/approve') {
+      const a = ssoAuth.get(query.get('state'));
+      if (!a) return { status: 400, body: { error: 'unknown state' } };
+      a.code = `sso${Math.random().toString(36).slice(2, 10)}`;
+      const back = new URL(a.redirectUri);
+      back.searchParams.set('code', a.code);
+      back.searchParams.set('state', query.get('state'));
+      return redirect(back.href);
+    }
     if (path.endsWith('/accounts/prelogin') && method === 'POST') {
       return { status: 200, body: { Kdf: kdf.kdf, KdfIterations: kdf.kdfIterations, KdfMemory: kdf.kdfMemory, KdfParallelism: kdf.kdfParallelism } };
     }
     if (path.endsWith('/connect/token')) {
       const f = new URLSearchParams(body);
+      flow.tokenForms.push(Object.fromEntries(f));
+      if (f.get('grant_type') === 'authorization_code') {
+        const a = [...ssoAuth.values()].find((x) => x.code && x.code === f.get('code'));
+        if (!a) return { status: 400, body: { error: 'invalid_grant', error_description: 'Invalid code cannot retrieve sso auth' } };
+        if (f.get('redirect_uri') !== a.redirectUri) return { status: 400, body: { error: 'invalid_grant', error_description: 'redirect_uri mismatch' } };
+        const challenge = createHash('sha256').update(f.get('code_verifier') ?? '').digest('base64url');
+        if (challenge !== a.challenge) return { status: 400, body: { error: 'invalid_grant', error_description: 'PKCE verification failed' } };
+        if (!f.get('deviceIdentifier') || !f.get('deviceName') || !f.get('deviceType')) return { status: 400, body: { error: 'invalid_request' } };
+        if (ssoTwoFactor && f.get('twoFactorToken') !== '123456') return { status: 400, body: { error: 'invalid_grant', TwoFactorProviders2: { 0: null } } };
+        if (duo && !duoValid(f)) return duoChallenge(headers);
+        return { status: 200, body: tokenResponse() };
+      }
       if (f.get('grant_type') === 'client_credentials') {
         if (f.get('client_id') !== API_CLIENT_ID || f.get('client_secret') !== API_CLIENT_SECRET) return { status: 400, body: { error: 'invalid_client' } };
         return { status: 200, body: { access_token: 'ATK', expires_in: 3600, Key: protectedKey, Kdf: kdf.kdf, KdfIterations: kdf.kdfIterations } };
@@ -150,6 +268,8 @@ export async function fakeBitwarden({ kdf, twoFactor = false, loginUri = 'https:
       if (f.get('grant_type') === 'refresh_token') return { status: 200, body: { access_token: 'AT2', expires_in: 3600 } };
       if (f.get('password') !== hash) return { status: 400, body: { error: 'invalid_grant', ErrorModel: { Message: 'Username or password is incorrect. Try again.' } } };
       if (twoFactor && f.get('twoFactorToken') !== '123456') return { status: 400, body: { error: 'invalid_grant', TwoFactorProviders2: { 0: null, 7: {} } } };
+      if (duo && !duoValid(f)) return duoChallenge(headers);
+      if (duo) return { status: 200, body: tokenResponse() };
       return { status: 200, body: { access_token: 'AT1', refresh_token: 'RT1', expires_in: 3600, Key: protectedKey } };
     }
     if (path.includes('/sync')) {
@@ -218,6 +338,7 @@ export async function fakeBitwarden({ kdf, twoFactor = false, loginUri = 'https:
     return { status: 404, body: {} };
   };
   handle.requests = requests;
+  handle.flow = flow;
   handle.sync = sync;
   return handle;
 }
